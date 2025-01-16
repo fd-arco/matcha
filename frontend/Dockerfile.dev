@@ -1,0 +1,19 @@
+FROM node:16
+
+RUN adduser --disabled-password --gecos "" appuser
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN chown -R appuser:appuser /app
+
+USER appuser
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
