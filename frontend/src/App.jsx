@@ -6,12 +6,31 @@ import { createBrowserRouter, RouterProvider, Link } from 'react-router-dom';
 import TestHome from "./pages/Home.jsx";
 import Navbar from "./components/Navbar.jsx"
 import TestUser from "./pages/User.jsx";
+import Register from './components/Register.jsx';
 
 
 
 const router = createBrowserRouter([
-    {path: '/user', element: <TestUser/>}
+    {path: '/user', element: <TestUser/>},
+    {path: '/', element: <Homepage />},
+    {path: '/login', element: <Login />},
+    {path: '/register', element: <Register />}
+
 ]);
+
+function Homepage(){
+  return(
+    <div>
+        <header className="sticky inset-0 z-50 backdrop-blur-lg">
+            <Navbar />
+        </header>
+        <TestHome /> 
+        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
+          <DarkModeToggle />
+        </div> 
+    </div>
+  );
+}
 
 function App() {
   return (
