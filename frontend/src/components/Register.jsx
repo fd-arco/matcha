@@ -1,12 +1,60 @@
 import { Link } from "react-router-dom";
 import Matcha from "../util/matcha1.jpg"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Register (){
 
+    const [firstname, setFirstName] = useState("");
+    const [email, setEmail] = useState("");
+    const [lastname, setLastName] = useState("");
+    const [password, setPassword] = useState("");
+    const [message, setMessage] = useState("");
+    const [validEmail, setValidEmail] = useState("false");
+    const navigate = useNavigate();
+
+    async function handleRegister(event) {
+        event.preventDefault();
+        console.log("fname  :" ,firstname);
+        console.log("lastname  :" ,lastname);
+        console.log("email  :" ,email);
+        console.log("password  :" ,password);
+    
+        try {
+            const response = await fetch("http://localhost:3000/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email, firstname, lastname, password }),
+            });
+    
+            const text = await response.text(); 
+
+            if (response.ok) {
+
+                setMessage("Inscription réussie !");
+                setTimeout(() => {
+                    navigate("/profil");
+                }, 1500);
+
+            } else {
+
+                setMessage("Erreur serevuer zebi.");
+            }
+            console.log("Réponse brute du serveur:", text); 
+
+        } catch (error) {
+
+            console.error("Erreur de la requête:", error);
+            setMessage("Erreur lors de l'inscription.");
+            console.error("Erreur tamere de la requête:", error);
+        }
+    }
+    
     return (
         <body class="bg-[#4E754E] min-h-screen flex items-center justify-center p-4">
             <div class="w-full max-w-[1200px] bg-[#13131a] rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row">
-
             <div class="w-full md:w-1/2 relative">
                 <a href="#" class="absolute top-6 left-6 text-white text-2xl font-bold z-10">MATCHA</a>
                 <Link to="/" class="absolute top-6 right-6 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm hover:bg-white/20 transition-colors z-10">
@@ -38,14 +86,18 @@ export default function Register (){
                         <a href="https://abhirajk.vercel.app/" class="text-white hover:underline">Log in</a>
                     </p> */}
     
-                    <form class="space-y-4">
+                    <form class="space-y-4" onSubmit={ handleRegister }>
                         <div class="flex flex-col md:flex-row gap-4">
-                            <input type="text" placeholder="First name" class="w-full md:w-1/2 bg-[#1c1c24] text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600"/>
-                            <input type="text" placeholder="Last name" class="w-full md:w-1/2 bg-[#1c1c24] text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600"/>
+                            <input type="text" onChange={(event) => setFirstName(event.target.value)} 
+                            value={firstname} placeholder="First name" class="w-full md:w-1/2 bg-[#1c1c24] text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600" required/>
+                            <input type="text" onChange={(event) => setLastName(event.target.value)}
+                            value={lastname} placeholder="Last name" class="w-full md:w-1/2 bg-[#1c1c24] text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600"/>
                         </div>
-                        <input type="email" placeholder="Email" class="w-full bg-[#1c1c24] text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600"/>
+                        <input type="email" onChange={(event) => setEmail(event.target.value)}
+                        value={email} placeholder="Email" class="w-full bg-[#1c1c24] text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600"/>
                         <div class="relative">
-                            <input type="password" placeholder="Enter your password" class="w-full bg-[#1c1c24] text-white rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-600"/>
+                            <input type="password" onChange={(event) => setPassword(event.target.value)}
+                            value={password} placeholder="Enter your password" class="w-full bg-[#1c1c24] text-white rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-600"/>
                             <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2">
                                 {/* <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -54,10 +106,9 @@ export default function Register (){
                             </button>
                         </div>
                         <br></br>
-                        <button type="submit" class="w-full bg-[#679267] text-white rounded-lg p-3 hover:bg-[#4E754E] transition-colors">
-                            Create account
-                        </button>
-    
+                            <button type="submit" class="w-full bg-[#679267] text-white rounded-lg p-3 hover:bg-[#4E754E] transition-colors">
+                                Create account
+                            </button>
                         <div class="relative my-8">
                             <div class="absolute inset-0 flex items-center">
                                 <div class="w-full border-t border-gray-700"></div>

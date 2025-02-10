@@ -3,6 +3,8 @@
     "@babel/plugin-transform-private-property-in-object": "^7.25.9"
   },
   "dependencies": {
+    "knex": "^3.1.0",
+    "pg": "^8.13.1",
     "react-router-dom": "^7.1.3"
   }
 }
