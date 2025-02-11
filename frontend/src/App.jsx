@@ -35,14 +35,6 @@ function Homepage(){
 function App() {
   return (
       <div>
-        {/* <header className="sticky inset-0 z-50 backdrop-blur-lg">
-            <Navbar />
-        </header>
-        <TestHome /> */}
-         {/* <Login /> */}
-          {/* <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
-            <DarkModeToggle /> */}
-          {/* </div> */}
           <RouterProvider router={router}/>
     </div>
   );

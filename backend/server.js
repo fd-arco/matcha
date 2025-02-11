@@ -31,20 +31,6 @@ app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
 
-// app.post("/register", (req, res) =>{
-
-//     const{ email, firstName, lastName, password } = req.body;
-
-//     if(!email || !firstName || !password || !lastName){
-//         return res.status(400).json({ error: "vueillez tout remplir" });
-//     }
-
-//     res.json({ message: `Email recu: ${firstName} lastname: ${lastName} Email recu: ${email} password: ${password}`})
-
-//     db('users').insert({firstName});
-// })
-
-
 app.post("/register", async (req, res) => {
 
     const { email, firstname, lastname, password } = req.body;
