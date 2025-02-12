@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 
 export default function DarkModeToggle() {
     
-    const [isDarkMode, setIsDarkMode] = useState(false);
+    const [isDarkMode, setIsDarkMode] = useState(() => {
+      return localStorage.getItem("darkMode") === "true";
+    });
   
     useEffect(() => {
       const htmlElement = document.documentElement;
@@ -11,6 +13,7 @@ export default function DarkModeToggle() {
       } else {
         htmlElement.classList.remove("dark");
       }
+      localStorage.setItem("darkMode", isDarkMode);
     }, [isDarkMode]);
   
     const toggleDarkMode = () => {
@@ -18,18 +21,16 @@ export default function DarkModeToggle() {
     };
   
     return (
-        <div class="fixed bottom-0 left-0 m-4 p-4">
             <button
                 onClick={toggleDarkMode}
-                className={`p-2 rounded-lg shadow-lg text-white transition duration-300 ease-in-out ${
+                className={`p-2 rounded-lg shadow-lg transition duration-300 ease-in-out ${
                 isDarkMode
-                    ? "bg-gray-800 hover:bg-gray-700"
-                    : "bg-blue-500 hover:bg-blue-400"
+                ? "bg-white text-black border border-gray-400 hover:bg-gray-100"
+                : "bg-gray-800 text-white hover:bg-gray-700"
                 }`}
             >
-                {isDarkMode ? "🌙 Dark Mode" : "☀️ Light Mode"}
+                {isDarkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
             </button>
 
-        </div>
     );
   }

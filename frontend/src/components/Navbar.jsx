@@ -1,26 +1,26 @@
 import { Link } from "react-router-dom";
+import DarkModeToggle from "../util/dark";
 
 export default function Navbar(){
 
     return (
-        <nav className="mx-auto flex max-w-6xl gap-8 px-6 transition-all duration-200 ease-in-out lg:px-12 py-4 bg-transparent shadow-md">
-            <div class="relative flex items-center">
+        <nav className="flex items-center justify-between px-6 py-4 bg-white-100 dark:bg-gray-900 shadow-md">
+            <div class="w-1/3 text-left">
+            <h1 class="text-black dark:text-white font-bold text-xl italic">
                 <Link to='/Home'>
-                    <h1>Matcha</h1>
+                    Matcha
                 </Link>
+            </h1>
             </div>
-            <div class="flex-grow"></div>
-            <div class="hidden items-center justify-center gap-6 md:flex">
-                <a href="#" class="font-dm text-sm font-medium text-slate-700">Langues</a>
+            <div class="w-1/3 text-center">
+                <DarkModeToggle/>
+            </div>
+            <div class="w-1/3 text-right space-x-2">
+                <a href="#" class="p-2 rounded-lg shadow-lg text-white transition duration-300 ease-in-out bg-green-400 hover:bg-green-300 dark:bg-green-800 dark:hover:bg-green-700">Langues</a>
                 <Link to="/login"
-                    class="rounded-md bg-gradient-to-br from-green-600 to-emerald-400 px-3 py-1.5 font-dm text-sm font-medium text-white shadow-md shadow-green-400/50 transition-transform duration-200 ease-in-out hover:scale-[1.03]">Sign
+                    class="p-2 rounded-lg shadow-lg text-white transition duration-300 ease-in-out bg-green-400 hover:bg-green-300 dark:bg-green-800 dark:hover:bg-green-700">Sign
                     in
                 </Link>
-            </div>
-            <div class="relative flex items-center justify-center md:hidden">
-                <button type="button">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" class="h-6 w-auto text-slate-900"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"></path></svg>
-                </button>
             </div>
         </nav>
     );

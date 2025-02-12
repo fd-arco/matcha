@@ -32,7 +32,7 @@ clean-frontend-dev:
 	docker compose -f $(DOCKER_COMPOSE_FILE) down --remove-orphans frontend-dev
 
 up:
-	docker compose -f $(DOCKER_COMPOSE_FILE) --profile production up --build
+	docker compose -f $(DOCKER_COMPOSE_FILE) --profile development up --build
 
 down:
 	docker compose -f $(DOCKER_COMPOSE_FILE) down
