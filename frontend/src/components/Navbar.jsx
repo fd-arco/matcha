@@ -4,7 +4,7 @@ import DarkModeToggle from "../util/dark";
 export default function Navbar(){
 
     return (
-        <nav className="flex items-center justify-between px-6 py-4 bg-white-100 dark:bg-gray-900 shadow-md">
+        <nav className="flex items-center justify-between px-6 py-4 bg-white dark:bg-gray-900 shadow-md">
             <div class="w-1/3 text-left">
             <h1 class="text-black dark:text-white font-bold text-xl italic">
                 <Link to='/Home'>
