@@ -1,13 +1,14 @@
 // import Header from "../components/Header.jsx"
 import tahm from "../util/tahm.jpg"
+import DarkModeToggle from "../util/dark";
 import { Link } from 'react-router-dom'
 
 export default function testHome() {
 
     return (
-        <div className="relative bg-gradient-to-r from-purple-600 to-blue-600 h-screen text-white overflow-hidden">
+        <div className="relative h-screen w-full text-white overflow-hidden">
             <div className="absolute inset-0">
-                <img src={tahm} alt="le tahm de fd"/>
+                <img src={tahm} alt="le tahm de fd" className="absolute inset-0 w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black opacity-50"></div>
             </div>
             
@@ -25,6 +26,9 @@ export default function testHome() {
                         </Link>
                     </div>
                 </div>
+            </div>
+            <div className="absolute bottom-4 left-4 z-20">
+                <DarkModeToggle />
             </div>
         </div>
     );

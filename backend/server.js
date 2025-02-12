@@ -2,21 +2,19 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const app = express();
-const knex = require('knex');
+const { Pool } = require('pg');
 
 
 app.use(cors());
 app.use(bodyParser.json());
 
 
-const db = knex({
-    client: 'pg',
-    connection: {
-        host: 'db', 
-        user: 'postgres', 
-        password: 'password', 
-        database: 'matcha_app',
-    },
+const pool = new Pool({
+    host: 'db', 
+    user: 'postgres', 
+    password: 'password', 
+    database: 'matcha_app',
+    port: 5432,
 });
 
 app.use(express.json());
@@ -40,12 +38,15 @@ app.post("/register", async (req, res) => {
     }
     try {
 
-        const [newUser] = await db('users').insert({ email, firstname, lastname, password }).returning("*");
+        const result = await pool.query(
+            'INSERT INTO users (email, firstname, lastname, password) VALUES ($1, $2, $3, $4) RETURNING *',
+            [email, firstname, lastname, password]
+        );
 
         res.status(201).json({
 
             message: `Utilisateur ${firstname} ${lastname} ajouté avec succès!`,
-            user: newUser
+            user: result.rows[0]
         });
     } 
     catch (error) {
@@ -58,9 +59,8 @@ app.post("/register", async (req, res) => {
 app.get('/users', async(req, res) => {
 
     try{
-        
-        const users = await db.select("*").from("users");
-        res.json(users);
+        const result = await pool.query('SELECT * FROM users');
+        res.json(result.rows);
     }
     catch(error){
 

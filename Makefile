@@ -9,6 +9,7 @@ clean-images:
 clean-volumes:
 	docker volume prune -f
 	docker compose down --volumes
+	docker volume rm $$(docker volume ls -q) || true
 
 clean-all: clean-containers clean-images clean-volumes
 
