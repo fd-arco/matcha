@@ -6,14 +6,14 @@ import TestHome from "./pages/Home.jsx";
 import Navbar from "./components/Navbar.jsx"
 import TestUser from "./pages/User.jsx";
 import Register from './components/Register.jsx';
-import Profil from "./pages/Profile.jsx"
+import CreateProfil from "./pages/CreateProfil.jsx"
 
 const router = createBrowserRouter([
     {path: '/user', element: <TestUser/>},
     {path: '/', element: <Homepage />},
     {path: '/login', element: <Login />},
     {path: '/register', element: <Register />},
-    {path: '/profil', element: <Profil />}
+    {path: '/create-profil', element: <CreateProfil />}
 
 ]);
 

@@ -35,8 +35,9 @@ export default function Register (){
             if (response.ok) {
 
                 setMessage("Inscription réussie !");
+                console.log("JE redirige bien vers create-profil");
                 setTimeout(() => {
-                    navigate("/profil");
+                    navigate("/create-profil");
                 }, 1500);
 
             } else {

@@ -1,0 +1,229 @@
+import { useState } from "react";
+import Navbar from "../components/Navbar";
+
+export default function CreateProfil() {
+    const [selectedPassions, setSelectedPassions] = useState([]);
+    const [selectedValue, setSelectedValue] = useState("");
+    const [photos, setPhotos] = useState([]);
+
+    const passionsList = ["Music", "Sports", "Reading", "Traveling", "Cooking", 
+        "Gaming", "Dancing", "Art", "Photography", "Movies"
+    ];
+
+    const handleAddPassion = (event) => {
+        const passion = event.target.value;
+        if (passion && !selectedPassions.includes(passion) && selectedPassions.length < 5) {
+            setSelectedPassions([...selectedPassions, passion]);
+        }
+        setSelectedValue("");
+    };
+
+    const handleRemovePassion = (passion) => {
+        setSelectedPassions(selectedPassions.filter((p) => p !== passion));
+    };
+
+    const handleUploadPhoto = (event) => {
+        if (photos.length >= 6) {
+            alert("You can only upload up to 6 photos.");
+            return;
+        }
+
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setPhotos([...photos, e.target.result]);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleRemovePhoto = (index) => {
+        setPhotos(photos.filter((_, i) => i !== index));
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-200 text-black dark:bg-gray-800 dark:text-white transition-colors duration-300 flex flex-col">
+            <Navbar />
+            <div className="flex-1 flex items-center justify-center px-4">
+                {/* Conteneur principal bien large et équilibré */}
+                <div className="bg-white dark:bg-black border rounded-lg px-8 py-6 mx-auto my-8 max-w-5xl w-full flex flex-wrap md:flex-nowrap justify-between gap-6">
+                    
+                    {/* SECTION GAUCHE: FORMULAIRE */}
+                    <div className="w-full md:w-[48%] flex flex-col">
+                        <h2 className="text-2xl font-medium mb-4">Create your account</h2>
+                        <form className="flex flex-col flex-grow">
+                            <div className="mb-4">
+                                <label htmlFor="name" className="block text-gray-700 font-medium mb-2">Name</label>
+                                <input type="text" id="name" name="name"
+                                    className="dark:bg-gray-600 border border-gray-400 p-2 w-full rounded-lg focus:outline-none focus:border-blue-400" required/>
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="age" className="block text-gray-700 font-medium mb-2">Age</label>
+                                <input type="number" id="age" name="age"
+                                    className="dark:bg-gray-600 border border-gray-400 p-2 w-full rounded-lg focus:outline-none focus:border-blue-400" required/>
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="gender" className="block text-gray-700 font-medium mb-2">Gender</label>
+                                <select id="gender" name="gender"
+                                    className="dark:bg-gray-600 border border-gray-400 p-2 w-full rounded-lg focus:outline-none focus:border-blue-400" required>
+                                    <option value="">Select gender</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Beyond the binary</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                             <label class="block text-gray-700 font-medium mb-2">Interested in...</label>
+                             <div class="flex flex-wrap -mx-2">
+                                 <div class="px-2 w-1/3">
+                                     <label for="men" class="block text-gray-700 font-medium mb-2">
+                                         <input type="radio" id="men" name="color" value="red" class="mr-2" required/>Men
+                                     </label>
+                                 </div>
+                                 <div class="px-2 w-1/3">
+                                     <label for="women" class="block text-gray-700 font-medium mb-2">
+                                         <input type="radio" id="women" name="color" value="blue" class="mr-2" required/>Women
+                                     </label>
+                                 </div>
+                                 <div class="px-2 w-1/3">
+                                     <label for="beyond-binary" class="block text-gray-700 font-medium mb-2">
+                                         <input type="radio" id="beyond-binary" name="color" value="green" class="mr-2" required/>Beyond the binary
+                                     </label>
+                                 </div>
+                                 <div class="px-2 w-1/3">
+                                     <label for="everyone" class="block text-gray-700 font-medium mb-2">
+                                         <input type="radio" id="everyone" name="color" value="green" class="mr-2" required/>Everyone
+                                     </label>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="mb-4">
+                             <label class="block text-gray-700 font-medium mb-2">What are you looking for?</label>
+                             <div class="flex flex-wrap -mx-2">
+                                 <div class="px-2 w-1/3">
+                                     <label for="serious-relationship" class="block text-gray-700 font-medium mb-2">
+                                         <input type="radio" id="serious-relationship" name="animal[]" value="cat" class="mr-2"/>Serious relationship
+                                     </label>
+                                 </div>
+                                 <div class="px-2 w-1/3">
+                                     <label for="nothing-serious" class="block text-gray-700 font-medium mb-2">
+                                         <input type="radio" id="nothing-serious" name="animal[]" value="dog"
+                                            class="mr-2"/>Nothing serious
+                                    </label>
+                                </div>
+                                <div class="px-2 w-1/3">
+                                    <label for="making-friends" class="block text-gray-700 font-medium mb-2">
+                                        <input type="radio" id="making-friends" name="animal[]" value="bird" class="mr-2"/>Making friends
+                                    </label>
+                                </div>
+                                <div class="px-2 w-1/3">
+                                    <label for="not-sure" class="block text-gray-700 font-medium mb-2">
+                                        <input type="radio" id="not-sure" name="animal[]" value="bird" class="mr-2"/>I'm not sure yet
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                            <div className="mb-4">
+                                <label className="block text-gray-700 font-medium mb-2">Select your passions (max 6)</label>
+                                <select 
+                                    value={selectedValue} 
+                                    onChange={handleAddPassion}
+                                    className="dark:bg-gray-700 border border-gray-400 p-2 w-full rounded-lg focus:outline-none focus:border-blue-400"
+                                >
+                                    <option value="">Choose a passion</option>
+                                    {passionsList.map((passion, index) => (
+                                        <option key={index} value={passion}>
+                                            {passion}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Affichage des passions sélectionnées */}
+                            <div className="mb-4 flex flex-wrap gap-2">
+                                {selectedPassions.map((passion, index) => (
+                                    <span
+                                        key={index}
+                                        onClick={() => handleRemovePassion(passion)}
+                                        className="cursor-pointer bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-red-500 transition-colors"
+                                    >
+                                        {passion} ✖
+                                    </span>
+                                ))}
+                            </div>
+
+                            {/* Bio */}
+                            <div className="mb-4">
+                                <label htmlFor="bio" className="block text-gray-700 font-medium mb-2">Bio</label>
+                                <textarea id="bio" name="bio"
+                                    className="dark:bg-gray-700 border border-gray-400 p-2 w-full rounded-lg focus:outline-none focus:border-blue-400" rows="2"></textarea>
+                            </div>
+
+                            <div>
+                                <button type="submit" className="bg-green-600 hover:bg-green-500 dark:bg-green-800 dark:hover:bg-green-700 text-white px-4 py-2 rounded-lg w-full">
+                                    Submit
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    {/* SECTION DROITE: UPLOAD DES PHOTOS */}
+                    <div className="w-full md:w-[48%] flex flex-col">
+                    <h2 className="text-2xl font-medium mb-4">Upload your photos (max 6)</h2>
+
+                    {/* Conteneur principal pour bien aligner les éléments */}
+                    {photos.length === 0 && (
+                    <div className="flex flex-col flex-grow items-center justify-center">
+                        <div class="flex-grow flex items-center justify-center">
+                        <img 
+                            src="https://cdn-icons-png.flaticon.com/512/847/847969.png" 
+                            alt="Default portrait" 
+                            className="w-64 h-64 object-cover rounded-full border border-gray-400"
+                        />
+                        </div>
+                        <div class="flex-grow flex items-center justify-center">
+                        <p className="text-xl italic text-gray-500 dark:text-gray-300 text-center flex-grow flex items-center justify-center">
+                        No photos uploaded
+                        </p>
+                        </div>
+                    </div>
+                    )}
+                        {/* Affichage des photos uploadées */}
+                        {photos.length > 0 && (
+                        <div className="grid grid-cols-2 gap-2 flex-grow">
+                            {photos.map((photo, index) => (
+                                <div key={index} className="relative">
+                                    <img src={photo} alt={`Uploaded ${index}`} className="w-full h-60 object-cover rounded-lg" />
+                                    {/* Bouton de suppression */}
+                                    <button 
+                                        onClick={() => handleRemovePhoto(index)}
+                                        className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center"
+                                    >
+                                        ✖
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                        )}
+                        {photos.length < 6 && (
+                        <div className="mt-4">
+                            <input 
+                                type="file" 
+                                accept="image/*" 
+                                onChange={handleUploadPhoto} 
+                                className="hidden" 
+                                id="photoUpload"
+                            />
+                            <label htmlFor="photoUpload" className="bg-green-600 hover:bg-green-500 dark:bg-green-800 dark:hover:bg-green-700 cursor-pointer text-white px-4 py-2 rounded-lg transition-colors block text-center">
+                                Upload a photo
+                            </label>
+                        </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
