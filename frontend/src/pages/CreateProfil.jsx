@@ -10,8 +10,13 @@ export default function CreateProfil() {
         "Gaming", "Dancing", "Art", "Photography", "Movies"
     ];
 
+    const [formErrors, setFormErrors] = useState({});
+
     const handleAddPassion = (event) => {
         const passion = event.target.value;
+        if (passion) {
+            setFormErrors((prev) => ({...prev, passions:""}));
+        }
         if (passion && !selectedPassions.includes(passion) && selectedPassions.length < 5) {
             setSelectedPassions([...selectedPassions, passion]);
         }
@@ -33,6 +38,7 @@ export default function CreateProfil() {
             const reader = new FileReader();
             reader.onload = (e) => {
                 setPhotos([...photos, e.target.result]);
+                setFormErrors((prev) => ({ ...prev, photos: ""}));
             };
             reader.readAsDataURL(file);
         }
@@ -41,6 +47,45 @@ export default function CreateProfil() {
     const handleRemovePhoto = (index) => {
         setPhotos(photos.filter((_, i) => i !== index));
     };
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        let errors = {};
+        const formData = new FormData(event.target);
+        const name = formData.get("name")?.trim();
+        const dob = formData.get("dob")?.trim();
+        const gender = formData.get("gender")?.trim();
+        const interestedIn = formData.get("interestedIn")?.trim();
+        const lookingFor = formData.get("lookingFor")?.trim();
+        if (!name) {
+            errors.name = "Name is required";
+        }
+        if (!dob) {
+            errors.dob = "Date of birth is required";
+        }
+        if (!gender) {
+            errors.gender = "Gender is required";
+        }
+        if (!interestedIn) {
+            errors.interestedIn = "Please select who you are interested in";
+        }
+        if (!lookingFor) {
+            errors.lookingFor = "Please select what you are looking for";
+        }
+        if (selectedPassions.length === 0) {
+            errors.passions = "Select at least one passion";
+        }
+        if (photos.length === 0) {
+            errors.photos = "Please upload at least one photo";
+        }
+
+        setFormErrors(errors);
+
+        if (Object.keys(errors).length > 0) {
+            return ;
+        }
+        
+    }
 
     return (
         <div className="min-h-screen bg-gray-200 text-black dark:bg-gray-800 dark:text-white transition-colors duration-300 flex flex-col">
@@ -52,86 +97,113 @@ export default function CreateProfil() {
                     {/* SECTION GAUCHE: FORMULAIRE */}
                     <div className="w-full md:w-[48%] flex flex-col">
                         <h2 className="text-2xl font-medium mb-4">Create your account</h2>
-                        <form className="flex flex-col flex-grow">
+                        <form onSubmit={handleSubmit} className="flex flex-col flex-grow">
                             <div className="mb-4">
                                 <label htmlFor="name" className="block text-gray-700 font-medium mb-2">Name</label>
-                                <input type="text" id="name" name="name"
-                                    className="dark:bg-gray-600 border border-gray-400 p-2 w-full rounded-lg focus:outline-none focus:border-blue-400" required/>
+                                <input type="text" id="name" name="name" onChange={(e) => {
+                                    setFormErrors((prev) => ({ ...prev, name: ""}));
+                                }}
+                                    className={`dark:bg-gray-600 border border-gray-400 p-2 w-full rounded-lg focus:outline-none focus:border-blue-400 ${formErrors.name ? "border-red-500" : "border-gray-400"}`}/>
+                                    {formErrors.name && (<p className="text-red-500 text-sm m-0 p-0">{formErrors.name}</p>)}
                             </div>
                             <div className="mb-4">
-                                <label htmlFor="age" className="block text-gray-700 font-medium mb-2">Age</label>
-                                <input type="number" id="age" name="age"
-                                    className="dark:bg-gray-600 border border-gray-400 p-2 w-full rounded-lg focus:outline-none focus:border-blue-400" required/>
+                                <label htmlFor="dob" className="block text-gray-700 font-medium mb-2">Date of birth</label>
+                                <input type="date" id="dob" name="dob" onChange={(e) => {
+                                    setFormErrors((prev) => ({ ...prev, dob: ""}));
+                                }}
+                                    className={`dark:bg-gray-600 border border-gray-400 p-2 w-full rounded-lg focus:outline-none focus:border-blue-400 ${formErrors.dob ? "border-red-500" : "border-gray-400"}`}/>
+                                    {formErrors.dob && (<p className="text-red-500 text-sm m-0 p-0">{formErrors.dob}</p>)}
                             </div>
                             <div className="mb-4">
                                 <label htmlFor="gender" className="block text-gray-700 font-medium mb-2">Gender</label>
-                                <select id="gender" name="gender"
-                                    className="dark:bg-gray-600 border border-gray-400 p-2 w-full rounded-lg focus:outline-none focus:border-blue-400" required>
+                                <select id="gender" name="gender" onChange={(e) => {
+                                    setFormErrors((prev) => ({...prev, gender:""}));
+                                }}
+                                    className={`dark:bg-gray-600 border border-gray-400 p-2 w-full rounded-lg focus:outline-none focus:border-blue-400 ${formErrors.gender ? "border-red-500" : "border-gray-400"}`}>
                                     <option value="">Select gender</option>
                                     <option value="male">Male</option>
                                     <option value="female">Female</option>
                                     <option value="other">Beyond the binary</option>
                                 </select>
+                                {formErrors.gender && (<p className="text-red-500 text-sm m-0 p-0">{formErrors.gender}</p>)}
                             </div>
                             <div class="mb-4">
-                             <label class="block text-gray-700 font-medium mb-2">Interested in...</label>
+                             <label class={`block text-gray-700 font-medium mb-2`}>Interested in...</label>
                              <div class="flex flex-wrap -mx-2">
                                  <div class="px-2 w-1/3">
                                      <label for="men" class="block text-gray-700 font-medium mb-2">
-                                         <input type="radio" id="men" name="color" value="red" class="mr-2" required/>Men
+                                         <input type="radio" id="men" name="interestedIn" value="red" class="mr-2 dark:accent-gray-700" onChange={(e) => {
+                                            setFormErrors((prev) => ({...prev, interestedIn:""}));
+                                         }}/>Men
                                      </label>
                                  </div>
                                  <div class="px-2 w-1/3">
                                      <label for="women" class="block text-gray-700 font-medium mb-2">
-                                         <input type="radio" id="women" name="color" value="blue" class="mr-2" required/>Women
+                                         <input type="radio" id="women" name="interestedIn" value="blue" class="mr-2 dark:accent-gray-700" onChange={(e) => {
+                                            setFormErrors((prev) => ({...prev, interestedIn:""}));
+                                         }} />Women
                                      </label>
                                  </div>
                                  <div class="px-2 w-1/3">
                                      <label for="beyond-binary" class="block text-gray-700 font-medium mb-2">
-                                         <input type="radio" id="beyond-binary" name="color" value="green" class="mr-2" required/>Beyond the binary
+                                         <input type="radio" id="beyond-binary" name="interestedIn" value="green" class="mr-2 dark:accent-gray-700" onChange={(e) => {
+                                            setFormErrors((prev) => ({...prev, interestedIn:""}));
+                                         }} />Beyond the binary
                                      </label>
                                  </div>
                                  <div class="px-2 w-1/3">
                                      <label for="everyone" class="block text-gray-700 font-medium mb-2">
-                                         <input type="radio" id="everyone" name="color" value="green" class="mr-2" required/>Everyone
+                                         <input type="radio" id="everyone" name="interestedIn" value="green" class="mr-2 dark:accent-gray-700" onChange={(e) => {
+                                            setFormErrors((prev) => ({...prev, interestedIn:""}));
+                                         }} />Everyone
                                      </label>
                                  </div>
                              </div>
+                             {formErrors.interestedIn && (<p className="text-red-500 text-sm m-0 p-0">{formErrors.interestedIn}</p>)}
                          </div>
                          <div class="mb-4">
-                             <label class="block text-gray-700 font-medium mb-2">What are you looking for?</label>
+                             <label class={`block text-gray-700 font-medium mb-2`}>What are you looking for?</label>
                              <div class="flex flex-wrap -mx-2">
                                  <div class="px-2 w-1/3">
                                      <label for="serious-relationship" class="block text-gray-700 font-medium mb-2">
-                                         <input type="radio" id="serious-relationship" name="animal[]" value="cat" class="mr-2"/>Serious relationship
+                                         <input type="radio" id="serious-relationship" name="lookingFor" value="serious" class="mr-2 dark:accent-gray-700" onChange={(e) => {
+                                            setFormErrors((prev) => ({...prev, lookingFor:""}));
+                                         }}/>Serious relationship
                                      </label>
                                  </div>
                                  <div class="px-2 w-1/3">
                                      <label for="nothing-serious" class="block text-gray-700 font-medium mb-2">
-                                         <input type="radio" id="nothing-serious" name="animal[]" value="dog"
-                                            class="mr-2"/>Nothing serious
+                                         <input type="radio" id="nothing-serious" name="lookingFor" value="nothingSerious"
+                                            class="mr-2 dark:accent-gray-700" onChange={(e) => {
+                                                setFormErrors((prev) => ({...prev, lookingFor:""}));
+                                             }}/>Nothing serious
                                     </label>
                                 </div>
                                 <div class="px-2 w-1/3">
                                     <label for="making-friends" class="block text-gray-700 font-medium mb-2">
-                                        <input type="radio" id="making-friends" name="animal[]" value="bird" class="mr-2"/>Making friends
+                                        <input type="radio" id="making-friends" name="lookingFor" value="makingFriends" class="mr-2 dark:accent-gray-700" onChange={(e) => {
+                                            setFormErrors((prev) => ({...prev, lookingFor:""}));
+                                         }}/>Making friends
                                     </label>
                                 </div>
                                 <div class="px-2 w-1/3">
                                     <label for="not-sure" class="block text-gray-700 font-medium mb-2">
-                                        <input type="radio" id="not-sure" name="animal[]" value="bird" class="mr-2"/>I'm not sure yet
+                                        <input type="radio" id="not-sure" name="lookingFor" value="notSure" class="mr-2 dark:accent-gray-700" onChange={(e) => {
+                                            setFormErrors((prev) => ({...prev, lookingFor:""}));
+                                         }}/>I'm not sure yet
                                     </label>
                                 </div>
                             </div>
+                            {formErrors.lookingFor && (<p className="text-red-500 text-sm m-0 p-0">{formErrors.lookingFor}</p>)}
                         </div>
 
                             <div className="mb-4">
-                                <label className="block text-gray-700 font-medium mb-2">Select your passions (max 6)</label>
+                                <label className={`block text-gray-700 font-medium mb-2`}>Select your passions (max 5)</label>
                                 <select 
                                     value={selectedValue} 
                                     onChange={handleAddPassion}
-                                    className="dark:bg-gray-700 border border-gray-400 p-2 w-full rounded-lg focus:outline-none focus:border-blue-400"
-                                >
+                                    className="dark:bg-gray-700 border border-gray-400 p-2 w-full rounded-lg focus:outline-none focus:border-blue-400" 
+                                    >
                                     <option value="">Choose a passion</option>
                                     {passionsList.map((passion, index) => (
                                         <option key={index} value={passion}>
@@ -140,6 +212,7 @@ export default function CreateProfil() {
                                     ))}
                                 </select>
                             </div>
+                            {formErrors.passions && (<p className="text-red-500 text-sm mb-2">{formErrors.passions}</p>)}
 
                             {/* Affichage des passions sélectionnées */}
                             <div className="mb-4 flex flex-wrap gap-2">
@@ -157,8 +230,8 @@ export default function CreateProfil() {
                             {/* Bio */}
                             <div className="mb-4">
                                 <label htmlFor="bio" className="block text-gray-700 font-medium mb-2">Bio</label>
-                                <textarea id="bio" name="bio"
-                                    className="dark:bg-gray-700 border border-gray-400 p-2 w-full rounded-lg focus:outline-none focus:border-blue-400" rows="2"></textarea>
+                                <textarea id="bio" name="bio" placeholder="Put a bio to get more likes"
+                                    className="dark:bg-gray-700 placeholder-gray-700 dark:placeholder-gray-400 border border-gray-400 p-2 w-full rounded-lg focus:outline-none focus:border-blue-400" rows="2"></textarea>
                             </div>
 
                             <div>
@@ -171,8 +244,8 @@ export default function CreateProfil() {
 
                     {/* SECTION DROITE: UPLOAD DES PHOTOS */}
                     <div className="w-full md:w-[48%] flex flex-col">
-                    <h2 className="text-2xl font-medium mb-4">Upload your photos (max 6)</h2>
-
+                    <h2 className={`text-2xl font-medium mb-4`}>Upload your photos (max 6)</h2>
+                    {formErrors.photos && (<p className="text-red-500 text-sm mt-1 mb-3">{formErrors.photos}</p>)}
                     {/* Conteneur principal pour bien aligner les éléments */}
                     {photos.length === 0 && (
                     <div className="flex flex-col flex-grow items-center justify-center">
