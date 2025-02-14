@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import Matcha from "../util/matcha1.jpg"
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Spinner from "../components/spinner"
+import Modal from "../components/Modal.jsx"
 
 export default function Register (){
 
@@ -15,11 +17,7 @@ export default function Register (){
 
     async function handleRegister(event) {
         event.preventDefault();
-        console.log("fname  :" ,firstname);
-        console.log("lastname  :" ,lastname);
-        console.log("email  :" ,email);
-        console.log("password  :" ,password);
-    
+
         try {
             const response = await fetch("http://localhost:3000/register", {
                 method: "POST",
@@ -32,25 +30,45 @@ export default function Register (){
             const text = await response.text(); 
 
             if (response.ok) {
-
-                setMessage("Inscription réussie !");
+                console.log("yo c lusrrt", text);
+                /*setMessage("Inscription réussie !");*/
                 setTimeout(() => {
                     navigate("/profil");
                 }, 1500);
+            } 
 
-            } else {
-
-                setMessage("Erreur serevuer zebi.");
+            /*const emailResponse = await fetch("http://localhost:3000/send-email", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email }),
+            });
+            
+            if (emailResponse.ok) {
+                setValidEmail(true);
+                console.log("Réponse brute du serveur:", emailResponse); 
+                setMessage("email envoye yopuhouuuu !");
+                setTimeout(() => {
+                    navigate("/profil");
+                }, 1500);
+            }*/
+            else {
+                setMessage("Email deja en utilisation");
+                console.log("ca rentre bien dedant")
             }
-            console.log("Réponse brute du serveur:", text); 
 
         } catch (error) {
-
             console.error("Erreur de la requête:", error);
             setMessage("Erreur lors de l'inscription.");
             console.error("Erreur tamere de la requête:", error);
         }
     }
+
+    /*async function handleModal() {
+
+
+    }*/
     
     return (
         <body class="bg-[#4E754E] min-h-screen flex items-center justify-center p-4">
@@ -85,7 +103,6 @@ export default function Register (){
                         Already have an account?
                         <a href="https://abhirajk.vercel.app/" class="text-white hover:underline">Log in</a>
                     </p> */}
-    
                     <form class="space-y-4" onSubmit={ handleRegister }>
                         <div class="flex flex-col md:flex-row gap-4">
                             <input type="text" onChange={(event) => setFirstName(event.target.value)} 
@@ -93,6 +110,7 @@ export default function Register (){
                             <input type="text" onChange={(event) => setLastName(event.target.value)}
                             value={lastname} placeholder="Last name" class="w-full md:w-1/2 bg-[#1c1c24] text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600"/>
                         </div>
+                        {message && <p style={{ color: 'white' }}>{message}</p>}
                         <input type="email" onChange={(event) => setEmail(event.target.value)}
                         value={email} placeholder="Email" class="w-full bg-[#1c1c24] text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600"/>
                         <div class="relative">

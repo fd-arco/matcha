@@ -6,7 +6,7 @@ export default function Navbar(){
         <nav className="mx-auto flex max-w-6xl gap-8 px-6 transition-all duration-200 ease-in-out lg:px-12 py-4 bg-transparent shadow-md">
             <div class="relative flex items-center">
                 <Link to='/Home'>
-                    <h1>Matcha</h1>
+                    <h1>Matcha caca</h1>
                 </Link>
             </div>
             <div class="flex-grow"></div>
