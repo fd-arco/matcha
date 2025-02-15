@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Spinner from "../components/spinner"
 import Modal from "../components/Modal.jsx"
+import EmailModal from "../util/modal2.jsx"
 
 export default function Register (){
 
@@ -12,13 +13,14 @@ export default function Register (){
     const [lastname, setLastName] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
-    const [validEmail, setValidEmail] = useState("false");
+    const [validEmail, setValidEmail] = useState(false);
     const navigate = useNavigate();
 
     async function handleRegister(event) {
         event.preventDefault();
 
         try {
+
             const response = await fetch("http://localhost:3000/register", {
                 method: "POST",
                 headers: {
@@ -54,22 +56,18 @@ export default function Register (){
                 }, 1500);
             }*/
             else {
-                setMessage("Email deja en utilisation");
+                setValidEmail(true)
                 console.log("ca rentre bien dedant")
             }
 
         } catch (error) {
+
             console.error("Erreur de la requête:", error);
             setMessage("Erreur lors de l'inscription.");
             console.error("Erreur tamere de la requête:", error);
         }
     }
 
-    /*async function handleModal() {
-
-
-    }*/
-    
     return (
         <body class="bg-[#4E754E] min-h-screen flex items-center justify-center p-4">
             <div class="w-full max-w-[1200px] bg-[#13131a] rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row">
@@ -158,6 +156,7 @@ export default function Register (){
                 </div>
             </div>
         </div>
+        {validEmail && <EmailModal onClose={() => setValidEmail(false)}/>}
     </body>
     );
 }
