@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import Matcha from "../util/matcha1.jpg"
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Spinner from "../components/spinner"
 import Modal from "../components/Modal.jsx"
@@ -14,6 +14,7 @@ export default function Register (){
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
     const [validEmail, setValidEmail] = useState(false);
+    const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
     async function handleRegister(event) {
@@ -29,15 +30,34 @@ export default function Register (){
                 body: JSON.stringify({ email, firstname, lastname, password }),
             });
     
-            const text = await response.text(); 
+            // const text = await response.text();
+            const data = await response.json();
+
 
             if (response.ok) {
-                console.log("yo c lusrrt", text);
-                /*setMessage("Inscription réussie !");*/
-                setTimeout(() => {
-                    navigate("/profil");
-                }, 1500);
-            } 
+
+                const token = data.token;
+                const user = data.user;
+
+                localStorage.setItem("token", token);
+
+                setTimeout(() => { navigate("/profil") }, 1500);
+
+            }
+
+            // if (response.ok) {
+                
+            //     const token = data.token;
+            //     console.log("yo c lusrrt", data);
+            //     if(token)
+            //     {
+            //         sessionStorage.setItem("token", token);
+            //         console.log("tokennnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn;         ",token)
+            //         setTimeout(() => {
+            //             navigate("/profil");
+            //         }, 1500);
+            //     }
+            // } 
 
             /*const emailResponse = await fetch("http://localhost:3000/send-email", {
                 method: "POST",
@@ -63,7 +83,7 @@ export default function Register (){
         } catch (error) {
 
             console.error("Erreur de la requête:", error);
-            setMessage("Erreur lors de l'inscription.");
+            setMessage("Erreur lors de l'inscription. caca");
             console.error("Erreur tamere de la requête:", error);
         }
     }
