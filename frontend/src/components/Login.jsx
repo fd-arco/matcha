@@ -13,6 +13,7 @@ export default function Login() {
     const [message, setMessage] = useState("");
     const [modal, setModal] = useState(false)
 
+
     async function handleLoginUser(event) {
       event.preventDefault();
       
@@ -36,6 +37,10 @@ export default function Login() {
         sessionStorage.setItem("token", token);
 
         setTimeout(() => { navigate("/swipe") }, 1500);
+        localStorage.setItem("token", token);
+
+        setTimeout(() => { navigate("/profil") }, 1500);
+
     }
 
       // if (response.ok) {
@@ -50,6 +55,7 @@ export default function Login() {
 
       else {
         setModal(true);
+        
         console.log("caca boudin")
         setMessage(data.error);
       }
@@ -123,9 +129,9 @@ export default function Login() {
                   <a
                     className="group text-blue-400 transition-all duration-100 ease-in-out"
                   >
-                    <button className="bg-left-bottom bg-gradient-to-r from-blue-400 to-blue-400 bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out">
+                    <span className="bg-left-bottom bg-gradient-to-r from-blue-400 to-blue-400 bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out">
                           click here
-                    </button>
+                    </span>
                   </a>
                 </h3>
               </div>

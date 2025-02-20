@@ -6,7 +6,7 @@ export default function Profil() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const token = sessionStorage.getItem("token");
+        const token = localStorage.getItem("token");
         if (token) {
             fetch("http://localhost:3000/me", {
                 headers: {
@@ -20,14 +20,12 @@ export default function Profil() {
                 } 
                 else 
                 {
-                    console.log("ca sort ici")
-                    console.log('tokern   ', token)
-                    sessionStorage.getItem("token");
+                    localStorage.removeItem("token");
                     navigate("/register");
                 }
             })
             .catch(() => {
-                sessionStorage.getItem("token");
+                localStorage.removeItem("token");
                 navigate("/register");
             });
         }
@@ -35,7 +33,7 @@ export default function Profil() {
 
 
     const handleLogout = () => {
-        sessionStorage.getItem("token");
+        localStorage.removeItem("token");
         navigate("/");
     };
     
