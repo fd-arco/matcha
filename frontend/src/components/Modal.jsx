@@ -1,23 +1,6 @@
 import { useState, useEffect } from "react";
-import UserList from "../util/userUtils.jsx"
 
 export default function WelcomeModal(){
-
-    const [modal, setModal] = useState(true);
-    const users = UserList();
-
-    useEffect(() => {
-        if (!localStorage.getItem("hasSeenModal")) {
-          setModal(false);
-        }
-      }, []);
-
-    function handleModal(event){
-        // event.preventDefault();
-        setModal(false);
-        localStorage.setItem("hasSeenModal", "true");
-    }
-
 
     return (
       <div
@@ -31,23 +14,17 @@ export default function WelcomeModal(){
               <div class="transition-colors duration-300">
              
                           <div class="spinner-card bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg flex flex-col items-center space-y-4">
-                              <h2 class="font-semibold  text-lg dark:text-white">Email verification</h2>
+                              <h2 class="font-semibold  text-lg dark:text-white">An email has been sent to verify your account</h2>
                               <div class="border-4 rounded-full w-12 h-12 spinner-circle"></div>
-                              <button class="px-4 py-2 bg-[#679267] text-white rounded-lg hover:bg-[#4E754E] transition">
-                                  Please wait...
-                              </button>
                           </div>
                       </div>
                 <div className="mt-4 px-4 py-3">
                   <p className="text-sm md:text-base text-gray-600 leading-relaxed">
-                    With the creation of your account, you may now edit your
-                    profile to start scrolling on the app.
+                    With the verification of your account you may acces to more features.
                   </p>
                 </div>
               </div>
             </div>
           </div>
-                /* modal ? (
-        ) : undefined*/
       );
 }

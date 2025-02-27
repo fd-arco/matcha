@@ -3,6 +3,7 @@ import DarkModeToggle from '../util/dark';
 import { Link } from 'react-router-dom';
 import { useState, useEffect} from 'react';
 import { useNavigate } from "react-router-dom";
+import EmailLogModal from "../util/modalLogin.jsx"
 
 export default function Login() {
 
@@ -10,7 +11,7 @@ export default function Login() {
     const [password, setPassword] = useState("")
     const navigate = useNavigate();
     const [message, setMessage] = useState("");
-
+    const [modal, setModal] = useState(false)
 
     async function handleLoginUser(event) {
       event.preventDefault();
@@ -32,7 +33,7 @@ export default function Login() {
         const token = data.token;
         const user = data.user;
 
-        localStorage.setItem("token", token);
+        sessionStorage.setItem("token", token);
 
         setTimeout(() => { navigate("/profil") }, 1500);
 
@@ -49,7 +50,7 @@ export default function Login() {
       // }
 
       else {
-        
+        setModal(true);
         console.log("caca boudin")
         setMessage(data.error);
       }
@@ -123,9 +124,9 @@ export default function Login() {
                   <a
                     className="group text-blue-400 transition-all duration-100 ease-in-out"
                   >
-                    <span className="bg-left-bottom bg-gradient-to-r from-blue-400 to-blue-400 bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out">
+                    <button className="bg-left-bottom bg-gradient-to-r from-blue-400 to-blue-400 bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out">
                           click here
-                    </span>
+                    </button>
                   </a>
                 </h3>
               </div>
@@ -153,8 +154,9 @@ export default function Login() {
         </div>
         <DarkModeToggle/>
         <button class="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-full transition-transform transform-gpu hover:-translate-y-1 hover:shadow-lg">
-          <Link to="/">Menu</Link>
+          <Link to="/">Menun</Link>
         </button>
+        {modal && <EmailLogModal onClose={() => setModal(false)}/>}
       </div>
     );
   }

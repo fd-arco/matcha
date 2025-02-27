@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const jwt = require("jsonwebtoken");
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -34,6 +35,10 @@ app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
 
+function generateVerificationToken() {
+    return crypto.randomBytes(20).toString('hex');
+}
+
 app.post("/register", async (req, res) => {
 
     const { email, firstname, lastname, password } = req.body;
@@ -42,14 +47,36 @@ app.post("/register", async (req, res) => {
         return res.status(400).json({ error: "Veuillez remplir tous les champs" });
     }
     try {
+        
+        const verifTokenMail = generateVerificationToken();
 
         const result = await pool.query(
-            'INSERT INTO users (email, firstname, lastname, password) VALUES ($1, $2, $3, $4) RETURNING *',
-            [email, firstname, lastname, password]
+            'INSERT INTO users (email, firstname, lastname, password, verified, veriftoken) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            [email, firstname, lastname, password, false, verifTokenMail]
         );
 
         const user = result.rows[0];
         const token = jwt.sign({ userId: user.id }, SECRET_KEY, { expiresIn: "7d" });
+
+        const verifLink = `http://localhost:3000/verify-email?token=${verifTokenMail}`;
+
+        const mailOptions = {
+            from: process.env.GMAIL_USER,
+            to: email,
+            subject: 'Vérification de votre compte',
+            text: `Merci pour votre inscription! Cliquez sur ce lien pour vérifier votre email: ${verifLink}`,
+            html: `<h2>Welcome to  MATCHA SALE CAFARD</h2><br></br><p>Merci pour votre inscription! Cliquez sur ce lien pour vérifier votre email: <a href="${verifLink}">Vérifier mon email</a></p>`
+        };
+
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.GMAIL_USER,
+                pass: process.env.GMAIL_PASS
+            }
+        });
+
+        await transporter.sendMail(mailOptions);
 
         res.status(201).json({
 
@@ -69,6 +96,31 @@ app.post("/register", async (req, res) => {
         res.status(500).json({ error: "Erreur lors de l'ajout de l'utilisateur." });
     }
 });
+
+
+app.get('/verify-email', async (req, res) => {
+
+    const { token } = req.query;
+
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE veriftoken = $1', [token]);
+
+        if (result.rows.length === 0) {
+            return res.status(400).json({ error: 'Token invalide ou expiré.' });
+        }
+
+        const user = result.rows[0];
+
+        await pool.query('UPDATE users SET verified = $1, veriftoken = NULL WHERE id = $2', [true, user.id]);
+
+        res.status(200).json({ message: 'Votre compte a été vérifié avec succès!' });
+
+    } catch (error) {
+        console.error('Erreur lors de la vérification:', error);
+        res.status(500).json({ error: 'Erreur lors de la vérification de l\'email.' });
+    }
+});
+
 
 app.get("/me", async (req, res) => {
 
@@ -115,7 +167,7 @@ app.post("/loginUser", async (req, res) => {
             return res.status(401).json({ error: "Mot de passe incorrect" });
         }
 
-        const token = jwt.sign({ userId: user.id }, "SECRET_KEY", { expiresIn: "7d" });
+        const token = jwt.sign({ userId: user.id }, SECRET_KEY, { expiresIn: "7d" });
 
         res.json({
             message: `Bienvenue ${user.firstname} !`,
@@ -128,55 +180,3 @@ app.post("/loginUser", async (req, res) => {
         res.status(500).json({ error: "Erreur serveur" });
     }
 });
-
-
-///////////////////////////////////////////////sendemail/////////
-
-const crypto = require('crypto');
-
-function generateVerificationToken() {
-    return crypto.randomBytes(20).toString('hex');
-}
-
-const verificationToken = generateVerificationToken();
-
-
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_PASS
-    }
-  });
-  
-  app.post('/send-email', async (req, res) => {
-
-    console.log("cote backend c bien lar:");
-    console.log("EMAIL ADRESSE PESRO:   ", process.env.GMAIL_USER); 
-
-    const { email } = req.body;
-
-    console.log("Email reçu:", email);
-
-    /*const verificationLink = `http://localhost:3000/verify-email?token=${verificationToken}`;*/
-
-    const mailOptions = {
-      from: process.env.GMAIL_USER,
-      to: email,
-      subject: 'Bienvenue sur Matcha',
-      text: 'Merci pour ton inscription, clique sur le lien pour confirmer ton email. chien de fd',
-     /*html: `<p>Please click on the following link to verify your email address:</p><a href="${verificationLink}">Verify your email</a>`,*/
-    };
-  
-    try {
-
-      await transporter.sendMail(mailOptions);
-      res.status(200).json({ message: 'Email envoyé avec succès.' });
-    } 
-    catch (error) {
-
-      console.error('Erreur d\'envoi:', error);
-      res.status(500).json({ message: 'Erreur lors de l\'envoi de l\'email.' });
-    }
-  });
-  

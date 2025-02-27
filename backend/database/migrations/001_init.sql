@@ -5,7 +5,9 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     firstname VARCHAR(100) NOT NULL DEFAULT '',
     lastname VARCHAR(100) NOT NULL DEFAULT '',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    verified BOOLEAN DEFAULT FALSE,
+    verifToken VARCHAR(255)
 );
 
 -- Création de la table profiles

@@ -20,3 +20,7 @@ titre modal/////////////////////
                 psql -U postgres -d matcha_app
                 matcha-backend-1
                 matcha-db-1
+
+
+                acces au site que si le mail est verifie
+                

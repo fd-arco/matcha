@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Spinner from "../components/spinner"
 import Modal from "../components/Modal.jsx"
 import EmailModal from "../util/modal2.jsx"
+import SentModal  from "../components/Modal.jsx"
 
 export default function Register (){
 
@@ -14,6 +15,7 @@ export default function Register (){
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
     const [validEmail, setValidEmail] = useState(false);
+    const [sent, setSent] = useState(false);
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
@@ -39,10 +41,10 @@ export default function Register (){
                 const token = data.token;
                 const user = data.user;
 
-                localStorage.setItem("token", token);
+                setSent(true);
 
-                setTimeout(() => { navigate("/profil") }, 1500);
-
+                sessionStorage.setItem("token", token);
+                setTimeout(() => { navigate("/profil") }, 3000);
             }
 
             // if (response.ok) {
@@ -121,7 +123,7 @@ export default function Register (){
                         Already have an account?
                         <a href="https://abhirajk.vercel.app/" class="text-white hover:underline">Log in</a>
                     </p> */}
-                    <form class="space-y-4" onSubmit={ handleRegister }>
+                    <form class="space-y-4" onSubmit={ handleRegister }  >
                         <div class="flex flex-col md:flex-row gap-4">
                             <input type="text" onChange={(event) => setFirstName(event.target.value)} 
                             value={firstname} placeholder="First name" class="w-full md:w-1/2 bg-[#1c1c24] text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600" required/>
@@ -177,6 +179,7 @@ export default function Register (){
             </div>
         </div>
         {validEmail && <EmailModal onClose={() => setValidEmail(false)}/>}
+        {sent && <SentModal/>}
     </body>
     );
 }
