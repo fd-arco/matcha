@@ -23,6 +23,40 @@
               font-family: 'Inter', sans-serif;
           }
       </style>
+      <style>
+        /* Base styles and dark mode */
+        :root {
+            --primary: #3B82F6;
+            --background: #ffffff;
+            --text: #1F2937;
+        }
+
+        [data-theme="dark"] {
+            --primary: #60A5FA;
+            --background: #1F2937;
+            --text: #F3F4F6;
+        }
+
+        /* Circle Spinner */
+        .spinner-circle {
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+
+        /* Floating animation for cards */
+        .spinner-card {
+            transition: all 0.3s ease;
+        }
+
+        .spinner-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
         <script src="https://cdn.tailwindcss.com"></script>
         <script>
           tailwind.config = {

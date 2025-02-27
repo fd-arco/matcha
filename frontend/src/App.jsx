@@ -8,6 +8,7 @@ import TestUser from "./pages/User.jsx";
 import Register from './components/Register.jsx';
 import CreateProfil from "./pages/CreateProfil.jsx"
 import Swipe from "./pages/Swipe.jsx";
+import Profile from "./pages/Profile.jsx"
 
 const router = createBrowserRouter([
     {path: '/user', element: <TestUser/>},
@@ -15,8 +16,8 @@ const router = createBrowserRouter([
     {path: '/login', element: <Login />},
     {path: '/register', element: <Register />},
     {path: '/create-profil', element: <CreateProfil />},
-    {path: '/swipe', element: <Swipe />}
-
+    {path: '/swipe', element: <Swipe />},
+    {path: '/profile', element: <Profile />}
 ]);
 
 function Homepage(){

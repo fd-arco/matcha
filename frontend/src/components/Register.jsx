@@ -1,8 +1,12 @@
 import { Link } from "react-router-dom";
 import Matcha from "../util/matcha1.jpg"
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DarkModeToggle from "../util/dark";
+import Spinner from "../components/spinner"
+import Modal from "../components/Modal.jsx"
+import EmailModal from "../util/modal2.jsx"
+import SentModal  from "../components/Modal.jsx"
 
 export default function Register (){
 
@@ -11,17 +15,16 @@ export default function Register (){
     const [lastname, setLastName] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
-    const [validEmail, setValidEmail] = useState("false");
+    const [validEmail, setValidEmail] = useState(false);
+    const [sent, setSent] = useState(false);
+    const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
     async function handleRegister(event) {
         event.preventDefault();
-        console.log("fname  :" ,firstname);
-        console.log("lastname  :" ,lastname);
-        console.log("email  :" ,email);
-        console.log("password  :" ,password);
-    
+
         try {
+
             const response = await fetch("http://localhost:3000/register", {
                 method: "POST",
                 headers: {
@@ -30,31 +33,39 @@ export default function Register (){
                 body: JSON.stringify({ email, firstname, lastname, password }),
             });
     
-            const data = await response.json(); 
+            // const text = await response.text();
+            const data = await response.json();
+
 
             if (response.ok) {
+
+                const token = data.token;
+                const user = data.user;
+
+                setSent(true);
 
                 setMessage("Inscription réussie !");
                 localStorage.setItem("userId", data.user.id); //TODO:ponctuel on fera avec les cookies apres 
                 console.log("JE redirige bien vers create-profil");
-                setTimeout(() => {
-                    navigate("/create-profil");
-                }, 1500);
 
-            } else {
-
-                setMessage("Erreur serevuer zebi.");
+                sessionStorage.setItem("token", token);
+                setTimeout(() => { navigate("/create-profil") }, 3000);
+            }
+            else {
+                
+                setValidEmail(true)
+                console.log("ca rentre bien dedant")
             }
             console.log("Réponse brute du serveur:", data); 
 
         } catch (error) {
 
             console.error("Erreur de la requête:", error);
-            setMessage("Erreur lors de l'inscription.");
+            setMessage("Erreur lors de l'inscription. caca");
             console.error("Erreur tamere de la requête:", error);
         }
     }
-    
+
     return (
         <body class="bg-gray-200 dark:text-white dark:bg-gray-600 dark:text-white min-h-screen flex items-center justify-center p-4">
             <div class="w-full max-w-[900px] bg-[#13131a] rounded-3xl overflow-hidden shadow-2xl flex flex-col lg:flex-row">
@@ -91,14 +102,14 @@ export default function Register (){
                         Already have an account?
                         <a href="https://abhirajk.vercel.app/" class="text-white hover:underline">Log in</a>
                     </p> */}
-    
-                    <form class="space-y-4" onSubmit={ handleRegister }>
+                    <form class="space-y-4" onSubmit={ handleRegister }  >
                         <div class="flex flex-col md:flex-row gap-4">
                             <input type="text" onChange={(event) => setFirstName(event.target.value)} 
                             value={firstname} placeholder="First name" class="w-full dark:text-white placeholder-gray-700 md:w-1/2 bg-gray-300 dark:bg-black text-black rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600" required/>
                             <input type="text" onChange={(event) => setLastName(event.target.value)}
                             value={lastname} placeholder="Last name" class="w-full dark:text-white placeholder-gray-700 md:w-1/2 bg-gray-300 dark:bg-black text-black rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600"/>
                         </div>
+                        {message && <p style={{ color: 'white' }}>{message}</p>}
                         <input type="email" onChange={(event) => setEmail(event.target.value)}
                         value={email} placeholder="Email" class="w-full dark:text-white placeholder-gray-700 bg-gray-300 dark:bg-black text-black rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600"/>
                         <div class="relative">
@@ -146,6 +157,8 @@ export default function Register (){
                 </div>
             </div>
         </div>
+        {validEmail && <EmailModal onClose={() => setValidEmail(false)}/>}
+        {sent && <SentModal/>}
     </body>
     );
 }

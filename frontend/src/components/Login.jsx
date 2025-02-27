@@ -1,8 +1,67 @@
 import '../App.css'
 import DarkModeToggle from '../util/dark';
 import { Link } from 'react-router-dom';
+import { useState, useEffect} from 'react';
+import { useNavigate } from "react-router-dom";
+import EmailLogModal from "../util/modalLogin.jsx"
 
 export default function Login() {
+
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("")
+    const navigate = useNavigate();
+    const [message, setMessage] = useState("");
+    const [modal, setModal] = useState(false)
+
+    async function handleLoginUser(event) {
+      event.preventDefault();
+      
+      try {
+        
+        const response = await fetch("http://localhost:3000/loginUser", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+
+        const token = data.token;
+        const user = data.user;
+
+        sessionStorage.setItem("token", token);
+
+        setTimeout(() => { navigate("/swipe") }, 1500);
+    }
+
+      // if (response.ok) {
+
+      //     const token = data.token
+      //     console.log("ca token :::", token)
+      //     sessionStorage.setItem("token", token);
+      //     setTimeout(() => {
+      //       navigate("/profil");
+      //   }, 1500);
+      // }
+
+      else {
+        setModal(true);
+        console.log("caca boudin")
+        setMessage(data.error);
+      }
+    } 
+  catch (error) 
+  {
+      console.error("Erreur lors de la connexion:", error);
+      setMessage("Erreur serveur");
+  }
+}
+
+
     return (
       <div className="h-screen w-screen flex justify-center items-center dark:bg-gray-900">
         <div className="grid gap-8">
@@ -16,7 +75,7 @@ export default function Login() {
               <h1 className="pt-8 pb-6 font-bold dark:text-gray-400 text-5xl text-center cursor-default">
                 Login
               </h1>
-              <form action="#" method="post" className="space-y-4">
+              <form onSubmit={handleLoginUser} className="space-y-4">
                 <div>
                   <label
                     htmlFor="email"
@@ -26,6 +85,8 @@ export default function Login() {
                   </label>
                   <input
                     id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="border p-3 dark:bg-indigo-700 dark:text-gray-300 dark:border-gray-700 shadow-md placeholder:text-base focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full"
                     type="email"
                     placeholder="Email"
@@ -41,6 +102,8 @@ export default function Login() {
                   </label>
                   <input
                     id="password"
+                    onChange={(e) => setPassword(e.target.value)}
+                    value={password}
                     className="border p-3 shadow-md dark:bg-indigo-700 dark:text-gray-300 dark:border-gray-700 placeholder:text-base focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full"
                     type="password"
                     placeholder="Password"
@@ -56,18 +119,17 @@ export default function Login() {
               </form>
               <div className="flex flex-col mt-4 items-center justify-center text-sm">
                 <h3 className="dark:text-gray-300">
-                  Don't have an account?
+                  Forgot your password? 
                   <a
                     className="group text-blue-400 transition-all duration-100 ease-in-out"
-                    href="#"
                   >
-                    <span className="bg-left-bottom bg-gradient-to-r from-blue-400 to-blue-400 bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out">
-                      Sign Up
-                    </span>
+                    <button className="bg-left-bottom bg-gradient-to-r from-blue-400 to-blue-400 bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out">
+                          click here
+                    </button>
                   </a>
                 </h3>
               </div>
-              <div
+              {/* <div
                 id="third-party-auth"
                 className="flex items-center justify-center mt-5 flex-wrap"
               >
@@ -85,14 +147,15 @@ export default function Login() {
                     alt="Github"
                   />
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
         <DarkModeToggle/>
         <button class="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-full transition-transform transform-gpu hover:-translate-y-1 hover:shadow-lg">
-          <Link to="/">Menu</Link>
+          <Link to="/">Menun</Link>
         </button>
+        {modal && <EmailLogModal onClose={() => setModal(false)}/>}
       </div>
     );
   }
