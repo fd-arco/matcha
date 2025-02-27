@@ -12,20 +12,20 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS profiles (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    bio TEXT,
-    birthday DATE,
     name VARCHAR(100),
+    dob DATE,
     gender VARCHAR(50),
-    orientation VARCHAR(50),
-    hobbies TEXT,
-    photo_url VARCHAR(255),
+    interested_in VARCHAR(50),
+    looking_for VARCHAR(50),
+    passions TEXT,
+    bio TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS profile_photos (
     id SERIAL PRIMARY KEY,
     profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-    photo_url VARCHAR(255) NOT NULL,
+    photo_url TEXT NOT NULL,
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

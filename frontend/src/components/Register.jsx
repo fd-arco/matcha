@@ -30,11 +30,12 @@ export default function Register (){
                 body: JSON.stringify({ email, firstname, lastname, password }),
             });
     
-            const text = await response.text(); 
+            const data = await response.json(); 
 
             if (response.ok) {
 
                 setMessage("Inscription réussie !");
+                localStorage.setItem("userId", data.user.id); //TODO:ponctuel on fera avec les cookies apres 
                 console.log("JE redirige bien vers create-profil");
                 setTimeout(() => {
                     navigate("/create-profil");
@@ -44,7 +45,7 @@ export default function Register (){
 
                 setMessage("Erreur serevuer zebi.");
             }
-            console.log("Réponse brute du serveur:", text); 
+            console.log("Réponse brute du serveur:", data); 
 
         } catch (error) {
 

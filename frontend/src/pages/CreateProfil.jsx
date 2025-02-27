@@ -1,10 +1,13 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
+import { Navigate, useNavigate } from "react-router-dom";
 
 export default function CreateProfil() {
     const [selectedPassions, setSelectedPassions] = useState([]);
     const [selectedValue, setSelectedValue] = useState("");
     const [photos, setPhotos] = useState([]);
+    const navigate = useNavigate();
+    const userId = localStorage.getItem("userId");
 
     const passionsList = ["Music", "Sports", "Reading", "Traveling", "Cooking", 
         "Gaming", "Dancing", "Art", "Photography", "Movies"
@@ -27,28 +30,25 @@ export default function CreateProfil() {
         setSelectedPassions(selectedPassions.filter((p) => p !== passion));
     };
 
-    const handleUploadPhoto = (event) => {
+    const handleUploadPhoto = async (event) => {
         if (photos.length >= 6) {
             alert("You can only upload up to 6 photos.");
             return;
         }
 
         const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setPhotos([...photos, e.target.result]);
-                setFormErrors((prev) => ({ ...prev, photos: ""}));
-            };
-            reader.readAsDataURL(file);
-        }
+        if (!file)
+            return;
+
+        const photoUrl = URL.createObjectURL(file);
+        setPhotos([...photos, {file, preview:photoUrl}]);
     };
 
     const handleRemovePhoto = (index) => {
         setPhotos(photos.filter((_, i) => i !== index));
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         let errors = {};
         const formData = new FormData(event.target);
@@ -57,6 +57,8 @@ export default function CreateProfil() {
         const gender = formData.get("gender")?.trim();
         const interestedIn = formData.get("interestedIn")?.trim();
         const lookingFor = formData.get("lookingFor")?.trim();
+        const bio = formData.get("bio")?.trim();
+
         if (!name) {
             errors.name = "Name is required";
         }
@@ -85,6 +87,39 @@ export default function CreateProfil() {
             return ;
         }
         
+        const finalFormData = new FormData();
+        finalFormData.append("user_id", userId); //TODO:RECUPERER USER_ID DEPUIS LA CREATION DU COMPTE
+        finalFormData.append("name", name);
+        finalFormData.append("dob", dob);
+        finalFormData.append("gender", gender);
+        finalFormData.append("interestedIn", interestedIn);
+        finalFormData.append("lookingFor", lookingFor);
+        finalFormData.append("bio", bio);
+        finalFormData.append("passions", JSON.stringify(selectedPassions));
+        
+        photos.forEach((photo) => {
+            finalFormData.append("photos", photo.file);
+        });
+        try {
+            console.log("DANS CREATE PROFILE API")
+            const response = await fetch("http://localhost:3000/create-profil", {
+                method: "POST",
+                body: finalFormData,
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                alert("Profil cree avec succes"); //TODO:ameliorer la mise en page
+                console.log("reponse du serveur : ", data);
+                navigate("/swipe");
+            } else {
+                alert("Erreur serveur:", data.error);
+            }
+        } catch (error) {
+            console.error("Erreur lors de l'envoi du profil:", error);
+            alert("Impossible de creer le profil.");
+        }
+
     }
 
     return (
@@ -132,28 +167,28 @@ export default function CreateProfil() {
                              <div class="flex flex-wrap -mx-2">
                                  <div class="px-2 w-1/3">
                                      <label for="men" class="block text-gray-700 font-medium mb-2">
-                                         <input type="radio" id="men" name="interestedIn" value="red" class="mr-2 dark:accent-gray-700" onChange={(e) => {
+                                         <input type="radio" id="men" name="interestedIn" value="men" class="mr-2 dark:accent-gray-700" onChange={(e) => {
                                             setFormErrors((prev) => ({...prev, interestedIn:""}));
                                          }}/>Men
                                      </label>
                                  </div>
                                  <div class="px-2 w-1/3">
                                      <label for="women" class="block text-gray-700 font-medium mb-2">
-                                         <input type="radio" id="women" name="interestedIn" value="blue" class="mr-2 dark:accent-gray-700" onChange={(e) => {
+                                         <input type="radio" id="women" name="interestedIn" value="women" class="mr-2 dark:accent-gray-700" onChange={(e) => {
                                             setFormErrors((prev) => ({...prev, interestedIn:""}));
                                          }} />Women
                                      </label>
                                  </div>
                                  <div class="px-2 w-1/3">
                                      <label for="beyond-binary" class="block text-gray-700 font-medium mb-2">
-                                         <input type="radio" id="beyond-binary" name="interestedIn" value="green" class="mr-2 dark:accent-gray-700" onChange={(e) => {
+                                         <input type="radio" id="beyond-binary" name="interestedIn" value="beyondBinary" class="mr-2 dark:accent-gray-700" onChange={(e) => {
                                             setFormErrors((prev) => ({...prev, interestedIn:""}));
                                          }} />Beyond the binary
                                      </label>
                                  </div>
                                  <div class="px-2 w-1/3">
                                      <label for="everyone" class="block text-gray-700 font-medium mb-2">
-                                         <input type="radio" id="everyone" name="interestedIn" value="green" class="mr-2 dark:accent-gray-700" onChange={(e) => {
+                                         <input type="radio" id="everyone" name="interestedIn" value="everyone" class="mr-2 dark:accent-gray-700" onChange={(e) => {
                                             setFormErrors((prev) => ({...prev, interestedIn:""}));
                                          }} />Everyone
                                      </label>
@@ -268,7 +303,7 @@ export default function CreateProfil() {
                         <div className="grid grid-cols-2 gap-2 flex-grow">
                             {photos.map((photo, index) => (
                                 <div key={index} className="relative">
-                                    <img src={photo} alt={`Uploaded ${index}`} className="w-full h-60 object-cover rounded-lg" />
+                                    <img src={photo.preview} alt={`Uploaded ${index}`} className="w-full h-60 object-cover rounded-lg" />
                                     {/* Bouton de suppression */}
                                     <button 
                                         onClick={() => handleRemovePhoto(index)}
