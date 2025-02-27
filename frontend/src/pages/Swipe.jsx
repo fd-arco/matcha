@@ -1,6 +1,7 @@
 import React from "react";
 import Navbar from "../components/Navbar";
 import Bandeau from "../components/Bandeau";
+import Messages from "../components/Messages";
 const Swipe = () => {
 
   return (
@@ -8,13 +9,13 @@ const Swipe = () => {
       <Navbar />
       <div className="flex flex-1">
         {/* Colonne de gauche */}
-        <div className="w-1/4 flex flex-col border-r bg-red-500">
+        <div className="w-1/4 flex flex-col">
           <Bandeau />
-          {/* <Messages /> */}
+          <Messages />
         </div>
 
         {/* Colonne de droite */}
-        <div className="w-3/4 bg-green-600">
+        <div className="w-3/4">
           {/* {selectedMatch ? <Conversation /> : <Matchs />} */}
         </div>
       </div>
