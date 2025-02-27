@@ -1,8 +1,12 @@
 const express = require('express');
 <<<<<<< HEAD
+<<<<<<< HEAD
 const crypto = require('crypto');
 =======
 >>>>>>> 9ea65b2 (fix le user)
+=======
+const crypto = require('crypto');
+>>>>>>> 7c8e9a3 (verif_email_ok)
 const jwt = require("jsonwebtoken");
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -54,6 +58,7 @@ app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
 
+<<<<<<< HEAD
 function calculateAge(dob) {
     const birthDate = new Date(dob);
     const today = new Date();
@@ -101,6 +106,8 @@ app.post("/create-profil", upload.array("photos", 6), async(req, res) => {
         res.status(500).json({error: "Erreur serveur"});
     }
 })
+=======
+>>>>>>> 7c8e9a3 (verif_email_ok)
 function generateVerificationToken() {
     return crypto.randomBytes(20).toString('hex');
 }
@@ -187,6 +194,10 @@ app.get('/verify-email', async (req, res) => {
     }
 });
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 7c8e9a3 (verif_email_ok)
 app.get("/me", async (req, res) => {
 
     const token = req.headers.authorization?.split(" ")[1];
@@ -232,7 +243,7 @@ app.post("/loginUser", async (req, res) => {
             return res.status(401).json({ error: "Mot de passe incorrect" });
         }
 
-        const token = jwt.sign({ userId: user.id }, "SECRET_KEY", { expiresIn: "7d" });
+        const token = jwt.sign({ userId: user.id }, SECRET_KEY, { expiresIn: "7d" });
 
         res.json({
             message: `Bienvenue ${user.firstname} !`,
@@ -245,6 +256,7 @@ app.post("/loginUser", async (req, res) => {
         res.status(500).json({ error: "Erreur serveur" });
     }
 });
+<<<<<<< HEAD
 
 
 ///////////////////////////////////////////////sendemail/////////
@@ -437,3 +449,5 @@ app.post("/like", async(req,res) => {
     }
 
 })
+=======
+>>>>>>> 7c8e9a3 (verif_email_ok)

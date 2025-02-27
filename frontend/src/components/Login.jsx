@@ -13,7 +13,6 @@ export default function Login() {
     const [message, setMessage] = useState("");
     const [modal, setModal] = useState(false)
 
-
     async function handleLoginUser(event) {
       event.preventDefault();
       
@@ -55,7 +54,6 @@ export default function Login() {
 
       else {
         setModal(true);
-        
         console.log("caca boudin")
         setMessage(data.error);
       }
@@ -129,9 +127,9 @@ export default function Login() {
                   <a
                     className="group text-blue-400 transition-all duration-100 ease-in-out"
                   >
-                    <span className="bg-left-bottom bg-gradient-to-r from-blue-400 to-blue-400 bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out">
+                    <button className="bg-left-bottom bg-gradient-to-r from-blue-400 to-blue-400 bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out">
                           click here
-                    </span>
+                    </button>
                   </a>
                 </h3>
               </div>
