@@ -59,11 +59,25 @@ export default function CreateProfil() {
         const lookingFor = formData.get("lookingFor")?.trim();
         const bio = formData.get("bio")?.trim();
 
+        function calculateAge(dob) {
+            const birthDate = new Date(dob);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age;
+        }
+
+        const age = calculateAge(dob);
+        if (!dob || isNaN(age) || age < 18 || age > 100) {
+            errors.dob = "You must be between 18 and 100 years old.";
+        }
+
         if (!name) {
             errors.name = "Name is required";
-        }
-        if (!dob) {
-            errors.dob = "Date of birth is required";
         }
         if (!gender) {
             errors.gender = "Gender is required";

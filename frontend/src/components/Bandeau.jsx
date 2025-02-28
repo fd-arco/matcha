@@ -25,7 +25,7 @@ const Bandeau = () => {
 
     return (
         //TODO:AJOUTER ONCLICK SUR LE DIV POUR REDIRIGER VERS LES EDIT PROFILE
-        <div className="bg-blue-500 text-white p-4 flex space-x-5"> 
+        <div className="bg-green-600 dark:bg-green-800 text-white p-4 flex space-x-5"> 
             <img
                 src={`http://localhost:3000${user.photos[0]}`}
                 alt="Photo de profil"

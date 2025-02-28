@@ -36,6 +36,10 @@ export default function Login() {
         sessionStorage.setItem("token", token);
 
         setTimeout(() => { navigate("/swipe") }, 1500);
+        localStorage.setItem("token", token);
+
+        setTimeout(() => { navigate("/profil") }, 1500);
+
     }
 
       // if (response.ok) {
