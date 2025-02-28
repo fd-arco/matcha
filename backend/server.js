@@ -48,9 +48,23 @@ app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
 
+function calculateAge(dob) {
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    return age;
+}
+
 app.post("/create-profil", upload.array("photos", 6), async(req, res) => {
     try {
         const { user_id, name, dob, gender, interestedIn, lookingFor, bio} = req.body;
+
+        const age = calculateAge(dob);
         let passionArray = [];
         if (req.body.passions) {
             try {
@@ -62,9 +76,9 @@ app.post("/create-profil", upload.array("photos", 6), async(req, res) => {
         const photosUrls = req.files.map(file => `/uploads/${file.filename}`);
         console.log("SALUT");
         const result = await pool.query(
-            `INSERT INTO profiles (user_id, name, dob, gender, interested_in, looking_for, passions, bio)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
-            [user_id, name, dob, gender, interestedIn, lookingFor, passionArray ,bio]
+            `INSERT INTO profiles (user_id, name, dob, age, gender, interested_in, looking_for, passions, bio)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
+            [user_id, name, dob, age, gender, interestedIn, lookingFor, passionArray ,bio]
         );
 
         const profile_id = result.rows[0].id;
@@ -259,3 +273,100 @@ app.post("/loginUser", async (req, res) => {
         res.status(500).json({ error: "Erreur serveur" });
     }
 });
+app.get('/matches/:userId', async (req, res) => {
+    const {userId} = req.params;
+
+    try {
+        const query = `
+        SELECT
+            u.id AS user_id,
+            p.name,
+            p.bio,
+            pp.photo_url AS photo
+        FROM matches m
+        JOIN users u ON u.id = CASE
+            WHEN m.user1_id = $1 THEN m.user2_id
+            ELSE m.user1_id
+        END
+        JOIN profiles p ON p.user_id = u.id
+        JOIN profile_photos pp ON pp.profile_id = p.id
+        WHERE m.user1_id = $1 OR m.user2_id = $1;
+        `;
+        
+        const result = await pool.query(query, [userId]);
+
+        if (result.rows.length === 0) {
+            return res.json([]);
+        }
+
+        res.json(result.rows);
+    } catch (error) {
+        console.error("Erreur lors de la recuperation des matchs: ", error);
+        res.status(500).json({ error: "erreur serveur"});
+    }
+});
+
+app.get('/profiles/:userId', async (req, res) => {
+    const {userId} = req.params;
+
+    try {
+        const query = `
+            SELECT
+                p.user_id,
+                p.name,
+                p.age,
+                p.bio,
+                p.gender,
+                p.interested_in,
+                p.looking_for,
+                p.passions,
+                pp.photo_url AS photo
+            FROM profiles p
+            JOIN profile_photos pp ON pp.profile_id = p.id
+            WHERE p.user_id != $1
+            AND p.user_id NOT IN (
+                SELECT liked_id FROM likes WHERE liker_id = $1
+            )
+            ORDER BY RANDOM()
+        `;
+
+        const result = await pool.query(query, [userId]);
+        res.json(result.rows);
+    } catch (error) {
+        console.error("Erreur lors de la recuperation des profils a swipe: ", error);
+        res.status(500).json({error: "Erreur serveur"});
+    }
+});
+
+app.post("/like", async(req,res) => {
+    const {likerId, likedId} = req.body;
+
+    try {
+        await pool.query(
+            `INSERT INTO likes (liker_id, liked_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+            [likerId, likedId]
+        );
+
+        const checkMatch = await pool.query(
+            `SELECT COUNT(*) AS count FROM likes 
+            WHERE (liker_id = $1 AND liked_id = $2)
+            OR (liker_id = $2 AND liked_id = $1)`,
+            [likerId, likedId]
+        );
+        console.log("CHECKMATCH = ", checkMatch.rows[0].count);
+        if (parseInt(checkMatch.rows[0].count, 10) === 2) {
+            await pool.query(
+                `INSERT INTO matches (user1_id, user2_id) VALUES ($1, $2)`,
+                [likerId, likedId]
+            );
+            console.log("Match cree");
+            return res.json({match:true, message:"C'est un match!"});
+        } 
+        console.log("Like enregistre");
+        res.json({match:false, message:"Like enregistre"});
+    } catch (error) {
+        console.error("Erreur lors de l enregistrement du like: ", error);
+        res.status(500).json({error: "Erreur serveur"});
+    }
+
+})

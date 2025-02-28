@@ -1,14 +1,15 @@
 import React, {useEffect, useState} from "react";
 import { useNavigate } from "react-router-dom";
 
-const Messages = ({userId, onSelectMatch }) => {
+const Messages = ({onSelectMatch }) => {
     const [matches, setMatches] = useState([]);
-
+    const userId = localStorage.getItem("userId");
     useEffect(() => {
         const fetchMatches = async () => {
             try {
                 const response = await fetch(`http://localhost:3000/matches/${userId}`);
                 const data = await response.json();
+                console.log("DATA RECU DU SERVEUR : ", data);
                 setMatches(data);
             } catch(error) {
                 console.error("Erreur lors du chargement des matchs", error);
@@ -31,9 +32,9 @@ const Messages = ({userId, onSelectMatch }) => {
                 <ul className="space-y-2">
                     {matches.map((match) => (
                         <li
-                            key={match.match.id}
+                            key={match.user_id}
                             onClick={() => onSelectMatch(match)}
-                            className="p-2 flex items-center space-x-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg"
+                            className="p-2 flex items-center space-x-3 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-700 rounded-lg"
                         >
                             <img
                                 src={`http://localhost:3000${match.photo}`}

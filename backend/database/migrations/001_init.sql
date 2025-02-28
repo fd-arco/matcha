@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS profiles (
     looking_for VARCHAR(50),
     passions TEXT,
     bio TEXT,
+    age INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
