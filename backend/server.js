@@ -432,8 +432,3 @@ app.post("/like", async(req,res) => {
     }
 
 })
-<<<<<<< HEAD
-=======
->>>>>>> 7c8e9a3 (verif_email_ok)
-=======
->>>>>>> e0796d7 (fusion main_swipe_page)
