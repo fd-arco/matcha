@@ -1,12 +1,5 @@
 const express = require('express');
-<<<<<<< HEAD
-<<<<<<< HEAD
 const crypto = require('crypto');
-=======
->>>>>>> 9ea65b2 (fix le user)
-=======
-const crypto = require('crypto');
->>>>>>> 7c8e9a3 (verif_email_ok)
 const jwt = require("jsonwebtoken");
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -24,7 +17,6 @@ const PORT = 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
-<<<<<<< HEAD
 const storage = multer.diskStorage({
     destination:"./uploads",
     filename:(req, file, cb) => {
@@ -37,8 +29,6 @@ const upload = multer({storage});
 // router.use(express.urlencoded({ extended: true }));
 
 app.use("/uploads", express.static("uploads"));
-=======
->>>>>>> 9ea65b2 (fix le user)
 const SECRET_KEY = process.env.JWT_SECRET || "monsecret";
 
 
@@ -58,7 +48,6 @@ app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
 
-<<<<<<< HEAD
 function calculateAge(dob) {
     const birthDate = new Date(dob);
     const today = new Date();
@@ -106,8 +95,6 @@ app.post("/create-profil", upload.array("photos", 6), async(req, res) => {
         res.status(500).json({error: "Erreur serveur"});
     }
 })
-=======
->>>>>>> 7c8e9a3 (verif_email_ok)
 function generateVerificationToken() {
     return crypto.randomBytes(20).toString('hex');
 }
@@ -194,10 +181,7 @@ app.get('/verify-email', async (req, res) => {
     }
 });
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 7c8e9a3 (verif_email_ok)
 app.get("/me", async (req, res) => {
 
     const token = req.headers.authorization?.split(" ")[1];
@@ -256,7 +240,6 @@ app.post("/loginUser", async (req, res) => {
         res.status(500).json({ error: "Erreur serveur" });
     }
 });
-<<<<<<< HEAD
 
 
 ///////////////////////////////////////////////sendemail/////////
@@ -449,5 +432,8 @@ app.post("/like", async(req,res) => {
     }
 
 })
+<<<<<<< HEAD
 =======
 >>>>>>> 7c8e9a3 (verif_email_ok)
+=======
+>>>>>>> e0796d7 (fusion main_swipe_page)
