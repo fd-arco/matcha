@@ -8,9 +8,12 @@ const { Pool } = require('pg');
 const multer = require('multer');
 const nodemailer = require('nodemailer');
 require('dotenv').config({ path: './.env' });
+const initWebSocket = require("./websocket");
+const http = require("http");
 
 
-
+const server = http.createServer(app);
+initWebSocket(server);
 app.use(express.json());
 
 const PORT = 3000;
@@ -44,7 +47,7 @@ app.get('/api', (req, res) => {
     res.json({ message: 'API is running!' });
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
 
@@ -341,6 +344,8 @@ app.get('/matches/:userId', async (req, res) => {
     try {
         const query = `
         SELECT
+            m.user1_id,
+            m.user2_id,
             u.id AS user_id,
             p.name,
             p.bio,
@@ -365,6 +370,24 @@ app.get('/matches/:userId', async (req, res) => {
     } catch (error) {
         console.error("Erreur lors de la recuperation des matchs: ", error);
         res.status(500).json({ error: "erreur serveur"});
+    }
+});
+
+app.get('/messages/:userId/:matchId', async(req, res) => {
+    const {userId, matchId} = req.params;
+
+    try {
+        const result = await pool.query(
+            `SELECT * FROM messages
+             WHERE (sender_id = $1 AND receiver_id = $2)
+             OR (sender_id=$2 AND receiver_id=$1)
+             ORDER BY created_at ASC`,
+             [userId, matchId]
+        );
+        res.json(result.rows);
+    } catch  (error) {
+        console.error("Erreur lors de la recuperation des messages: ", error);
+        res.status(500).json({error: "erreur serveur"});
     }
 });
 

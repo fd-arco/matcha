@@ -10,6 +10,13 @@ const Messages = ({onSelectMatch }) => {
                 const response = await fetch(`http://localhost:3000/matches/${userId}`);
                 const data = await response.json();
                 console.log("DATA RECU DU SERVEUR : ", data);
+                const formattedMatches = data.map(match => ({
+                    match_id: match.match_id,
+                    user_id: match.user1_id === userId ? match.user2_id : match.user1_id,
+                    name: match.name,
+                    bio: match.bio,
+                    photo: match.photo
+                }))
                 setMatches(data);
             } catch(error) {
                 console.error("Erreur lors du chargement des matchs", error);
