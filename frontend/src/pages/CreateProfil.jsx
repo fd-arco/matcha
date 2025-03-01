@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import { Navigate, useNavigate } from "react-router-dom";
+import ModalLocal from "../util/modalLocal.jsx"
 
 export default function CreateProfil() {
     const [selectedPassions, setSelectedPassions] = useState([]);
@@ -8,6 +9,7 @@ export default function CreateProfil() {
     const [photos, setPhotos] = useState([]);
     const navigate = useNavigate();
     const userId = localStorage.getItem("userId");
+    const [modalLocal, setModalLocal] = useState(false);
 
     const passionsList = ["Music", "Sports", "Reading", "Traveling", "Cooking", 
         "Gaming", "Dancing", "Art", "Photography", "Movies"
@@ -47,6 +49,11 @@ export default function CreateProfil() {
     const handleRemovePhoto = (index) => {
         setPhotos(photos.filter((_, i) => i !== index));
     };
+
+    async function handleLocalModal(){
+        console.log("ca reeeeeeeeeeeeeeeeeeeentre")
+        setModalLocal(true);
+    }
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -284,10 +291,25 @@ export default function CreateProfil() {
                             </div>
 
                             <div>
-                                <button type="submit" className="bg-green-600 hover:bg-green-500 dark:bg-green-800 dark:hover:bg-green-700 text-white px-4 py-2 rounded-lg w-full">
-                                    Submit
-                                </button>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 font-medium mb-2">Autorisez vous Matcha a utiliser votre localisation?</label>
                             </div>
+                            <div className="flex space-x-8">
+                                <div>
+                                    <button  type="button" className="bg-green-600 hover:bg-green-500 dark:bg-green-800 dark:hover:bg-green-700 rounded-lg w-full sm:w-auto">
+                                        oui
+                                    </button>
+                                    <button type="button" className="bg-green-600 hover:bg-green-500 dark:bg-green-800 dark:hover:bg-green-700 rounded-lg w-full sm:w-auto" >
+                                        non
+                                    </button>
+                                </div>
+                            </div>
+                            <br></br>
+                            <button type="submit" className="bg-green-600 hover:bg-green-500 dark:bg-green-800 dark:hover:bg-green-700 text-white px-4 py-2 rounded-lg w-full">
+                                Submit
+                            </button>
+                            </div>
+
                         </form>
                     </div>
 
