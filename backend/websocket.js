@@ -39,24 +39,16 @@ const initWebSocket = (server) => {
                     }
                 }
                 if (data.type === "message") {
+                    console.log("JE DOIS RENVOYER LE MESSAGE RECU AUX UTILISATEURS CONNECTES")
                     const { senderId, receiverId, content} = data;
-
-
-                    console.log("📩 Nouveau message reçu");
-                    console.log(`   📤 Expéditeur (senderId): ${senderId}`);
-                    console.log(`   📥 Destinataire (receiverId): ${receiverId}`);
-                    console.log(`   💬 Contenu: ${content}`);
-
-                    console.log("📡 Liste des utilisateurs connectés au WebSocket:");
-                    console.log([...clients.keys()]);
-
+                    
                     const result = await pool.query(
                         `INSERT INTO messages (sender_id, receiver_id, content, is_read) VALUES ($1, $2, $3, FALSE) RETURNING *`,
                         [senderId, receiverId, content]
                     );
 
                     const savedMessage = result.rows[0];
-
+                    
                     if (clients.has(receiverId.toString())) {
                         console.log(`ENvoie du message a ${receiverId.toString()}`);
                         clients.get(receiverId.toString()).send(JSON.stringify({

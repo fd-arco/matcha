@@ -10,6 +10,7 @@ const nodemailer = require('nodemailer');
 require('dotenv').config({ path: './.env' });
 const initWebSocket = require("./websocket");
 const http = require("http");
+const { queryObjects } = require('v8');
 
 
 const server = http.createServer(app);
@@ -349,7 +350,22 @@ app.get('/matches/:userId', async (req, res) => {
             u.id AS user_id,
             p.name,
             p.bio,
-            pp.photo_url AS photo
+            pp.photo_url AS photo,
+            (
+                SELECT content
+                FROM messages
+                WHERE (sender_id = m.user1_id AND receiver_id = m.user2_id)
+                OR (sender_id = m.user2_id AND receiver_id = m.user1_id)
+                ORDER BY created_at DESC
+                LIMIT 1    
+            ) AS last_message,
+            (
+                SELECT COUNT(*)
+                FROM messages
+                WHERE receiver_id = $1
+                AND sender_id = u.id
+                AND is_read = FALSE
+            ) AS unread_count
         FROM matches m
         JOIN users u ON u.id = CASE
             WHEN m.user1_id = $1 THEN m.user2_id
@@ -372,6 +388,26 @@ app.get('/matches/:userId', async (req, res) => {
         res.status(500).json({ error: "erreur serveur"});
     }
 });
+
+app.put('/messages/read', async(req, res) => {
+    const {userId, matchId} = req.body;
+
+    try {
+        const query = `
+            UPDATE messages
+            SET is_read = TRUE
+            WHERE receiver_id = $1
+            AND sender_id = $2
+            AND is_read = FALSE
+        `;
+
+        await pool.query(query, [userId, matchId]);
+        res.json({success:true, message:"messages marques comme lus"});
+    } catch (error) {
+        console.error("erreur lors de la mise a jour des messages lus:", error);
+        res.status(500).json({error: "erreur serveur"});
+    }
+})
 
 app.get('/messages/:userId/:matchId', async(req, res) => {
     const {userId, matchId} = req.params;

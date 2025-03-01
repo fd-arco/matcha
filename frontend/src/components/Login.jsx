@@ -34,11 +34,11 @@ export default function Login() {
         const user = data.user;
 
         sessionStorage.setItem("token", token);
-
+        localStorage.setItem("userId", data.user.id); //TODO:PROVISION FAIRE AVEC COOKIES PLUSTARD
         setTimeout(() => { navigate("/swipe") }, 1500);
         localStorage.setItem("token", token);
 
-        setTimeout(() => { navigate("/profil") }, 1500);
+        // setTimeout(() => { navigate("/profil") }, 1500);
 
     }
 

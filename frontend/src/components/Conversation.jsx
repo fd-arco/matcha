@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from "react";
 import { useNavigate } from "react-router-dom";
+import { EventEmitter } from "ws";
 
-const Conversation = ({match, onBack}) => {
+const Conversation = ({match, onBack, socket, messagesGlobal}) => {
     const [messages, setMessages] = useState([]);
-    const [socket, setSocket] = useState(null);
     const [newMessage, setNewMessage] = useState("");
     const userId = localStorage.getItem("userId");
 
@@ -18,32 +18,25 @@ const Conversation = ({match, onBack}) => {
             }
         }
         fetchMessages();
+    }, [userId, match.user_id]);
 
-        const ws = new WebSocket(`ws://localhost:3000`);
-
-        ws.onopen = () => {
-            console.log("Websocket connecte");
-            ws.send(JSON.stringify({type:"register", userId}));
-        };
-
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-
-            if (data.type === "newMessage") {
-                console.log("Nouveau message recu :", data.message);
-                setMessages((prev) => [...prev, data.message]);
-            }
-
-            if (data.type === "messageRead") {
-                console.log("MEssage marque comme lu", data);
-            }
-        }
-        ws.onclose = () => console.log("websocket deconnecte");
-
-        setSocket(ws);
-
-        return () => ws.close();
-    }, [userId]);
+    useEffect(() => {
+        if (!socket) return;
+        if (!messagesGlobal || messagesGlobal.length === 0) return;
+        const lastMessage = messagesGlobal[messagesGlobal.length - 1];
+        console.log("LAST MESSAGE : ", lastMessage);
+        console.log("MATCH.USER_ID =", match.user_id);
+        console.log("USER_ID =", userId);
+        const userIdInt = parseInt(userId, 10);
+        if (
+            (lastMessage.sender_id === match.user_id && lastMessage.receiver_id === userIdInt) ||
+            (lastMessage.sender_id === userIdInt && lastMessage.receiver_id === match.user_id)
+        ) {
+            console.log("DANS USEEFFECT CONVERSATION");
+            setMessages(prevMessages => [...prevMessages, lastMessage]);
+    }  
+    
+    }, [messagesGlobal, match.user_id]);
 
     const sendMessage = () => {
         if (newMessage.trim() !== "" && socket) {
