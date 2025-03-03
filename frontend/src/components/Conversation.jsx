@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import { useNavigate } from "react-router-dom";
 import { EventEmitter } from "ws";
+import { ArrowLeft } from "lucide-react";
 
 const Conversation = ({match, onBack, socket, messagesGlobal}) => {
     const [messages, setMessages] = useState([]);
@@ -83,9 +84,9 @@ const Conversation = ({match, onBack, socket, messagesGlobal}) => {
             </div>    
             <button
                 onClick={onBack}
-                className="mt-4 px-6 py-2 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600"
-            >
-                🔙 Back to Swipes
+                className="mb-4 px-4 mt-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center space-x-2">
+                <ArrowLeft size={20} />
+                <span>Back To Swipes</span>
             </button>
         </div>
     )
