@@ -25,16 +25,19 @@ const initWebSocket = (server) => {
                     clients.set(data.userId, ws);
                     console.log(`Utilisateur ${data.userId} connected.`);
                 }
-                if (data.type === "messageRead") {
-                    const {conversationUserId, userId} = data;
+                console.log("DANS WS READ_MESSAGES")
+                if (data.type === "read_messages") {
+                    const {userId, matchId} = data;
                     await pool.query(
-                        `UPDATE message SET is_read = TRUE WHERE sender_id=$1 AND receiver_id=$2 AND is_read=FALSE`,
-                        [conversationUserId, userId]
+                        `UPDATE messages SET is_read = TRUE WHERE sender_id=$1 AND receiver_id=$2 AND is_read=FALSE`,
+                        [userId, matchId]
                     );
-                    if (clients.has(conversationUserId)) {
-                        clients.get(conversationUserId).send(JSON.stringify({
-                            type: "messageRead",
-                            conversationUserId
+                    console.log("JENVOIE PAS POUR RESET UNREAD_COUNT");
+                    if (clients.has(userId.toString())) {
+                        console.log("matchId = ", matchId);
+                        clients.get(userId.toString()).send(JSON.stringify({
+                            type: "read_messages",
+                            matchId: matchId,
                         }));
                     }
                 }
@@ -49,12 +52,22 @@ const initWebSocket = (server) => {
 
                     const savedMessage = result.rows[0];
                     
+                    await pool.query(
+                        `INSERT INTO notifications (user_id, sender_id, type) VALUES ($1, $2, 'message')`,
+                        [receiverId, senderId]
+                    )
+                    
                     if (clients.has(receiverId.toString())) {
                         console.log(`ENvoie du message a ${receiverId.toString()}`);
+                        console.log(`ENVOIE de la notification a ${receiverId.toString()}`);
                         clients.get(receiverId.toString()).send(JSON.stringify({
                             type: "newMessage",
                             message: savedMessage
                         }));
+                        clients.get(receiverId.toString()).send(JSON.stringify({
+                            type:"newNotification",
+                            category:"messages",
+                        }))
                     }
                     
                     console.log("BONJOUR");

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { WebSocketServer } from "ws";
 import { createWebSocketStream } from "ws";
 
-const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal}) => {
+const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal, unreadCountTrigger}) => {
     const [matches, setMatches] = useState([]);
     const userId = localStorage.getItem("userId");
     useEffect(() => {
@@ -28,7 +28,17 @@ const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal}) => {
         };
         fetchMatches();
     }, [userId]);
-    
+
+    useEffect(() => {
+        console.log("dans useffect unreadcounttrigger");
+        setMatches(prevMatches =>
+            prevMatches.map(m => {
+                console.log("🎯 Vérification match :", { userId: m.user_id, unreadCountTrigger });
+                return m.user_id === selectedMatch?.user_id ? {...m, unread_count:0} : m
+            })
+        );
+    }, [unreadCountTrigger]);
+
     useEffect(() => {
         if (!socket)
             return;
@@ -44,9 +54,8 @@ const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal}) => {
                     let updateMatch = {...m};
                     updateMatch.last_message = lastMessage.content;
                     const isRecipient = lastMessage.receiver_id.toString() === userId;
-                    const isUserInConversation = selectedMatch && selectedMatch.user_id === lastMessage.sender_id;
                     updateMatch.unread_count = parseInt(updateMatch.unread_count, 10) || 0;
-                    if (!isUserInConversation && isRecipient) {
+                    if (isRecipient) {
                         console.log("JE PASSE ICI OU PSA???")
                         updateMatch.unread_count += 1;
                         console.log("NOMBRE DE NOTIFICATIONS: ", updateMatch.unread_count);

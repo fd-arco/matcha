@@ -5,10 +5,12 @@ import Messages from "../components/Messages";
 import Matchs from "../components/Matchs";
 import {useState, useEffect} from "react";
 import Conversation from "../components/Conversation";
+import { MessageSquareWarning } from "lucide-react";
 const Swipe = () => {
     const [selectedMatch, setSelectedMatch] = useState(null);
     const [socket, setSocket] = useState(null);
     const [messagesGlobal, setMessagesGlobal] = useState([]);
+    const [unreadCountTrigger, setUnreadCountTrigger] = useState(false);
 
     const handleBackToSwipes = () => {
         setSelectedMatch(null);
@@ -32,6 +34,11 @@ const Swipe = () => {
 
           setMessagesGlobal((prev) => [...prev, newMessage]);
         }
+
+        if (message.type === "read_messages") {
+          console.log("message.matchid = " , message.matchId);
+          setUnreadCountTrigger(prev => !prev);
+        }
       }
 
       newSocket.onclose = () => {
@@ -49,7 +56,7 @@ const Swipe = () => {
         {/* Colonne de gauche */}
         <div className="w-1/4 flex flex-col">
           <Bandeau />
-          <Messages onSelectMatch={setSelectedMatch} selectedMatch={selectedMatch} socket={socket} messagesGlobal={messagesGlobal}/>
+          <Messages onSelectMatch={setSelectedMatch} selectedMatch={selectedMatch} socket={socket} messagesGlobal={messagesGlobal} unreadCountTrigger={unreadCountTrigger}/>
         </div>
 
         {/* Colonne de droite */}

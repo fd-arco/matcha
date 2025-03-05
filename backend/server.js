@@ -409,6 +409,76 @@ app.put('/messages/read', async(req, res) => {
     }
 })
 
+app.get('/notifications/:userId', async(req, res) => {
+    try {
+        const { userId } = req.params;
+        console.log("🔎 API Notifications : Requête pour userID =", userId);
+
+        const query = `
+            WITH counts AS (
+                SELECT
+                    SUM(CASE WHEN type = 'view' THEN 1 ELSE 0 END) AS views,
+                    SUM(CASE WHEN type = 'like' THEN 1 ELSE 0 END) AS likes,
+                    SUM(CASE WHEN type = 'match' THEN 1 ELSE 0 END) AS matchs,
+                    SUM(CASE WHEN type = 'message' THEN 1 ELSE 0 END) AS messages
+                FROM notifications WHERE user_id = $1 AND is_read=FALSE
+            )
+            SELECT
+                c.views, c.likes, c.matchs, c.messages,
+                n.id AS notification_id, n.sender_id,
+                u.firstname AS sender_name,
+                n.is_read, n.created_at,
+                m.content AS message_content
+            FROM counts c
+            LEFT JOIN notifications n on n.user_id = $1 AND n.type = 'message'
+            LEFT JOIN users u ON n.sender_id = u.id
+            LEFT JOIN LATERAL (
+                SELECT content 
+                FROM messages 
+                WHERE sender_id = n.sender_id 
+                AND receiver_id = n.user_id 
+                ORDER BY created_at DESC 
+                LIMIT 1  -- 🔥 Récupérer uniquement le dernier message pour chaque notification
+                ) m ON TRUE
+            ORDER BY n.created_at DESC
+        `;
+
+        console.log("📌 Requête SQL exécutée :", query);
+
+        const result = await pool.query(query, [userId]);
+
+        console.log("🛠 Résultat SQL brut :", result.rows);
+
+        if (!result.rows.length) {
+            console.warn("⚠️ Aucune notification trouvée pour userId =", userId);
+            return res.status(200).json([]);
+        }
+
+        res.json(result.rows);
+    } catch (error) {
+        console.error("❌ Erreur API notifications", error);
+        return res.status(500).json({ error: "erreur serveur" });
+    }
+});
+
+
+app.post('/notifications/read', async(req, res) => {
+    try {
+        const {userId, category} = req.body;
+        const typeMap = {views:"view", likes:"like", matchs:"match", messages:"message"};
+
+        await pool.query(
+            `UPDATE notifications SET is_read = TRUE WHERE user_id = $1 and type=$2`,
+            [userId, typeMap[category]]
+        );
+        res.json({success:true});
+    } catch (error) {
+        console.error("erreur lors de la mise a jour des notifications", error);
+        res.status(500).json({error: "erreur serveur"});
+    }
+
+})
+
 app.get('/messages/:userId/:matchId', async(req, res) => {
     const {userId, matchId} = req.params;
 

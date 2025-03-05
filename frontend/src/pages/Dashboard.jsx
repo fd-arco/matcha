@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import { useNavigate } from "react-router-dom";
 import {Eye, Heart, Users, MessageSquare, ArrowLeft} from "lucide-react";
 import ViewsDashboard from "../components/ViewsDashboard";
@@ -10,6 +10,77 @@ import Navbar from "../components/Navbar";
 const Dashboard = () => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("views");
+    const [messageNotifications, setMessageNotifications] = useState([]);
+    const [notifications, setNotifications] = useState({
+        views:0,
+        likes:0,
+        matchs:0,
+        messages:0,
+    })
+
+    const userId = localStorage.getItem("userId");
+
+    useEffect(() => {
+        const fetchNotifications = async() => {
+            try {
+                const response = await fetch(`http://localhost:3000/notifications/${userId}`);
+                console.log("RESPONSE = ", response);
+                const data = await response.json();
+                console.log("DATA = ", data);
+                setNotifications({
+                    views:data[0].views || 0,
+                    likes:data[0].likes || 0,
+                    matchs:data[0].matchs || 0,
+                    messages:data[0].messages || 0,
+                });
+                setMessageNotifications(data.filter(n => n.notification_id !== null));
+            } catch (error) {
+                console.error("Erreur lors du chargement des notifications", error);
+            }
+        }
+        fetchNotifications();
+    }, [userId]);
+
+    useEffect(() => {
+        const socket = new WebSocket(`ws://localhost:3000`);
+        socket.onopen = () => {
+            console.log("WEBSOCKET dashboard connected");
+            socket.send(JSON.stringify({type: "register", userId}));
+        }
+
+        socket.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+
+            if (message.type === "newNotification") {
+                console.log("RECEption de la notificaiton depuis websocket");
+                setNotifications(prev => ({
+                    ...prev, [message.category]: Number(prev[message.category]) + 1
+                }));
+            }
+        }
+
+        socket.onclose = () => {
+            console.log("WEBSOCKET dashboard disconnected");
+        };
+
+        return () => {
+            socket.close();
+        }
+    }, [userId]);
+
+    const markAsRead = async (category) => {
+        setNotifications((prev) => ({ ...prev, [category]:0}));
+
+        try {
+            await fetch(`http://localhost:3000/notifications/read`, {
+                method:"POST",
+                headers: {"Content-type":"application/json"},
+                body: JSON.stringify({userId, category}),
+            });
+        } catch (error) {
+            console.error("erreur lors de la misee a jour des notifications", error);
+        }
+    }
 
     return (
         <div className="h-screen flex flex-col">
@@ -24,32 +95,65 @@ const Dashboard = () => {
 
                 <div className="grid grid-cols-4 gap-4 bg-white p-4 rounded-lg shadow-md">
                     <div
-                        className={`flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="views"? "bg-green-500 text-white" : "hover:bg-gray-200"}`}
-                        onClick={() => setActiveTab("views")}
+                        className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="views"? "bg-green-500 text-white" : "hover:bg-gray-200"}`}
+                        onClick={() => {
+                            setActiveTab("views");
+                            markAsRead("views");
+                        }}
+                        
                     >
                         <Eye size={32} />
                         <span className="mt-2">Views</span>
+                        {notifications.views > 0 && (
+                            <span className="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded-full">
+                                {notifications.views}
+                            </span>
+                        )}
                     </div>
                     <div
-                        className={`flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="likes" ? "bg-green-500 text-white" : "hover:bg-gray-200"}`}
-                        onClick={() => setActiveTab("likes")}
+                        className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="likes" ? "bg-green-500 text-white" : "hover:bg-gray-200"}`}
+                        onClick={() => {
+                            setActiveTab("likes");
+                            markAsRead("likes");
+                        }}
                     >
                         <Heart size={32} />
                         <span className="mt-2">Likes</span>
+                        {notifications.likes > 0 && (
+                            <span className="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded-full">
+                                {notifications.likes}
+                            </span>
+                        )}
                     </div>
                     <div
-                        className={`flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="matchs" ? "bg-green-500 text-white" : "hover:bg-gray-200"}`}
-                        onClick={() => setActiveTab("matchs")}
+                        className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="matchs" ? "bg-green-500 text-white" : "hover:bg-gray-200"}`}
+                        onClick={() => {
+                            setActiveTab("matchs");
+                            markAsRead("matchs");
+                        }}
                     >
                         <Users size={32} />
                         <span className="mt-2">Matchs</span>
+                        {notifications.matchs > 0 && (
+                            <span className="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded-full">
+                                {notifications.matchs}
+                            </span>
+                        )}
                     </div>
                     <div 
-                        className={`flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="messages" ? "bg-green-500 text-white" : "hover:bg-gray-200"}`}
-                        onClick={() => setActiveTab("messages")}
+                        className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="messages" ? "bg-green-500 text-white" : "hover:bg-gray-200"}`}
+                        onClick={() => {
+                            setActiveTab("messages");
+                            markAsRead("messages");
+                        }}
                     >
                         <MessageSquare size={32} />
                         <span className="mt-2">Messages</span>
+                        {notifications.messages > 0 && (
+                            <span className="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded-full">
+                                {notifications.messages}
+                            </span>
+                        )}
                     </div>
                 </div>
 
@@ -57,7 +161,7 @@ const Dashboard = () => {
                     {activeTab === "views" && <ViewsDashboard/>}
                     {activeTab === "likes" && <LikesDashboard/>}
                     {activeTab === "matchs" && <MatchsDashboard/>}
-                    {activeTab === "messages" && <MessagesDashboard/>}
+                    {activeTab === "messages" && <MessagesDashboard notifications={messageNotifications}/>}
                 </div>
             </div>
         </div>

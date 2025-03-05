@@ -7,6 +7,7 @@ const Conversation = ({match, onBack, socket, messagesGlobal}) => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const userId = localStorage.getItem("userId");
+    const [hasClicked, setHasClicked] = useState(false);
 
     useEffect(() => {
         const fetchMessages = async () => {
@@ -53,12 +54,37 @@ const Conversation = ({match, onBack, socket, messagesGlobal}) => {
         }
     };
 
+    const handleClick = async() => {
+        try {
+            await fetch("http://localhost:3000/messages/read", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    userId: userId,
+                    matchId: match.user_id
+                })
+            });
+            if (socket) {
+                console.log("LE BON MATCH.USER_ID =", match.user_id);
+                socket.send(JSON.stringify({
+                    type:"read_messages",
+                    userId: userId,
+                    matchId: match.user_id
+                }));
+            }
+        } catch (error) {
+            console.error("Erreur lors de la mise a jour des messages lus:", error);
+        }
+    }
+
     const userIdInt = parseInt(localStorage.getItem("userId", 10)); 
 
     return (
         <div className="bg-gray-100 dark:bg-gray-700 flex flex-col items-center justify-center h-full p-4 shadow-lg">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{match.name}</h2>
-            <div className="flex-1 overflow-y-auto w-full mt-4 p-2 border rounded-lg bg-white dark:bg-gray-800" style={{ maxHeight: "70vh" }}>
+            <div className="flex-1 overflow-y-auto w-full mt-4 p-2 border rounded-lg bg-white dark:bg-gray-800" onClick={handleClick} style={{ maxHeight: "70vh" }}>
                 {messages.map((msg, index) => (
                     <div key={index} className={`flex my-2 ${msg.sender_id === userIdInt ? "justify-end" : "justify-start"}`}>
                         <p className={`p-3 rounded-lg max-w-xs break-words ${msg.sender_id === userIdInt ? "bg-green-500 text-white self-end" : "bg-gray-300 text-gray-900 self-start"}`}>
