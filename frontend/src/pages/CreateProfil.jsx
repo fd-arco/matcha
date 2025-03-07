@@ -141,6 +141,10 @@ export default function CreateProfil() {
             alert("Impossible de creer le profil.");
         }
 
+        async function handleLocalModal(){
+            setModalLocal(true);
+        }
+
     }
 
     return (
@@ -296,7 +300,7 @@ export default function CreateProfil() {
                             </div>
                             <div className="flex space-x-8">
                                 <div>
-                                    <button  type="button" className="bg-green-600 hover:bg-green-500 dark:bg-green-800 dark:hover:bg-green-700 rounded-lg w-full sm:w-auto">
+                                    <button  type="button" onClick={ handleLocalModal } className="bg-green-600 hover:bg-green-500 dark:bg-green-800 dark:hover:bg-green-700 rounded-lg w-full sm:w-auto">
                                         oui
                                     </button>
                                     <button type="button" className="bg-green-600 hover:bg-green-500 dark:bg-green-800 dark:hover:bg-green-700 rounded-lg w-full sm:w-auto" >
@@ -312,7 +316,7 @@ export default function CreateProfil() {
 
                         </form>
                     </div>
-
+                    {modalLocal && <ModalLocal onClose={() => setModalLocal(false)}/>}                   
                     {/* SECTION DROITE: UPLOAD DES PHOTOS */}
                     <div className="w-full md:w-[48%] flex flex-col">
                     <h2 className={`text-2xl font-medium mb-4`}>Upload your photos (max 6)</h2>

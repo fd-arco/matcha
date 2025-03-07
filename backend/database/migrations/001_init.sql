@@ -22,6 +22,8 @@ CREATE TABLE IF NOT EXISTS profiles (
     passions TEXT,
     bio TEXT,
     age INTEGER,
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

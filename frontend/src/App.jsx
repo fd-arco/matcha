@@ -19,7 +19,7 @@ const router = createBrowserRouter([
     {path: '/create-profil', element: <CreateProfil />},
     {path: '/swipe', element: <Swipe />},
     {path: '/profile', element: <Profile />},
-    {path: '/testloc', element: <TestLoc />}
+    /*{path: '/testloc', element: <TestLoc />},*/
 
 ]);
 

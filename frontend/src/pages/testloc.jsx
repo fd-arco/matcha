@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Navbar from "../components/Navbar";
 import { Navigate, useNavigate } from "react-router-dom";
 import ModalLocal from "../util/modalLocal.jsx"
 
@@ -10,9 +9,7 @@ export default function CreateProfil() {
     const [modalLocal, setModalLocal] = useState(false);
 
   
-
     async function handleLocalModal(){
-        console.log("ca reeeeeeeeeeeeeeeeeeeentre")
         setModalLocal(true);
     }
 

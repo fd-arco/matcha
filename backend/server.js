@@ -9,8 +9,6 @@ const multer = require('multer');
 const nodemailer = require('nodemailer');
 require('dotenv').config({ path: './.env' });
 
-
-
 app.use(express.json());
 
 const PORT = 3000;
@@ -95,6 +93,7 @@ app.post("/create-profil", upload.array("photos", 6), async(req, res) => {
         res.status(500).json({error: "Erreur serveur"});
     }
 })
+
 function generateVerificationToken() {
     return crypto.randomBytes(20).toString('hex');
 }
@@ -432,3 +431,24 @@ app.post("/like", async(req,res) => {
     }
 
 })
+
+app.get("/config", async(req, res) => {
+    res.json({kk: process.env.REACT_APP_GOOGLE_API_KEY,});
+}
+)
+
+app.post("/longitude", async(req, res) => {
+
+    const { latitude, longitude } = req.body
+    if(!latitude || !longitude){
+       return res.status(400).json("pas les directiosn ma couillasse")
+    }
+    try{
+
+        const result = await pool.query('INSERT INTO profiles(latitude, longitude) VALUES ($1::DOUBLE PRECISION, $2::DOUBLE PRECISION) RETURNING *', [latitude, longitude]);
+    }
+    catch(error)
+    {
+        res.status(400).json(error, "erreur lors de lenregistrement de la localisastion")
+    }
+});

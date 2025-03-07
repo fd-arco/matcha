@@ -1,24 +1,65 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 
 const ModalLocal = ({ onClose }) => {
   const [location, setLocation] = useState(null);
   const [error, setError] = useState(null);
+  const [apiKey, setApiKey] = useState("")
 
-  const getUserLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setLocation({ lat: latitude, lng: longitude });
+  useEffect(() => {
+    fetch("http://localhost:3000/config")
+      .then((response) => response.json())
+      .then((data) => {
+        setApiKey(data.kk);
+      })
+      .catch((error) => {
+        console.error('Erreur lors de la récupération de la clé API', error);
+      });
+    }, []);
+
+    async  function sendLocation(latitude, longitude){
+      try{
+          if(latitude && longitude){
+            const response = await fetch("http://localhost:3000/longitude",{
+              method: "POST",
+              headers:{"content-type": "application/json"},
+              body: JSON.stringify({latitude, longitude}),
+    
+            })
+          };
+          const data = await data.text();
+          if(data.ok)
+          {
+            console.log("localisation bien dans la database")
+          }
+        }
+        catch(error){
+          console.log(error, "ca flop")
+          setError("flop de push de la loc dans la database:") 
+        }
+    }
+
+    const getUserLocation = () => {
+      
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+
+            const { latitude, longitude } = position.coords;
+            setLocation({ lat: latitude, lng: longitude });
+            console.log("latitide        ", latitude);
+            console.log("longitude       ", longitude);
+            sendLocation(latitude, longitude);  
         },
         (error) => {
+          console.log("   error   " )
           setError('Impossible d\'obtenir la géolocalisation');
         }
       );
     } else {
       setError('La géolocalisation n\'est pas supportée par ce navigateur');
     }
+
   };
 
   return (
@@ -29,40 +70,50 @@ const ModalLocal = ({ onClose }) => {
           <h2 className="text-2xl md:text-4xl font-extrabold text-gray-900 flex items-center justify-center gap-2">
             Matcha wants to use your location?
           </h2>
-          <div className="mt-6 flex flex-col gap-3 items-center">
-            <form method="post" action="https://hustleseo.com/accept_cookies">
+          {!location && <div className="mt-6 flex flex-col gap-3 items-center">
+            <form >
               <button
                 id="accept-btn"
                 className="px-5 py-2 bg-green-500 text-white text-base font-semibold rounded-lg w-full shadow-md hover:bg-green-600 transition-all"
                 type="button"
                 onClick={() => {
                   getUserLocation();
-                  onClose();
                 }}
               >
                 Accept and Continue
               </button>
-              <input type="hidden" name="authenticity_token" value="rtgM4oNX1_s5NAq3urkj6-bbAu56nyzLsTNEHV7_fACS2rqxhaTWqDARPXnLGdHr18-nWytmMgXKawVjZYcBZQ" autoComplete="off" />
+              <input type="hidden" autoComplete="off" />
+            </form>
+          </div>}
+        </div>
+        {apiKey && location &&
+           <div className="mt-6">
+           <LoadScript googleMapsApiKey={apiKey}>
+             <GoogleMap
+               center={location}
+               mapContainerStyle={{ width: '100%', height: '300px' }}
+               zoom={15}
+             >
+               <Marker position={location} />
+             </GoogleMap>
+           </LoadScript>
+           <div className="mt-6 flex flex-col gap-3 items-center">
+            <form >
+              <button
+                id="close-btn"
+                className="px-5 py-2 bg-green-500 text-white text-base font-semibold rounded-lg w-full shadow-md hover:bg-green-600 transition-all"
+                type="button"
+                onClick={() => {
+                  onClose();
+                }}
+              >
+                Close
+              </button>
+              <input type="hidden" autoComplete="off" />
             </form>
           </div>
-        </div>
-        {location && (
-          <div className="mt-6">
-            <LoadScript googleMapsApiKey="VOTRE_CLÉ_API_GOOGLE_MAPS">
-              <GoogleMap
-                mapContainerStyle={{ width: '100%', height: '300px' }}
-                center={location}
-                zoom={12}
-              >
-                <Marker position={location} />
-              </GoogleMap>
-            </LoadScript>
-            <p className="mt-4">Votre position actuelle :</p>
-            <p>Latitude: {location.lat}</p>
-            <p>Longitude: {location.lng}</p>
-          </div>
-        )}
-        {error && <p className="text-red-500 mt-4">{error}</p>}
+         </div>
+         }
       </div>
     </div>
   );
