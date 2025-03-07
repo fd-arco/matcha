@@ -60,7 +60,7 @@ function calculateAge(dob) {
 
 app.post("/create-profil", upload.array("photos", 6), async(req, res) => {
     try {
-        const { user_id, name, dob, gender, interestedIn, lookingFor, bio} = req.body;
+        const { user_id, name, dob, gender, interestedIn, lookingFor, bio, latitude, longitude} = req.body;
 
         const age = calculateAge(dob);
         let passionArray = [];
@@ -74,9 +74,9 @@ app.post("/create-profil", upload.array("photos", 6), async(req, res) => {
         const photosUrls = req.files.map(file => `/uploads/${file.filename}`);
         console.log("SALUT");
         const result = await pool.query(
-            `INSERT INTO profiles (user_id, name, dob, age, gender, interested_in, looking_for, passions, bio)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
-            [user_id, name, dob, age, gender, interestedIn, lookingFor, passionArray ,bio]
+            `INSERT INTO profiles (user_id, name, dob, age, gender, interested_in, looking_for, passions, bio, latitude, longitude)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id`,
+            [user_id, name, dob, age, gender, interestedIn, lookingFor, passionArray ,bio, latitude, longitude]
         );
 
         const profile_id = result.rows[0].id;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import { getUserLocation } from './geo.js';
 
 const ModalLocal = ({ onClose }) => {
   const [location, setLocation] = useState(null);
@@ -17,49 +18,87 @@ const ModalLocal = ({ onClose }) => {
       });
     }, []);
 
-    async  function sendLocation(latitude, longitude){
-      try{
-          if(latitude && longitude){
-            const response = await fetch("http://localhost:3000/longitude",{
-              method: "POST",
-              headers:{"content-type": "application/json"},
-              body: JSON.stringify({latitude, longitude}),
+    // async  function sendLocation(latitude, longitude){
+    //   try{
+    //       if(latitude && longitude){
+    //         const response = await fetch("http://localhost:3000/longitude",{
+    //           method: "POST",
+    //           headers:{"content-type": "application/json"},
+    //           body: JSON.stringify({latitude, longitude}),
     
-            })
-          };
-          const data = await data.text();
-          if(data.ok)
-          {
-            console.log("localisation bien dans la database")
-          }
-        }
-        catch(error){
-          console.log(error, "ca flop")
-          setError("flop de push de la loc dans la database:") 
-        }
-    }
+    //         })
+    //       };
+    //       const data = await data.text();
+    //       if(data.ok)
+    //       {
+    //         console.log("localisation bien dans la database")
+    //       }
+    //     }
+    //     catch(error){
+    //       console.log(error, "ca flop")
+    //       setError("flop de push de la loc dans la database:") 
+    //     }
+    // }
 
-    const getUserLocation = () => {
+  //   const getUserLocation = () => {
       
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
+  //     if (navigator.geolocation) {
+  //       navigator.geolocation.getCurrentPosition(
+  //         (position) => {
 
-            const { latitude, longitude } = position.coords;
-            setLocation({ lat: latitude, lng: longitude });
-            console.log("latitide        ", latitude);
-            console.log("longitude       ", longitude);
-            sendLocation(latitude, longitude);  
-        },
-        (error) => {
-          console.log("   error   " )
-          setError('Impossible d\'obtenir la géolocalisation');
-        }
-      );
-    } else {
-      setError('La géolocalisation n\'est pas supportée par ce navigateur');
-    }
+  //           const { latitude, longitude } = position.coords;
+  //           setLocation({ lat: latitude, lng: longitude });
+  //           console.log("latitide        ", latitude);
+  //           console.log("longitude       ", longitude);
+  //           resolve({ latitude, longitude });
+  //           // sendLocation(latitude, longitude);
+  //       },
+  //       (error) => {
+  //         console.log("   error   " )
+  //         setError('Impossible d\'obtenir la géolocalisation');
+  //       }
+  //     );
+  //   } else {
+  //     setError('La géolocalisation n\'est pas supportée par ce navigateur');
+  //   }
 
+  // };
+
+  // const getUserLocation = () => {
+  //   return new Promise((resolve, reject) => {
+  //     if (navigator.geolocation) {
+  //       navigator.geolocation.getCurrentPosition(
+  //         (position) => {
+  //           const { latitude, longitude } = position.coords;
+  //           setLocation({ lat: latitude, lng: longitude });
+  //           console.log("latitude", latitude);
+  //           console.log("longitude", longitude);
+  //           resolve({ latitude, longitude });
+  //         },
+  //         (error) => {
+  //           console.log("   error   ");
+  //           setError('Impossible d\'obtenir la géolocalisation');
+  //           reject('Impossible d\'obtenir la géolocalisation'); 
+  //         }
+  //       );
+  //     } else {
+  //       setError('La géolocalisation n\'est pas supportée par ce navigateur');
+  //       reject('La géolocalisation n\'est pas supportée par ce navigateur'); 
+  //     }
+  //   });
+  // };
+
+
+  const handleGetLocation = () => {
+    getUserLocation()
+      .then((location) => {
+        setLocation({ lat: location.latitude, lng: location.longitude });
+        console.log("Géolocalisationfcbndgndf récupérée", location);
+      })
+      .catch((error) => {
+        setError(error);
+        console.log("Erreur géolocalisation:", error);
+      });
   };
 
   return (
@@ -76,9 +115,9 @@ const ModalLocal = ({ onClose }) => {
                 id="accept-btn"
                 className="px-5 py-2 bg-green-500 text-white text-base font-semibold rounded-lg w-full shadow-md hover:bg-green-600 transition-all"
                 type="button"
-                onClick={() => {
-                  getUserLocation();
-                }}
+                onClick={
+                  handleGetLocation
+                }
               >
                 Accept and Continue
               </button>

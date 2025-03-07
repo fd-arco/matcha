@@ -2,6 +2,7 @@ import { useState } from "react";
 import Navbar from "../components/Navbar";
 import { Navigate, useNavigate } from "react-router-dom";
 import ModalLocal from "../util/modalLocal.jsx"
+import { getUserLocation } from "../util/geo.js";
 
 export default function CreateProfil() {
     const [selectedPassions, setSelectedPassions] = useState([]);
@@ -107,7 +108,9 @@ export default function CreateProfil() {
         if (Object.keys(errors).length > 0) {
             return ;
         }
-        
+
+        const location = await getUserLocation();
+
         const finalFormData = new FormData();
         finalFormData.append("user_id", userId); //TODO:RECUPERER USER_ID DEPUIS LA CREATION DU COMPTE
         finalFormData.append("name", name);
@@ -117,6 +120,8 @@ export default function CreateProfil() {
         finalFormData.append("lookingFor", lookingFor);
         finalFormData.append("bio", bio);
         finalFormData.append("passions", JSON.stringify(selectedPassions));
+        finalFormData.append("latitude", location.latitude);
+        finalFormData.append("longitude", location.longitude);
         
         photos.forEach((photo) => {
             finalFormData.append("photos", photo.file);
