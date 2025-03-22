@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import { useNavigate } from "react-router-dom";
 import {LayoutDashboard, Settings} from "lucide-react";
 
-const Bandeau = () => {
+const Bandeau = ({hasNotification}) => {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
     const userId = localStorage.getItem("userId");
@@ -41,8 +41,11 @@ const Bandeau = () => {
             <div className="flex">
                 <button
                     onClick={() => navigate("/dashboard")}
-                    className="p-2 rounded-full hover:bg-gray-100 transition">
+                    className="p-2 rounded-full hover:bg-gray-100 transition relative">
                     <LayoutDashboard size={25} className="text-white hover:text-gray-300" />
+                    {hasNotification && (
+                        <span className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-3 h-3 text-xs flex items-center justify-center" />
+                    )}
                </button>
                <button
                     onClick={() => navigate("/settings")}

@@ -2,10 +2,14 @@ import React, {useEffect, useState} from "react";
 import { useNavigate } from "react-router-dom";
 import { WebSocketServer } from "ws";
 import { createWebSocketStream } from "ws";
+import { formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
 
 const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal, unreadCountTrigger}) => {
     const [matches, setMatches] = useState([]);
     const userId = localStorage.getItem("userId");
+    const [currentTime, setCurrentTime] = useState(new Date());
+
     useEffect(() => {
         const fetchMatches = async () => {
             try {
@@ -19,8 +23,15 @@ const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal, unreadC
                     bio: match.bio,
                     photo: match.photo,
                     last_message: match.last_message || "",
+                    last_message_created_at: match.last_message_created_at || null,
                     unread_count: match.unread_count || 0
                 }))
+
+                formattedMatches.sort((a, b) => {
+                    const dateA = new Date(a.last_message_created_at || 0);
+                    const dateB = new Date(b.last_message_created_at || 0);
+                    return dateB - dateA;
+                });
                 setMatches(data);
             } catch(error) {
                 console.error("Erreur lors du chargement des matchs", error);
@@ -40,6 +51,13 @@ const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal, unreadC
     }, [unreadCountTrigger]);
 
     useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 60000);
+        return () => clearInterval(interval);
+    }, []);
+
+    useEffect(() => {
         if (!socket)
             return;
         if (messagesGlobal.length === 0)
@@ -48,11 +66,12 @@ const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal, unreadC
         const lastMessage = messagesGlobal[messagesGlobal.length -1];
 
         setMatches(prevMatches => {
-            return prevMatches.map(m => {
+            const updated = prevMatches.map(m => {
                 if (m.user_id === lastMessage.sender_id || m.user_id === lastMessage.receiver_id) {
                     console.log("HE PASSE ")
                     let updateMatch = {...m};
                     updateMatch.last_message = lastMessage.content;
+                    updateMatch.last_message_created_at = lastMessage.created_at;
                     const isRecipient = lastMessage.receiver_id.toString() === userId;
                     updateMatch.unread_count = parseInt(updateMatch.unread_count, 10) || 0;
                     if (isRecipient) {
@@ -63,6 +82,13 @@ const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal, unreadC
                     return updateMatch;
                 }
                 return m;
+            });
+
+            return updated.sort((a,b) => {
+                console.log("last message a : " + a.last_message_created_at + " last message b: " + b.last_message_created_at);
+                const dateA = new Date(a.last_message_created_at || 0);
+                const dateB = new Date(b.last_message_created_at || 0);
+                return dateB - dateA;
             })
         })
     }, [messagesGlobal]);
@@ -122,6 +148,11 @@ const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal, unreadC
                                 )}
                                 </div>
                                 <span className="text-gray-600 dark:text-gray-400 text-sm truncate w-40">{match.last_message}</span>
+                                {match.last_message_created_at && (
+                                    <span className="text-xs text-gray-500">
+                                        sent {formatDistanceToNow(new Date(match.last_message_created_at), {addSuffix: false, locale:fr})} ago
+                                    </span>
+                                )}
                             </div>
                         </li>
                     ))}

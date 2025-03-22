@@ -7,7 +7,7 @@ import MatchsDashboard from "../components/MatchsDashboard";
 import MessagesDashboard from "../components/MessagesDashboard";
 import Navbar from "../components/Navbar";
 
-const Dashboard = () => {
+const Dashboard = ({setHasNotification}) => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("views");
     const [messageNotifications, setMessageNotifications] = useState([]);
@@ -80,6 +80,21 @@ const Dashboard = () => {
                 headers: {"Content-type":"application/json"},
                 body: JSON.stringify({userId, category}),
             });
+
+            const res = await fetch(`http://localhost:3000/notifications/${userId}`);
+            const data = await res.json();
+
+            const updated = {
+                views: data[0].views || 0,
+                likes: data[0].likes || 0,
+                matchs: data[0].matchs || 0,
+                messages: data[0].messages || 0,
+            }
+            
+            setNotifications(updated);
+            const total = Object.values(updated).reduce((acc, val) => acc + val, 0);
+            setHasNotification(total > 0);
+
         } catch (error) {
             console.error("erreur lors de la misee a jour des notifications", error);
         }

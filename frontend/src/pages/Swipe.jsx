@@ -11,6 +11,23 @@ const Swipe = () => {
     const [socket, setSocket] = useState(null);
     const [messagesGlobal, setMessagesGlobal] = useState([]);
     const [unreadCountTrigger, setUnreadCountTrigger] = useState(false);
+    const [hasNotification, setHasNotification] = useState(false);
+
+    const fetchNotifications = async () => {
+      try {
+        const res = await fetch(`http://localhost:3000/notifications/${userId}`);
+        const data = await res.json();
+    
+        const totalNotifs = (data[0]?.views || 0)
+          + (data[0]?.likes || 0)
+          + (data[0]?.matchs || 0)
+          + (data[0]?.messages || 0);
+    
+        setHasNotification(totalNotifs > 0);
+      } catch (err) {
+        console.error("Erreur fetch notifications", err);
+      }
+    };
 
     const handleBackToSwipes = () => {
         setSelectedMatch(null);
@@ -39,6 +56,10 @@ const Swipe = () => {
           console.log("message.matchid = " , message.matchId);
           setUnreadCountTrigger(prev => !prev);
         }
+
+        if (message.type === "newNotification") {
+          setHasNotification(true);
+        }
       }
 
       newSocket.onclose = () => {
@@ -49,13 +70,20 @@ const Swipe = () => {
         newSocket.close();
       }
     }, [userId]);
+
+    useEffect(() => {
+      if (userId) {
+        fetchNotifications();
+      }
+    }, [userId]);
+
   return (
     <div className="h-screen flex flex-col">
       <Navbar />
       <div className="flex flex-1">
         {/* Colonne de gauche */}
         <div className="w-1/4 flex flex-col">
-          <Bandeau />
+          <Bandeau hasNotification={hasNotification} />
           <Messages onSelectMatch={setSelectedMatch} selectedMatch={selectedMatch} socket={socket} messagesGlobal={messagesGlobal} unreadCountTrigger={unreadCountTrigger}/>
         </div>
 

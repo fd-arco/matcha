@@ -351,14 +351,8 @@ app.get('/matches/:userId', async (req, res) => {
             p.name,
             p.bio,
             pp.photo_url AS photo,
-            (
-                SELECT content
-                FROM messages
-                WHERE (sender_id = m.user1_id AND receiver_id = m.user2_id)
-                OR (sender_id = m.user2_id AND receiver_id = m.user1_id)
-                ORDER BY created_at DESC
-                LIMIT 1    
-            ) AS last_message,
+            msg.content AS last_message,
+            msg.created_at AS last_message_created_at,
             (
                 SELECT COUNT(*)
                 FROM messages
@@ -373,6 +367,13 @@ app.get('/matches/:userId', async (req, res) => {
         END
         JOIN profiles p ON p.user_id = u.id
         JOIN profile_photos pp ON pp.profile_id = p.id
+        LEFT JOIN LATERAL (
+            SELECT content, created_at
+                FROM messages
+                    WHERE (sender_id = m.user1_id AND receiver_id = m.user2_id) OR (sender_id = m.user2_id AND receiver_id = m.user1_id)
+                ORDER BY created_at DESC
+                LIMIT 1
+        ) msg ON TRUE 
         WHERE m.user1_id = $1 OR m.user2_id = $1;
         `;
         
