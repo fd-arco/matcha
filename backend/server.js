@@ -428,18 +428,21 @@ app.get('/notifications/:userId', async(req, res) => {
                 n.id AS notification_id, n.sender_id,
                 u.firstname AS sender_name,
                 n.is_read, n.created_at,
-                m.content AS message_content
+                m.content AS message_content,
+                m.created_at AS message_created_at,
+                p.photo_url AS sender_photo
             FROM counts c
             LEFT JOIN notifications n on n.user_id = $1 AND n.type = 'message'
             LEFT JOIN users u ON n.sender_id = u.id
+            LEFT JOIN messages m ON m.id = n.message_id
+            LEFT JOIN profiles prof ON prof.user_id = u.id
             LEFT JOIN LATERAL (
-                SELECT content 
-                FROM messages 
-                WHERE sender_id = n.sender_id 
-                AND receiver_id = n.user_id 
-                ORDER BY created_at DESC 
-                LIMIT 1  -- 🔥 Récupérer uniquement le dernier message pour chaque notification
-                ) m ON TRUE
+                SELECT photo_url
+                FROM profile_photos
+                WHERE profile_id = prof.id
+                ORDER BY uploaded_at ASC
+                LIMIT 1
+                ) p on TRUE
             ORDER BY n.created_at DESC
         `;
 

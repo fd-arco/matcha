@@ -56,6 +56,9 @@ const Dashboard = () => {
                 setNotifications(prev => ({
                     ...prev, [message.category]: Number(prev[message.category]) + 1
                 }));
+                if (message.category === "messages" && message.notification) {
+                    setMessageNotifications(prev => [message.notification, ...prev])
+                }
             }
         }
 
