@@ -12,6 +12,7 @@ const Swipe = () => {
     const [messagesGlobal, setMessagesGlobal] = useState([]);
     const [unreadCountTrigger, setUnreadCountTrigger] = useState(false);
     const [hasNotification, setHasNotification] = useState(false);
+    const [matchesGlobal, setMatchesGlobal] = useState([]);
 
     const fetchNotifications = async () => {
       try {
@@ -60,6 +61,11 @@ const Swipe = () => {
         if (message.type === "newNotification") {
           setHasNotification(true);
         }
+
+        if (message.type === "newMatch") {
+          setMatchesGlobal(prev => [...prev, message.match]);
+        }
+
       }
 
       newSocket.onclose = () => {
@@ -84,7 +90,7 @@ const Swipe = () => {
         {/* Colonne de gauche */}
         <div className="w-1/4 flex flex-col">
           <Bandeau hasNotification={hasNotification} />
-          <Messages onSelectMatch={setSelectedMatch} selectedMatch={selectedMatch} socket={socket} messagesGlobal={messagesGlobal} unreadCountTrigger={unreadCountTrigger}/>
+          <Messages onSelectMatch={setSelectedMatch} selectedMatch={selectedMatch} socket={socket} messagesGlobal={messagesGlobal} unreadCountTrigger={unreadCountTrigger} matchesGlobal={matchesGlobal}/>
         </div>
 
         {/* Colonne de droite */}

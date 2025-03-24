@@ -179,6 +179,17 @@ const initWebSocket = (server) => {
                                 created_at: notifForReceiver.created_at,
                             }
                         }))
+                        clients.get(receiverId.toString()).send(JSON.stringify({
+                            type:"newMatch",
+                            match: {
+                                user_id:senderId,
+                                name:senderName,
+                                photo:senderPhoto,
+                                last_message:"",
+                                last_message_created_at:null,
+                                unread_count:0,
+                            }
+                        }))
                     }
 
                     if (clients.has(senderId.toString())) {
@@ -193,6 +204,17 @@ const initWebSocket = (server) => {
                                 is_read:false,
                                 created_at:notifForSender.created_at,
                             },
+                        }))
+                        clients.get(senderId.toString()).send(JSON.stringify({
+                            type:"newMatch",
+                            match: {
+                                user_id:receiverId,
+                                name:receiverName,
+                                photo:receiverPhoto,
+                                last_message:"",
+                                last_message_created_at:null,
+                                unread_count:0,
+                            }
                         }))
                     }
                 }

@@ -5,7 +5,7 @@ import { createWebSocketStream } from "ws";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 
-const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal, unreadCountTrigger}) => {
+const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal, unreadCountTrigger, matchesGlobal}) => {
     const [matches, setMatches] = useState([]);
     const userId = localStorage.getItem("userId");
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -39,6 +39,17 @@ const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal, unreadC
         };
         fetchMatches();
     }, [userId]);
+
+    useEffect(() => {
+        if (!matchesGlobal.length) return;
+
+        setMatches(prev => {
+            const newMatch = matchesGlobal[matchesGlobal.length -1];
+            const alreadyExists = prev.some(m => m.user_id === newMatch.user_id);
+            if (alreadyExists) return prev;
+            return [newMatch, ...prev];
+        });
+    }, [matchesGlobal]);
 
     useEffect(() => {
         console.log("dans useffect unreadcounttrigger");
