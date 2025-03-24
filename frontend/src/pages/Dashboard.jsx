@@ -12,6 +12,7 @@ const Dashboard = ({setHasNotification}) => {
     const [activeTab, setActiveTab] = useState("views");
     const [messageNotifications, setMessageNotifications] = useState([]);
     const [matchNotifications, setMatchNotifications] = useState([]);
+    const [likeNotifications, setLikeNotifications] = useState([]);
     const [notifications, setNotifications] = useState({
         views:0,
         likes:0,
@@ -40,6 +41,19 @@ const Dashboard = ({setHasNotification}) => {
             }
         }
         fetchNotifications();
+    }, [userId]);
+
+    useEffect(() => {
+        const fetchLikeNotifications = async() => {
+            try {
+                const res = await fetch(`http://localhost:3000/notifications/${userId}/likes`);
+                const data = await res.json();
+                setLikeNotifications(data);
+            } catch (error) {
+                console.error("erreur fetch like notification", error);
+            }
+        }
+        fetchLikeNotifications();
     }, [userId]);
 
     useEffect(() => {
@@ -75,6 +89,9 @@ const Dashboard = ({setHasNotification}) => {
                 }
                 if (message.category === "matchs" && message.notification) {
                     setMatchNotifications(prev => [message.notification, ...prev]);
+                }
+                if (message.category === "likes" && message.notification) {
+                    setLikeNotifications(prev => [message.notification, ...prev]);
                 }
             }
         }
@@ -194,7 +211,7 @@ const Dashboard = ({setHasNotification}) => {
 
                 <div className="mt-6 p-4 bg-white rounded-lg shadow-md">
                     {activeTab === "views" && <ViewsDashboard/>}
-                    {activeTab === "likes" && <LikesDashboard/>}
+                    {activeTab === "likes" && <LikesDashboard notifications={likeNotifications}/>}
                     {activeTab === "matchs" && <MatchsDashboard notifications={matchNotifications}/>}
                     {activeTab === "messages" && <MessagesDashboard notifications={messageNotifications}/>}
                 </div>

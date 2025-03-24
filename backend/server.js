@@ -497,6 +497,39 @@ app.get('/notifications/:userId/matchs', async (req, res) => {
     }
 })
 
+app.get('/notifications/:userId/likes', async (req, res) => {
+    const {userId} = req.params;
+
+    try {
+        const query = `
+        SELECT
+            n.id AS notification_id,
+            n.sender_id,
+            u.firstname AS sender_name,
+            n.created_at,
+            p.photo_url AS sender_photo,
+            n.is_read
+        FROM notifications n
+        JOIN users u ON u.id = n.sender_id
+        LEFT JOIN profiles prof ON prof.user_id = u.id
+        LEFT JOIN LATERAL (
+            SELECT photo_url
+            FROM profile_photos
+            WHERE profile_id = prof.id
+            ORDER BY uploaded_at ASC
+            LIMIT 1
+        ) p ON true
+        WHERE n.user_id = $1 AND n.type = 'like'
+        ORDER BY n.created_at DESC
+        `;
+        const result = await pool.query(query, [userId]);
+        res.json(result.rows);
+    } catch (error) {
+        console.error("erreur lors du fetch des notifications like", err);
+        res.status(500).json({error: "erreur serveur"});
+    }
+})
+
 
 app.post('/notifications/read', async(req, res) => {
     try {
@@ -588,7 +621,13 @@ app.post("/like", async(req,res) => {
             );
             console.log("Match cree");
             return res.json({match:true, message:"C'est un match!"});
-        } 
+        } else {
+            await pool.query(
+                `INSERT INTO notifications (user_id, sender_id, type)
+                 VALUES ($1, $2, 'like')`,
+                 [likedId, likerId]
+            );
+        }
         console.log("Like enregistre");
         res.json({match:false, message:"Like enregistre"});
     } catch (error) {

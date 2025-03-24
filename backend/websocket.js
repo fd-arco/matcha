@@ -218,6 +218,44 @@ const initWebSocket = (server) => {
                         }))
                     }
                 }
+                if (data.type === "likeNotification") {
+                    const {senderId, receiverId} = data;
+
+                    const senderInfo = await pool.query(`
+                        SELECT u.firstname, prof.id AS profile_id
+                        FROM users u
+                        LEFT JOIN profiles prof ON prof.user_id = u.id
+                        WHERE u.id = $1
+                        `, [senderId]);
+
+                    const senderName = senderInfo.rows[0]?.firstname || "Someone";
+                    const profileId = senderInfo.rows[0]?.profile_id;
+
+                    let senderPhoto = null;
+                    if (profileId) {
+                        const photoRes = await pool.query(`
+                            SELECT photo_url
+                            FROM profile_photos
+                            WHERE profile_id = $1
+                            ORDER BY uploaded_at ASC
+                            LIMIT 1
+                            `, [profileId]);
+                        senderPhoto = photoRes.rows[0]?.photo_url || null;
+                    }
+                    if (clients.has(receiverId.toString())) {
+                        clients.get(receiverId.toString()).send(JSON.stringify({
+                            type: "newNotification",
+                            category: "likes",
+                            notification: {
+                                sender_id: senderId,
+                                sender_name: senderName,
+                                sender_photo: senderPhoto,
+                                is_read: false,
+                                created_at: new Date().toISOString(), // TODO:afficher l heure de la notification de like
+                            }
+                        }));
+                    }
+                }
             } catch (error) {
                 console.error("Erreur lors de l'envoi du message:", error);
             }

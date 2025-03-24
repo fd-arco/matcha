@@ -48,6 +48,11 @@ const Matchs = ({socket}) => {
                     }
                     console.log("Liked:", likedProfile.name);
                 } else {
+                    socket.send(JSON.stringify({
+                        type:"likeNotification",
+                        senderId:userId,
+                        receiverId:likedProfile.user_id,
+                    }));
                     setCurrentIndex((prev) => prev + 1);
                 }
             } catch (error) {
