@@ -1,9 +1,13 @@
 import {useEffect, useState} from "react"
+import MatchModal from "./MatchModal";
 
-const Matchs = () => {
+const Matchs = ({socket}) => {
     const [profiles, setProfiles] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const userId = localStorage.getItem("userId");
+    const [showMatchModal, setShowMatchModal] = useState(false);
+    const [matchedProfile, setMatchedProfile] = useState(null);
+
     useEffect(() => {
         const fetchProfiles = async() => {
             try {
@@ -31,13 +35,24 @@ const Matchs = () => {
                 const data = await response.json();
 
                 if (data.match) {
-                    alert("C'est un match !!") //TODO:CHANGER LE FRONT
+                    setMatchedProfile(likedProfile);
+                    console.log("LIKED PROFILE = ", likedProfile);
+                    setShowMatchModal(true);
+                    console.log("YOOO");
+                    if (socket && socket.readyState === WebSocket.OPEN) {
+                        socket.send(JSON.stringify({
+                            type:"match",
+                            senderId:userId,
+                            receiverId:likedProfile.user_id,
+                        }))
+                    }
+                    console.log("Liked:", likedProfile.name);
+                } else {
+                    setCurrentIndex((prev) => prev + 1);
                 }
-                console.log("Liked:", likedProfile.name);
             } catch (error) {
                 console.error("Erreur lors du like: ", error);
             }
-            setCurrentIndex((prev) => prev + 1);
         }
     };
 
@@ -108,6 +123,17 @@ const Matchs = () => {
                     </button>
                 </div>
             </div>
+            {showMatchModal && matchedProfile && (
+                <MatchModal
+                    name={matchedProfile.name}
+                    photo={matchedProfile.photo}
+                    onClose={() => {
+                        setShowMatchModal(false);
+                        setMatchedProfile(null);
+                        setCurrentIndex((prev) => prev + 1);
+                    }}
+                />
+            )}
         </div>
     )
 }

@@ -92,7 +92,7 @@ const Swipe = () => {
           {selectedMatch ? (
             <Conversation match={selectedMatch} onBack={handleBackToSwipes} socket={socket} messagesGlobal={messagesGlobal}/>
            ) : (
-           <Matchs />
+           <Matchs socket={socket} />
             )}
         </div>
       </div>

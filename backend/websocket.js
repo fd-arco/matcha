@@ -113,6 +113,89 @@ const initWebSocket = (server) => {
                         }));
                     }
                 }
+                if (data.type === "match") {
+                    const {senderId, receiverId} = data;
+
+                    const result = await pool.query(
+                        `INSERT INTO notifications(user_id, sender_id, type)
+                            VALUES ($1, $2, 'match'), ($2, $1, 'match') RETURNING *`,
+                            [receiverId, senderId]
+                    );
+
+                    const [notifForReceiver, notifForSender] = result.rows;
+
+                    const senderInfo = await pool.query(`
+                        SELECT u.firstname, prof.id AS profile_id
+                        FROM users u
+                        LEFT JOIN profiles prof ON prof.user_id = u.id
+                        WHERE u.id = $1
+                        `, [senderId]);
+
+                    const senderName = senderInfo.rows[0]?.firstname || "Someone";
+                    const senderProfileId = senderInfo.rows[0]?.profile_id;
+
+                    let senderPhoto = null;
+                    if (senderProfileId) {
+                        const photoRes = await pool.query(`
+                            SELECT photo_url FROM profile_photos
+                            WHERE profile_id = $1
+                            ORDER BY uploaded_at ASC
+                            LIMIT 1
+                            `, [senderProfileId]);
+                        senderPhoto = photoRes.rows[0]?.photo_url || null;
+                    }
+
+                    const receiverInfo = await pool.query(`
+                        SELECT u.firstname, prof.id AS profile_id
+                        FROM users u
+                        LEFT JOIN profiles prof ON prof.user_id = u.id
+                        WHERE u.id = $1
+                        `, [receiverId]);
+
+                    const receiverName = receiverInfo.rows[0]?.firstname || "Someone";
+                    const receiverProfileId = receiverInfo.rows[0]?.profile_id;
+
+                    let receiverPhoto = null;
+                    if (receiverProfileId) {
+                        const photoRes = await pool.query(`
+                            SELECT photo_url FROM profile_photos
+                            WHERE profile_id = $1
+                            ORDER BY uploaded_at ASC
+                            LIMIT 1
+                            `, [receiverProfileId]);
+                        receiverPhoto = photoRes.rows[0]?.photo_url || null;
+                    }
+
+                    if (clients.has(receiverId.toString())) {
+                        clients.get(receiverId.toString()).send(JSON.stringify({
+                            type:"newNotification",
+                            category:"matchs",
+                            notification: {
+                                notification_id: notifForReceiver.id,
+                                sender_id: senderId,
+                                sender_name: senderName,
+                                sender_photo: senderPhoto,
+                                is_read: false,
+                                created_at: notifForReceiver.created_at,
+                            }
+                        }))
+                    }
+
+                    if (clients.has(senderId.toString())) {
+                        clients.get(senderId.toString()).send(JSON.stringify({
+                            type:"newNotification",
+                            category:"matchs",
+                            notification: {
+                                notification_id: notifForSender.id,
+                                sender_id:receiverId,
+                                sender_name:receiverName,
+                                sender_photo:receiverPhoto,
+                                is_read:false,
+                                created_at:notifForSender.created_at,
+                            },
+                        }))
+                    }
+                }
             } catch (error) {
                 console.error("Erreur lors de l'envoi du message:", error);
             }

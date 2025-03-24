@@ -447,11 +447,9 @@ app.get('/notifications/:userId', async(req, res) => {
             ORDER BY n.created_at DESC
         `;
 
-        console.log("📌 Requête SQL exécutée :", query);
 
         const result = await pool.query(query, [userId]);
 
-        console.log("🛠 Résultat SQL brut :", result.rows);
 
         if (!result.rows.length) {
             console.warn("⚠️ Aucune notification trouvée pour userId =", userId);
@@ -464,6 +462,40 @@ app.get('/notifications/:userId', async(req, res) => {
         return res.status(500).json({ error: "erreur serveur" });
     }
 });
+
+app.get('/notifications/:userId/matchs', async (req, res) => {
+    const {userId} = req.params;
+
+    try {
+        const query = `
+            SELECT
+                n.id AS notification_id,
+                n.sender_id,
+                u.firstname AS sender_name,
+                n.created_at,
+                p.photo_url AS sender_photo,
+                n.is_read
+            FROM notifications n
+            JOIN users u on u.id = n.sender_id
+            LEFT JOIN profiles prof ON prof.user_id = u.id
+            LEFT JOIN LATERAL (
+                SELECT photo_url
+                FROM profile_photos
+                WHERE profile_id = prof.id
+                ORDER BY uploaded_at ASC
+                LIMIT 1
+            ) p ON true
+            WHERE n.user_id = $1 AND n.type = 'match'
+            ORDER BY n.created_at DESC
+        `;
+
+        const result = await pool.query(query, [userId]);
+        res.json(result.rows);
+    } catch(err) {
+        console.error("Erreur lors du fetch des notifications match", err);
+        res.status(500).json({error:"Erreur serveur"});
+    }
+})
 
 
 app.post('/notifications/read', async(req, res) => {

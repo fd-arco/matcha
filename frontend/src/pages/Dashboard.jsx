@@ -11,6 +11,7 @@ const Dashboard = ({setHasNotification}) => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("views");
     const [messageNotifications, setMessageNotifications] = useState([]);
+    const [matchNotifications, setMatchNotifications] = useState([]);
     const [notifications, setNotifications] = useState({
         views:0,
         likes:0,
@@ -42,6 +43,19 @@ const Dashboard = ({setHasNotification}) => {
     }, [userId]);
 
     useEffect(() => {
+        const fetchMatchNotifications = async() => {
+            try {
+                const res = await fetch(`http://localhost:3000/notifications/${userId}/matchs`);
+                const data = await res.json();
+                setMatchNotifications(data);
+            } catch (err) {
+                console.error("Erreurfetch match notification", err);
+            }
+        }
+        fetchMatchNotifications();
+    }, [userId]);
+
+    useEffect(() => {
         const socket = new WebSocket(`ws://localhost:3000`);
         socket.onopen = () => {
             console.log("WEBSOCKET dashboard connected");
@@ -58,6 +72,9 @@ const Dashboard = ({setHasNotification}) => {
                 }));
                 if (message.category === "messages" && message.notification) {
                     setMessageNotifications(prev => [message.notification, ...prev])
+                }
+                if (message.category === "matchs" && message.notification) {
+                    setMatchNotifications(prev => [message.notification, ...prev]);
                 }
             }
         }
@@ -178,7 +195,7 @@ const Dashboard = ({setHasNotification}) => {
                 <div className="mt-6 p-4 bg-white rounded-lg shadow-md">
                     {activeTab === "views" && <ViewsDashboard/>}
                     {activeTab === "likes" && <LikesDashboard/>}
-                    {activeTab === "matchs" && <MatchsDashboard/>}
+                    {activeTab === "matchs" && <MatchsDashboard notifications={matchNotifications}/>}
                     {activeTab === "messages" && <MessagesDashboard notifications={messageNotifications}/>}
                 </div>
             </div>
