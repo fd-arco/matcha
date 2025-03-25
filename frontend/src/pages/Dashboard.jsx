@@ -13,7 +13,10 @@ const Dashboard = ({setHasNotification}) => {
     const [messageNotifications, setMessageNotifications] = useState([]);
     const [matchNotifications, setMatchNotifications] = useState([]);
     const [likeNotifications, setLikeNotifications] = useState([]);
-    const [viewNotifications, setViewNotifications] = useState([]);
+    const [viewNotifications, setViewNotifications] = useState({
+        received: [],
+        sent: [],
+    });
     const [notifications, setNotifications] = useState({
         views:0,
         likes:0,
@@ -75,7 +78,10 @@ const Dashboard = ({setHasNotification}) => {
             try {
                 const res = await fetch(`http://localhost:3000/notifications/${userId}/views`);
                 const data = await res.json();
-                setViewNotifications(data);
+                setViewNotifications({
+                    received:data.received,
+                    sent:data.sent,
+                });
             } catch (err) {
                 console.error("Erreur fetch view notification", err);
             }
@@ -108,7 +114,15 @@ const Dashboard = ({setHasNotification}) => {
                     setLikeNotifications(prev => [message.notification, ...prev]);
                 }
                 if (message.category === "views" && message.notification) {
-                    setViewNotifications(prev => [message.notification, ...prev]);
+                    setViewNotifications(prev => ({
+                        ...prev,
+                        received: message.notification.sender_id
+                        ? [message.notification, ...(prev.received || [])]
+                        : prev.received,
+                        sent: message.notification.sender_name
+                        ? [message.notification, ...(prev.sent || [])]
+                        : prev.sent
+                    }));
                 }
             }
         }
