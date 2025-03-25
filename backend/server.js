@@ -636,3 +636,55 @@ app.post("/like", async(req,res) => {
     }
 
 })
+
+app.post("/view", async (req, res) => {
+    const {viewerId, viewedId} = req.body;
+
+    try {
+        const existing = await pool.query(
+            `INSERT INTO notifications (user_id, sender_id, type)
+             VALUES ($1, $2, 'view')`,
+             [viewedId, viewerId]
+        );
+
+        if (existing.rows.length > 0) {
+            return res.status(200).json({message:"les 2 utilisateurs se sont deja vus pas de nouvelle"})
+        }
+        res.status(200).json({success:true, message:"View enregistree"});
+    } catch (error) {
+        console.error("Erreur lors de l enregistrement de la view:", error);
+        res.status(500).json({error: "erreur serveur"});
+    }
+})
+
+app.get('/notifications/:userId/views', async(req, res) => {
+    const {userId} = req.params;
+
+    try {
+        const result = await pool.query(`
+            SELECT
+                n.id AS notification_id,
+                n.sender_id,
+                u.firstname AS sender_name,
+                n.created_at,
+                p.photo_url AS sender_photo,
+                n.is_read
+            FROM notifications n
+            JOIN users u ON u.id = n.sender_id
+            LEFT JOIN profiles prof ON prof.user_id = u.id
+            LEFT JOIN LATERAL (
+                SELECT photo_url
+                FROM profile_photos
+                WHERE profile_id = prof.id
+                ORDER BY uploaded_at ASC
+                LIMIT 1
+            ) p ON true
+            WHERE n.user_id = $1 AND n.type = 'view'
+            ORDER BY n.created_at DESC
+            `, [userId]);
+        res.json(result.rows);
+    } catch (error) {
+        console.error("Erreur lors du fetch des notifications views:", err);
+        res.status(500).json({error: "erreur serveur"});
+    }
+})

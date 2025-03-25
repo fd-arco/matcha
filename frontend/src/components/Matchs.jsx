@@ -22,6 +22,31 @@ const Matchs = ({socket}) => {
         fetchProfiles();
     }, [userId]);
 
+    useEffect(() => {
+        const sendView = async () => {
+            if (profiles.length === 0 || currentIndex >= profiles.length) return ;
+            const viewedProfile = profiles[currentIndex];
+            try {
+                await fetch("http://localhost:3000/view", {
+                    method:"POST",
+                    headers:{"Content-type": "application/json"},
+                    body: JSON.stringify({viewerId: userId, viewedId: viewedProfile.user_id})
+                });
+
+                if (socket) {
+                    socket.send(JSON.stringify({
+                        type:"viewNotification",
+                        senderId: userId,
+                        receiverId: viewedProfile.user_id,
+                    }));
+                }
+            } catch (err) {
+                console.error("Erreur lors de l envoie de la notif view: ", err);
+            }
+        }
+        sendView();
+    }, [currentIndex, profiles, userId]);
+
     const handleLike = async () => {
         if (currentIndex < profiles.length) {
             const likedProfile = profiles[currentIndex];

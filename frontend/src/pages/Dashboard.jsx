@@ -13,6 +13,7 @@ const Dashboard = ({setHasNotification}) => {
     const [messageNotifications, setMessageNotifications] = useState([]);
     const [matchNotifications, setMatchNotifications] = useState([]);
     const [likeNotifications, setLikeNotifications] = useState([]);
+    const [viewNotifications, setViewNotifications] = useState([]);
     const [notifications, setNotifications] = useState({
         views:0,
         likes:0,
@@ -70,6 +71,19 @@ const Dashboard = ({setHasNotification}) => {
     }, [userId]);
 
     useEffect(() => {
+        const fetchViewNotifications = async() => {
+            try {
+                const res = await fetch(`http://localhost:3000/notifications/${userId}/views`);
+                const data = await res.json();
+                setViewNotifications(data);
+            } catch (err) {
+                console.error("Erreur fetch view notification", err);
+            }
+        }
+        fetchViewNotifications();
+    }, [userId])
+
+    useEffect(() => {
         const socket = new WebSocket(`ws://localhost:3000`);
         socket.onopen = () => {
             console.log("WEBSOCKET dashboard connected");
@@ -92,6 +106,9 @@ const Dashboard = ({setHasNotification}) => {
                 }
                 if (message.category === "likes" && message.notification) {
                     setLikeNotifications(prev => [message.notification, ...prev]);
+                }
+                if (message.category === "views" && message.notification) {
+                    setViewNotifications(prev => [message.notification, ...prev]);
                 }
             }
         }
@@ -210,7 +227,7 @@ const Dashboard = ({setHasNotification}) => {
                 </div>
 
                 <div className="mt-6 p-4 bg-white rounded-lg shadow-md">
-                    {activeTab === "views" && <ViewsDashboard/>}
+                    {activeTab === "views" && <ViewsDashboard notifications={viewNotifications}/>}
                     {activeTab === "likes" && <LikesDashboard notifications={likeNotifications}/>}
                     {activeTab === "matchs" && <MatchsDashboard notifications={matchNotifications}/>}
                     {activeTab === "messages" && <MessagesDashboard notifications={messageNotifications}/>}
