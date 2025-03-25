@@ -12,7 +12,10 @@ const Dashboard = ({setHasNotification}) => {
     const [activeTab, setActiveTab] = useState("views");
     const [messageNotifications, setMessageNotifications] = useState([]);
     const [matchNotifications, setMatchNotifications] = useState([]);
-    const [likeNotifications, setLikeNotifications] = useState([]);
+    const [likeNotifications, setLikeNotifications] = useState({
+        received:[],
+        sent:[],
+    });
     const [viewNotifications, setViewNotifications] = useState({
         received: [],
         sent: [],
@@ -52,7 +55,11 @@ const Dashboard = ({setHasNotification}) => {
             try {
                 const res = await fetch(`http://localhost:3000/notifications/${userId}/likes`);
                 const data = await res.json();
-                setLikeNotifications(data);
+                console.log("LIKES FETCHED:", data);
+                setLikeNotifications({
+                    received:data.received,
+                    sent:data.sent,
+                });
             } catch (error) {
                 console.error("erreur fetch like notification", error);
             }
@@ -111,7 +118,10 @@ const Dashboard = ({setHasNotification}) => {
                     setMatchNotifications(prev => [message.notification, ...prev]);
                 }
                 if (message.category === "likes" && message.notification) {
-                    setLikeNotifications(prev => [message.notification, ...prev]);
+                    setLikeNotifications(prev => ({
+                        ...prev,
+                        received: [message.notification, ...(prev.received || [])]
+                    }));
                 }
                 if (message.category === "views" && message.notification) {
                     setViewNotifications(prev => ({
