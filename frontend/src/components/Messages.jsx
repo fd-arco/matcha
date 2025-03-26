@@ -78,7 +78,7 @@ const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal, unreadC
 
         setMatches(prevMatches => {
             const updated = prevMatches.map(m => {
-                if (m.user_id === lastMessage.sender_id || m.user_id === lastMessage.receiver_id) {
+                if (Number(m.user_id) === Number(lastMessage.sender_id) || Number(m.user_id) === Number(lastMessage.receiver_id)) {
                     console.log("HE PASSE ")
                     let updateMatch = {...m};
                     updateMatch.last_message = lastMessage.content;

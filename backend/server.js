@@ -562,7 +562,15 @@ app.get("/notifications/:userId/likes", async (req, res) => {
                 l.liked_id AS sender_id,
                 u.firstname AS sender_name,
                 l.created_at,
-                p.photo_url AS sender_photo
+                p.photo_url AS sender_photo,
+            (
+                EXISTS (
+                SELECT 1 FROM matches
+                WHERE
+                    (user1_id = $1 AND user2_id = l.liked_id) OR
+                    (user1_id = l.liked_id AND user2_id = $1)
+                )
+            ) AS is_matched
             FROM likes l
             JOIN users u ON u.id = l.liked_id
             LEFT JOIN profiles prof ON prof.user_id = u.id
@@ -665,6 +673,12 @@ app.post("/like", async(req,res) => {
             `INSERT INTO likes (liker_id, liked_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
             [likerId, likedId]
         );
+        
+        await pool.query(
+            `INSERT INTO notifications (user_id, sender_id, type)
+             VALUES ($1, $2, 'like')`,
+             [likedId, likerId]
+        );
 
         const checkMatch = await pool.query(
             `SELECT COUNT(*) AS count FROM likes 
@@ -680,12 +694,6 @@ app.post("/like", async(req,res) => {
             );
             console.log("Match cree");
             return res.json({match:true, message:"C'est un match!"});
-        } else {
-            await pool.query(
-                `INSERT INTO notifications (user_id, sender_id, type)
-                 VALUES ($1, $2, 'like')`,
-                 [likedId, likerId]
-            );
         }
         console.log("Like enregistre");
         res.json({match:false, message:"Like enregistre"});
@@ -770,4 +778,65 @@ app.get('/notifications/:userId/views', async(req, res) => {
         console.error("Erreur lors du fetch des notifications views:", err);
         res.status(500).json({error: "erreur serveur"});
     }
+})
+
+app.post("/unlike", async (req, res) => {
+    const {user1, user2} = req.body;
+
+    try {
+        await pool.query(
+            `DELETE FROM likes WHERE liker_id = $1 and liked_id = $2`,
+            [user1, user2]
+        );
+
+        await pool.query(
+            `DELETE FROM notifications WHERE sender_id = $1 AND user_id = $2 AND type='like'`,
+            [user1, user2]
+        );
+
+        res.status(200).json({success: true, message:"unlike effectue"});
+    } catch (err) {
+        console.error("Erreur lors du unlike", err);
+        res.status(500).json({success:false, message:"ewrreur serveur"});
+    }
+});
+
+app.post("/unmatch", async(req, res) => {
+    const {user1, user2} = req.body;
+
+    try {
+        await pool.query(
+            `DELETE FROM matches
+             WHERE (user1_id = $1 AND user2_id = $2)
+             OR (user1_id = $2 AND user2_id = $1)`,
+            [user1, user2]);
+
+        await pool.query(
+            `DELETE FROM likes
+             WHERE (liker_id = $1 AND liked_id = $2)
+             OR (liker_id = $2 AND liked_id = $1)
+            `, [user1, user2]
+        );
+
+        await pool.query(`
+            DELETE FROM notifications
+            WHERE type = 'like'
+                AND (
+                (user_id = $1 AND sender_id = $2)
+                OR (user_id = $2 AND sender_id = $1)
+                )
+                `, [user1, user2]);
+
+        await pool.query(
+            `DELETE FROM notifications
+             WHERE type = 'match' AND (
+             (user_id = $1 AND sender_id = $2) OR
+            (user_id = $2 AND sender_id = $1)
+            )`, [user1, user2])
+            res.status(200).json({success:true, message:"Unmatch effectue avec succes"});
+    } catch (error) {
+        console.error("erreur lors du unmatch: ", error);
+        res.status(500).json({success:false, message:"erreur serveur lors du unmatch"});
+    } 
+
 })

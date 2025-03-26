@@ -45,7 +45,7 @@ const Swipe = () => {
 
       newSocket.onmessage = (event) => {
         const message = JSON.parse(event.data);
-
+        console.log("📦 [WS] Message reçu :", message);
         if (message.type === "newMessage") {
           console.log("DANS WEBSOCKET SWIPE NEWMESSAGE")
           const newMessage = message.message;

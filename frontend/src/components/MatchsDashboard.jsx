@@ -1,7 +1,28 @@
 import React from "react";
 
-const MatchsDashboard = ({notifications}) => {
+const MatchsDashboard = ({notifications, setMatchNotifications, userId}) => {
     console.log("NOTIFICATIONS = ", notifications);
+
+    const handleUnmatch = async(notif) => {
+        try {
+            await fetch(`http://localhost:3000/unmatch`, {
+                method:"POST",
+                headers: {
+                    "Content-type": "application/json",
+                },
+                body:JSON.stringify({
+                    user1:userId,
+                    user2:notif.sender_id,
+                }),
+            });
+            setMatchNotifications((prev) =>
+                prev.filter((n) => n.notification_id !== notif.notification_id)
+            );
+        } catch (err) {
+            console.error("error lors du unmatch:", err);
+        }
+    }
+
     return (
         <div className="p-4 max-h-[800px] overflow-y-auto">
             <h2 className="text-xl font-semibold mb-2">Matchs</h2>
@@ -24,13 +45,23 @@ const MatchsDashboard = ({notifications}) => {
                                         {new Date(notif.created_at).toLocaleString()}
                                     </p>
                                 </div>
-                                {notif.sender_photo && (
-                                    <img
+
+                                <div className="flex items-center gap-4">
+                                    <button
+                                        className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+                                        onClick={() => handleUnmatch(notif)}
+                                    >
+                                        Unmatch
+                                    </button>
+
+                                    {notif.sender_photo && (
+                                        <img
                                         src={`http://localhost:3000${notif.sender_photo}`}
                                         alt={notif.sender_name}
                                         className="w-12 h-12 rounded-full object-cover border ml-4"
-                                    />
-                                )}
+                                        />
+                                    )}
+                                </div>
                             </div>
                         </li>
                     ))}

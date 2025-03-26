@@ -252,8 +252,8 @@ const Dashboard = ({setHasNotification}) => {
 
                 <div className="mt-6 p-4 bg-white rounded-lg shadow-md">
                     {activeTab === "views" && <ViewsDashboard notifications={viewNotifications}/>}
-                    {activeTab === "likes" && <LikesDashboard notifications={likeNotifications}/>}
-                    {activeTab === "matchs" && <MatchsDashboard notifications={matchNotifications}/>}
+                    {activeTab === "likes" && <LikesDashboard notifications={likeNotifications} setLikeNotifications={setLikeNotifications} userId={userId}/>}
+                    {activeTab === "matchs" && <MatchsDashboard notifications={matchNotifications} setMatchNotifications={setMatchNotifications} userId={userId}/>}
                     {activeTab === "messages" && <MessagesDashboard notifications={messageNotifications}/>}
                 </div>
             </div>
