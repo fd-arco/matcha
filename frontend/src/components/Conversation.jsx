@@ -26,13 +26,16 @@ const Conversation = ({match, onBack, socket, messagesGlobal}) => {
         if (!socket) return;
         if (!messagesGlobal || messagesGlobal.length === 0) return;
         const lastMessage = messagesGlobal[messagesGlobal.length - 1];
-        console.log("LAST MESSAGE : ", lastMessage);
-        console.log("MATCH.USER_ID =", match.user_id);
-        console.log("USER_ID =", userId);
         const userIdInt = parseInt(userId, 10);
+        const matchUserIdInt = parseInt(match.user_id, 10);
+        console.log("🔍 LAST MESSAGE :", lastMessage);
+        console.log("📌 match.user_id =", match.user_id, "| type:", typeof match.user_id);
+        console.log("👤 userIdInt =", userIdInt, "| type:", typeof userIdInt);
+        console.log("✉️ lastMessage.sender_id =", lastMessage.sender_id, "| type:", typeof lastMessage.sender_id);
+        console.log("✉️ lastMessage.receiver_id =", lastMessage.receiver_id, "| type:", typeof lastMessage.receiver_id);
         if (
-            (lastMessage.sender_id === match.user_id && lastMessage.receiver_id === userIdInt) ||
-            (lastMessage.sender_id === userIdInt && lastMessage.receiver_id === match.user_id)
+            (lastMessage.sender_id === matchUserIdInt && lastMessage.receiver_id === userIdInt) ||
+            (lastMessage.sender_id === userIdInt && lastMessage.receiver_id === matchUserIdInt)
         ) {
             console.log("DANS USEEFFECT CONVERSATION");
             setMessages(prevMessages => [...prevMessages, lastMessage]);

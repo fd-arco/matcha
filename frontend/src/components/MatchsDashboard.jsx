@@ -1,7 +1,17 @@
 import React from "react";
+import {useState} from "react";
+import ProfileModal from "./ProfileModal";
 
 const MatchsDashboard = ({notifications, setMatchNotifications, userId}) => {
-    console.log("NOTIFICATIONS = ", notifications);
+    const [selectedProfile, setSelectedProfile] = useState(null);
+    
+    const handleImageClick = (notif) => {
+        setSelectedProfile({
+            userId: notif.sender_id,
+            name: notif.sender_name,
+            photo:notif.sender_photo,
+        });
+    }
 
     const handleUnmatch = async(notif) => {
         try {
@@ -58,7 +68,8 @@ const MatchsDashboard = ({notifications, setMatchNotifications, userId}) => {
                                         <img
                                         src={`http://localhost:3000${notif.sender_photo}`}
                                         alt={notif.sender_name}
-                                        className="w-12 h-12 rounded-full object-cover border ml-4"
+                                        className="w-12 h-12 rounded-full object-cover border ml-4 cursor-pointer"
+                                        onClick={() => handleImageClick(notif)}
                                         />
                                     )}
                                 </div>
@@ -66,8 +77,13 @@ const MatchsDashboard = ({notifications, setMatchNotifications, userId}) => {
                         </li>
                     ))}
                 </ul>
-            )} 
-            <ul></ul>
+            )}
+            {selectedProfile && (
+                <ProfileModal
+                    userId={selectedProfile.userId}
+                    onClose={() => setSelectedProfile(null)}
+                />
+            )}
         </div>
     );
 };

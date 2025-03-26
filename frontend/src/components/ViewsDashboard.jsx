@@ -1,7 +1,19 @@
 import React from "react";
+import { useState } from "react";
+import ProfileModal from "./ProfileModal";
 
-const ViewsDashboard = ({ notifications }) => {
+const ViewsDashboard = ({ notifications, userId }) => {
     const { received = [], sent = [] } = notifications;
+    const [selectedProfile, setSelectedProfile] = useState(null);
+
+    const handleImageClick = (notif, isSent) => {
+        const otherUserId = isSent ? notif.receiver_id : notif.sender_id;
+        setSelectedProfile({
+            userId: otherUserId,
+            name: notif.sender_name,
+            photo: notif.sender_photo,
+        })
+    }
     console.log("SENT = ", sent);
     return (
         <div className="p-4 max-h-[800px] overflow-y-auto">
@@ -29,7 +41,8 @@ const ViewsDashboard = ({ notifications }) => {
                                         <img
                                             src={`http://localhost:3000${notif.sender_photo}`}
                                             alt={notif.sender_name}
-                                            className="w-12 h-12 rounded-full object-cover border ml-4"
+                                            className="w-12 h-12 rounded-full object-cover border ml-4 cursor-pointer"
+                                            onClick={() => handleImageClick(notif, false)}
                                         />
                                     )}
                                 </div>
@@ -51,7 +64,7 @@ const ViewsDashboard = ({ notifications }) => {
                                 <div className="flex justify-between items-center">
                                     <div>
                                         <p className="font-semibold text-gray-900">
-                                            You viewed {notif.sender_name}'s profile
+                                            You viewed {notif.receiver_name}'s profile
                                         </p>
                                         <p className="text-sm text-gray-500 mt-1">
                                             {new Date(notif.created_at).toLocaleString()}
@@ -59,9 +72,10 @@ const ViewsDashboard = ({ notifications }) => {
                                     </div>
                                     {notif.sender_photo && (
                                         <img
-                                            src={`http://localhost:3000${notif.sender_photo}`}
-                                            alt={notif.sender_name}
-                                            className="w-12 h-12 rounded-full object-cover border ml-4"
+                                            src={`http://localhost:3000${notif.receiver_photo}`}
+                                            alt={notif.receiver_name}
+                                            className="w-12 h-12 rounded-full object-cover border ml-4 cursor-pointer"
+                                            onClick={() => handleImageClick(notif, true)}
                                         />
                                     )}
                                 </div>
@@ -70,6 +84,12 @@ const ViewsDashboard = ({ notifications }) => {
                     </ul>
                 )}
             </section>
+            {selectedProfile && (
+                <ProfileModal
+                    userId={selectedProfile.userId}
+                    onClose={() => setSelectedProfile(null)}
+                />
+            )}
         </div>
     );
 };

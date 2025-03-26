@@ -1,6 +1,19 @@
 import React from "react";
+import { useState } from "react";
+import ProfileModal from "./ProfileModal";
 
 const MessagesDashboard = ({notifications}) => {
+
+    const [selectedProfile, setSelectedProfile] = useState(null);
+
+    const handleImageClick = (notif) => {
+        setSelectedProfile({
+            userId: notif.sender_id,
+            name: notif.sender_name,
+            photo:notif.sender_photo,
+        });
+    }
+
     return (
         <div className="p-4 max-h-[800px] overflow-y-auto">
             <h2 className="text-xl font-semibold mb-2">Messages</h2>
@@ -30,15 +43,21 @@ const MessagesDashboard = ({notifications}) => {
                                     <img
                                         src={`http://localhost:3000${notif.sender_photo}`}
                                         alt="sender"
-                                        className="w-12 h-12 rounded-full object-cover border ml-4"
+                                        className="w-12 h-12 rounded-full object-cover border ml-4 cursor-pointer"
+                                        onClick={() => handleImageClick(notif)}
                                     />
                                 )}
                             </div>
                         </li>
                     ))}
                 </ul>
+            )}
+            {selectedProfile && (
+                <ProfileModal
+                    userId={selectedProfile.userId}
+                    onClose={() => setSelectedProfile(null)}
+                />
             )} 
-            <ul></ul>
         </div>
     );
 };

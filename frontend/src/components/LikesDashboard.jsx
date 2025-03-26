@@ -1,9 +1,11 @@
 import React from "react";
-
+import ProfileModal from "./ProfileModal";
+import { useState } from "react";
 const LikesDashboard = ({ notifications, setLikeNotifications, userId}) => {
     const { received = [], sent = [] } = notifications;
-    const handleUnlike = async(notif) => {
+    const [selectedProfile, setSelectedProfile] = useState(null);
 
+    const handleUnlike = async(notif) => {
         try {
             await fetch(`http://localhost:3000/unlike`, {
                 method:"POST",
@@ -21,6 +23,15 @@ const LikesDashboard = ({ notifications, setLikeNotifications, userId}) => {
             console.error("erreur lors de unmatch/unlike", err);
         }
     }
+
+    const handleImageClick = (notif) => {
+        setSelectedProfile({
+            userId: notif.sender_id,
+            name: notif.sender_name,
+            photo:notif.sender_photo,
+        });
+    }
+
     return (
         <div className="p-4 max-h-[800px] overflow-y-auto">
             <h2 className="text-xl font-semibold mb-4">❤️ Likes</h2>
@@ -47,7 +58,8 @@ const LikesDashboard = ({ notifications, setLikeNotifications, userId}) => {
                                         <img
                                             src={`http://localhost:3000${notif.sender_photo}`}
                                             alt={notif.sender_name}
-                                            className="w-12 h-12 rounded-full object-cover border ml-4"
+                                            className="w-12 h-12 rounded-full object-cover border ml-4 cursor-pointer"
+                                            onClick={() => handleImageClick(notif)}
                                         />
                                     )}
                                 </div>
@@ -92,7 +104,8 @@ const LikesDashboard = ({ notifications, setLikeNotifications, userId}) => {
                                         <img
                                         src={`http://localhost:3000${notif.sender_photo}`}
                                         alt={notif.sender_name}
-                                        className="w-12 h-12 rounded-full object-cover border ml-4"
+                                        className="w-12 h-12 rounded-full object-cover border ml-4 cursor-pointer"
+                                        onClick={() => handleImageClick(notif)}
                                         />
                                     )}
                                     </div>
@@ -102,6 +115,13 @@ const LikesDashboard = ({ notifications, setLikeNotifications, userId}) => {
                     </ul>
                 )}
             </section>
+
+            {selectedProfile && (
+                <ProfileModal
+                    userId={selectedProfile.userId}
+                    onClose={() => setSelectedProfile(null)}
+                />
+            )}
         </div>
     );
 };

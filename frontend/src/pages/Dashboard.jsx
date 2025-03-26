@@ -26,7 +26,6 @@ const Dashboard = ({setHasNotification}) => {
         matchs:0,
         messages:0,
     })
-
     const userId = localStorage.getItem("userId");
 
     useEffect(() => {
@@ -124,16 +123,28 @@ const Dashboard = ({setHasNotification}) => {
                     }));
                 }
                 if (message.category === "views" && message.notification) {
+                    const isSender = message.notification.sender_id === Number(userId);
+                
                     setViewNotifications(prev => ({
-                        ...prev,
-                        received: message.notification.sender_id
-                        ? [message.notification, ...(prev.received || [])]
-                        : prev.received,
-                        sent: message.notification.sender_name
-                        ? [message.notification, ...(prev.sent || [])]
-                        : prev.sent
+                        received: !isSender
+                            ? [message.notification, ...(prev.received || [])]
+                            : prev.received,
+                        sent: isSender
+                            ? [message.notification, ...(prev.sent || [])]
+                            : prev.sent
                     }));
                 }
+                // if (message.category === "views" && message.notification) {
+                //     setViewNotifications(prev => ({
+                //         ...prev,
+                //         received: message.notification.sender_id
+                //         ? [message.notification, ...(prev.received || [])]
+                //         : prev.received,
+                //         sent: message.notification.sender_name
+                //         ? [message.notification, ...(prev.sent || [])]
+                //         : prev.sent
+                //     }));
+                // }
             }
         }
 
@@ -251,7 +262,7 @@ const Dashboard = ({setHasNotification}) => {
                 </div>
 
                 <div className="mt-6 p-4 bg-white rounded-lg shadow-md">
-                    {activeTab === "views" && <ViewsDashboard notifications={viewNotifications}/>}
+                    {activeTab === "views" && <ViewsDashboard notifications={viewNotifications} userId={userId}/>}
                     {activeTab === "likes" && <LikesDashboard notifications={likeNotifications} setLikeNotifications={setLikeNotifications} userId={userId}/>}
                     {activeTab === "matchs" && <MatchsDashboard notifications={matchNotifications} setMatchNotifications={setMatchNotifications} userId={userId}/>}
                     {activeTab === "messages" && <MessagesDashboard notifications={messageNotifications}/>}

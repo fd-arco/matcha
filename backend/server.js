@@ -748,26 +748,64 @@ app.get('/notifications/:userId/views', async(req, res) => {
             `, [userId]),
 
             pool.query(`
-            SELECT
-                n.id AS notification_id,
-                n.sender_id,
-                u.firstname AS sender_name,
-                n.created_at,
-                p.photo_url AS sender_photo,
-                n.is_read
-            FROM notifications n
-            JOIN users u ON u.id = n.user_id
-            LEFT JOIN profiles prof ON prof.user_id = u.id
-            LEFT JOIN LATERAL (
-                SELECT photo_url
-                FROM profile_photos
-                WHERE profile_id = prof.id
-                ORDER BY uploaded_at ASC
-                LIMIT 1
-            ) p ON true
-            WHERE n.sender_id = $1 AND n.type = 'view'
-            ORDER BY n.created_at DESC
+                SELECT
+                    n.id AS notification_id,
+                    n.sender_id,
+                    sender_u.firstname AS sender_name,
+                    sender_p.photo_url AS sender_photo,
+                    n.user_id AS receiver_id,
+                    receiver_u.firstname AS receiver_name,
+                    receiver_p.photo_url AS receiver_photo,
+                    n.created_at,
+                    n.is_read
+                FROM notifications n
+                -- Infos du sender
+                JOIN users sender_u ON sender_u.id = n.sender_id
+                LEFT JOIN profiles sender_prof ON sender_prof.user_id = sender_u.id
+                LEFT JOIN LATERAL (
+                    SELECT photo_url
+                    FROM profile_photos
+                    WHERE profile_id = sender_prof.id
+                    ORDER BY uploaded_at ASC
+                    LIMIT 1
+                ) sender_p ON true
+            
+                -- Infos du receiver
+                JOIN users receiver_u ON receiver_u.id = n.user_id
+                LEFT JOIN profiles receiver_prof ON receiver_prof.user_id = receiver_u.id
+                LEFT JOIN LATERAL (
+                    SELECT photo_url
+                    FROM profile_photos
+                    WHERE profile_id = receiver_prof.id
+                    ORDER BY uploaded_at ASC
+                    LIMIT 1
+                ) receiver_p ON true
+            
+                WHERE n.sender_id = $1 AND n.type = 'view'
+                ORDER BY n.created_at DESC
             `, [userId])
+
+            // pool.query(`
+            // SELECT
+            //     n.id AS notification_id,
+            //     n.sender_id,
+            //     u.firstname AS sender_name,
+            //     n.created_at,
+            //     p.photo_url AS sender_photo,
+            //     n.is_read
+            // FROM notifications n
+            // JOIN users u ON u.id = n.user_id
+            // LEFT JOIN profiles prof ON prof.user_id = u.id
+            // LEFT JOIN LATERAL (
+            //     SELECT photo_url
+            //     FROM profile_photos
+            //     WHERE profile_id = prof.id
+            //     ORDER BY uploaded_at ASC
+            //     LIMIT 1
+            // ) p ON true
+            // WHERE n.sender_id = $1 AND n.type = 'view'
+            // ORDER BY n.created_at DESC
+            // `, [userId])
         ]);
 
         res.json({
@@ -839,4 +877,49 @@ app.post("/unmatch", async(req, res) => {
         res.status(500).json({success:false, message:"erreur serveur lors du unmatch"});
     } 
 
+})
+
+app.get("/modalprofile/:userId", async(req, res) => {
+    const {userId} = req.params;
+
+    try {
+        const userProfile = await pool.query(`
+            SELECT
+                u.firstname,
+                prof.age,
+                prof.gender,
+                prof.interested_in,
+                prof.looking_for,
+                prof.passions,
+                prof.bio,
+                prof.dob,
+                prof.name,
+                prof.id AS profile_id
+            FROM profiles prof
+            JOIN users u ON u.id = prof.user_id
+            WHERE prof.user_id = $1
+            `, [userId]);
+
+        if (userProfile.rows.length === 0) {
+            return res.status(404).json({error:"Profil introuvable"});
+        }
+        const profile = userProfile.rows[0];
+
+        const photoQuery = await pool.query(`
+            SELECT photo_url
+            FROM profile_photos
+            WHERE profile_id = $1
+            ORDER BY uploaded_at ASC
+            `, [profile.profile_id]);
+
+        const photos = photoQuery.rows.map(p => p.photo_url);
+
+        res.json({
+            ...profile,
+            photos
+        });
+    } catch (err) {
+        console.error("Erreur recuperation modal profil: ", err);
+        res.status(500).json({error: "Erreur serveur modal profile"});
+    }
 })
