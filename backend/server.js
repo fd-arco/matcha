@@ -11,6 +11,7 @@ require('dotenv').config({ path: './.env' });
 const initWebSocket = require("./websocket");
 const http = require("http");
 const { queryObjects } = require('v8');
+const { user } = require('pg/lib/defaults');
 
 
 const server = http.createServer(app);
@@ -921,5 +922,82 @@ app.get("/modalprofile/:userId", async(req, res) => {
     } catch (err) {
         console.error("Erreur recuperation modal profil: ", err);
         res.status(500).json({error: "Erreur serveur modal profile"});
+    }
+})
+
+app.get("/get-profile/:userId", async(req, res) => {
+    try {
+        const {userId} = req.params;
+        const profileResult = await pool.query(
+            `SELECT * FROM profiles WHERE user_id = $1`, [userId]
+        );
+
+        if (profileResult.rows.length === 0) {
+            return res.status(404).json({error: 'Profile not found'});
+        };
+
+        const profile = profileResult.rows[0];
+
+        const photoResult = await pool.query(
+            `SELECT photo_url FROM profile_photos WHERE profile_id =$1`, [profile.id]
+        );
+
+        profile.photos = photoResult.rows.map(photo => photo.photo_url);
+        res.json(profile);
+    } catch (err) {
+        console.error("Erreur lors de la recuperation du profile", err);
+        res.status(500).json({error: 'error servor get-profile for update'});
+    }
+})
+
+app.put("/edit-profile/:userId", upload.array("photos", 6), async(req, res) => {
+    try {
+        const {userId} = req.params;
+        const {name, dob, gender, interestedIn, lookingFor, bio, passions} = req.body;
+
+        const age = calculateAge(dob);
+        let passionArray = [];
+
+        if (passions) {
+            try {
+                passionArray = JSON.parse(passions);
+            } catch (error) {
+                console.error("erreur json parse passions:", error);
+            }
+        }
+
+        await pool.query(
+            `UPDATE profiles SET name = $1, dob = $2, age=$3, gender=$4, interested_in=$5, looking_for=$6, passions=$7, bio=$8 WHERE user_id = $9`,
+            [name, dob, age, gender, interestedIn, lookingFor, passionArray, bio, userId]
+        );
+
+        const profileRes = await pool.query(
+            `SELECT id FROM profiles WHERE user_id = $1`, 
+            [userId]
+        );
+        const profileId = profileRes.rows[0]?.id;
+
+        console.log("🧩 profileId trouvé:", profileId);
+
+        if (!profileId) {
+            return res.status(400).json({ error: "Profile not found for user" });
+        }
+
+        if (req.files) {
+            const photosUrls = req.files.map(file => `/uploads/${file.filename}`);
+
+            await pool.query(`DELETE FROM profile_photos WHERE profile_id = (SELECT id FROM profiles WHERE user_id=$1)`, [userId]);
+
+            for (const photoUrl of photosUrls) {
+                await pool.query(
+                    `INSERT INTO profile_photos (profile_id, photo_url) VALUES ((SELECT id FROM profiles WHERE user_id = $1), $2)`,
+                    [userId, photoUrl]
+                );
+            }
+        }
+        res.status(200).json({message:"Profile updated successfully!"});
+    } catch (err) {
+        console.error("error during updating profile:", err);
+        res.status(500).json({error:"Error servor during updating profile"});
     }
 })

@@ -3,7 +3,6 @@ import {motion, AnimatePresence} from "framer-motion";
 
 const MatchModal = ({name, photo, onClose}) => {
 
-    console.log("JE passe bien dans matchmodal");
     return (
         <AnimatePresence>
             <motion.div

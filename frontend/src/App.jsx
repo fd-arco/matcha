@@ -10,7 +10,7 @@ import CreateProfil from "./pages/CreateProfil.jsx"
 import Swipe from "./pages/Swipe.jsx";
 import Profile from "./pages/Profile.jsx"
 import Dashboard from './pages/Dashboard.jsx';
-import Settings from './pages/Settings.jsx';
+import SettingsPage from './pages/SettingsPage.jsx';
 
 const router = createBrowserRouter([
     {path: '/user', element: <TestUser/>},
@@ -21,7 +21,7 @@ const router = createBrowserRouter([
     {path: '/swipe', element: <Swipe />},
     {path: '/profile', element: <Profile />},
     {path: '/dashboard', element: <Dashboard />},
-    {path: '/settings', element: <Settings />}
+    {path: '/settingsPage', element: <SettingsPage/>}
 ]);
 
 function Homepage(){

@@ -48,7 +48,7 @@ const Bandeau = ({hasNotification}) => {
                     )}
                </button>
                <button
-                    onClick={() => navigate("/settings")}
+                    onClick={() => navigate("/settingsPage")}
                     className="p-2 rounded-full hover:bg-gray-100 transition">
                     <Settings size={25} className="text-white hover:text-gray-300" />
                 </button>
