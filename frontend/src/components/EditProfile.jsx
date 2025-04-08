@@ -13,7 +13,8 @@ export default function EditProfile() {
     });
     const [selectedPassions, setSelectedPassions] = useState([]);
     const [selectedValue, setSelectedValue] = useState("");
-    const [photos, setPhotos] = useState([]);
+    const [newPhotos, setNewPhotos] = useState([]);
+    const [existingPhotos, setExistingPhotos] = useState([]);
     const [formErrors, setFormErrors] = useState({});
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
@@ -52,7 +53,7 @@ export default function EditProfile() {
                     }
 
                     setSelectedPassions(passionsArray || []);
-                    setPhotos(data.photos || []);
+                    setExistingPhotos(data.photos || []);
                 } else {
                     console.error("Failed to fetch profile data");
                 }
@@ -77,7 +78,7 @@ export default function EditProfile() {
     };
 
     const handleUploadPhoto = async (event) => {
-        if (photos.length >= 6) {
+        if (existingPhotos.length + newPhotos.length >= 6) {
             alert("You can only upload up to 6 photos.");
             return;
         }
@@ -86,11 +87,16 @@ export default function EditProfile() {
         if (!file) return;
 
         const photoUrl = URL.createObjectURL(file);
-        setPhotos([...photos, {preview: photoUrl, file}]);
+        setNewPhotos([...newPhotos, {preview: photoUrl, file}]);
+        event.target.value = null;
     };
 
-    const handleRemovePhoto = (index) => {
-        setPhotos(photos.filter((_, i) => i !== index));
+    const handleRemovePhoto = (index, from = 'existing') => {
+        if (from === 'existing') {
+            setExistingPhotos(existingPhotos.filter((_, i) => i !== index));
+        } else {
+            setNewPhotos(newPhotos.filter((_, i) => i !== index));
+        }
     };
 
     const handleSubmit = async (event) => {
@@ -132,7 +138,7 @@ export default function EditProfile() {
         if (selectedPassions.length === 0) {
             errors.passions = "Select at least one passion.";
         }
-        if (photos.length === 0) {
+        if (existingPhotos.length + newPhotos.length === 0) {
             errors.photos = "Please upload at least one photo.";
         }
 
@@ -151,8 +157,9 @@ export default function EditProfile() {
         finalFormData.append("lookingFor", lookingFor);
         finalFormData.append("bio", bio);
         finalFormData.append("passions", JSON.stringify(selectedPassions));
+        finalFormData.append("existingPhotos", JSON.stringify(existingPhotos));
 
-        photos.forEach((photo) => {
+        newPhotos.forEach((photo) => {
             finalFormData.append("photos", photo.file);
         });
 
@@ -387,7 +394,7 @@ export default function EditProfile() {
                     <div className="w-full md:w-[48%] flex flex-col">
                         <h2 className={`text-2xl font-medium mb-4`}>Upload your photos (max 6)</h2>
                         {formErrors.photos && (<p className="text-red-500 text-sm mt-1 mb-3">{formErrors.photos}</p>)}
-                        {photos.length === 0 && (
+                        {existingPhotos.length + newPhotos.length === 0 && (
                             <div className="flex flex-col flex-grow items-center justify-center">
                                 <div className="flex-grow flex items-center justify-center">
                                     <img 
@@ -403,10 +410,13 @@ export default function EditProfile() {
                                 </div>
                             </div>
                         )}
-                        {photos.length > 0 && (
+                        {existingPhotos.length + newPhotos.length > 0 && (
                             <div className="grid grid-cols-2 gap-2 flex-grow">
-                                {photos.map((photo, index) => {
-                                    const photoUrl = typeof photo === "string" ? photo : photo.preview 
+                                {[...existingPhotos, ...newPhotos].map((photo, index) => {
+                                    const isFromExisting = index < existingPhotos.length;
+                                    const photoUrl = isFromExisting
+                                    ? photo
+                                    : photo.preview
                                     const isAbsolute = photoUrl.startsWith("blob:") || photoUrl.startsWith("http://") || photoUrl.startsWith("https://");
                                     const fullUrl = isAbsolute ? photoUrl : `http://localhost:3000${photoUrl}`;
                                     console.log(`Image URL ${index}:`, fullUrl);
@@ -414,7 +424,7 @@ export default function EditProfile() {
                                         <div key={index} className="relative">
                                         <img src={fullUrl} alt={`Uploaded ${index}`} className="w-full h-60 object-cover rounded-lg" />
                                         <button 
-                                            onClick={() => handleRemovePhoto(index)}
+                                            onClick={() => handleRemovePhoto(index, isFromExisting ? 'existing' : 'new')}
                                             className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center"
                                         >
                                             ✖
@@ -424,7 +434,7 @@ export default function EditProfile() {
                                 })} 
                             </div>
                         )}
-                        {photos.length < 6 && (
+                        {existingPhotos.length + newPhotos.length < 6 && (
                             <div className="mt-4">
                                 <input 
                                     type="file" 

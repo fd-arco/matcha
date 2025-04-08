@@ -953,7 +953,7 @@ app.get("/get-profile/:userId", async(req, res) => {
 app.put("/edit-profile/:userId", upload.array("photos", 6), async(req, res) => {
     try {
         const {userId} = req.params;
-        const {name, dob, gender, interestedIn, lookingFor, bio, passions} = req.body;
+        const {name, dob, gender, interestedIn, lookingFor, bio, passions, existingPhotos} = req.body;
 
         const age = calculateAge(dob);
         let passionArray = [];
@@ -966,32 +966,50 @@ app.put("/edit-profile/:userId", upload.array("photos", 6), async(req, res) => {
             }
         }
 
+        const photosToKeep = existingPhotos ? JSON.parse(existingPhotos) : [];
+        console.log("📸 photosToKeep =", photosToKeep);
+
         await pool.query(
             `UPDATE profiles SET name = $1, dob = $2, age=$3, gender=$4, interested_in=$5, looking_for=$6, passions=$7, bio=$8 WHERE user_id = $9`,
             [name, dob, age, gender, interestedIn, lookingFor, passionArray, bio, userId]
         );
-
+        
         const profileRes = await pool.query(
             `SELECT id FROM profiles WHERE user_id = $1`, 
             [userId]
         );
         const profileId = profileRes.rows[0]?.id;
-
+        
         console.log("🧩 profileId trouvé:", profileId);
-
+        
         if (!profileId) {
             return res.status(400).json({ error: "Profile not found for user" });
         }
+        
+        if (photosToKeep.length > 0) {
+            const placeholders = photosToKeep.map((_, i) => `$${i + 2}`).join(", ");
+            const query = `
+            DELETE FROM profile_photos
+            WHERE profile_id = $1
+            AND photo_url NOT IN (${placeholders})
+            `;
+            const values = [profileId, ...photosToKeep];
+
+            await pool.query(query, values);
+        } else {
+            await pool.query(
+                `DELETE FROM profile_photos WHERE profile_id = $1`,
+                [profileId]
+            );
+        }
 
         if (req.files) {
-            const photosUrls = req.files.map(file => `/uploads/${file.filename}`);
+            const newUrls = req.files.map(file => `/uploads/${file.filename}`);
 
-            await pool.query(`DELETE FROM profile_photos WHERE profile_id = (SELECT id FROM profiles WHERE user_id=$1)`, [userId]);
-
-            for (const photoUrl of photosUrls) {
+            for (const photoUrl of newUrls) {
                 await pool.query(
-                    `INSERT INTO profile_photos (profile_id, photo_url) VALUES ((SELECT id FROM profiles WHERE user_id = $1), $2)`,
-                    [userId, photoUrl]
+                    `INSERT INTO profile_photos (profile_id, photo_url) VALUES ($1, $2)`,
+                    [profileId, photoUrl]
                 );
             }
         }
