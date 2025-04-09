@@ -1,10 +1,151 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const SearchModule = () => {
+    const [ageGap, setAgeGap] = useState([18, 100]);
+    const [fameRating, setFameRating] = useState(0);
+    const [location, setLocation] = useState(50);
+    const [tagsInCommon, setTagsInCommon] = useState(0);
+    const [error, setError] = useState('');
+    const [matchingProfilesCount, setMatchingProfilesCount] = useState(0);
+
+    const userId = Number(localStorage.getItem("userId"));
+
+    useEffect(() => {
+        if (ageGap[0] > ageGap[1]) return;
+
+        const fetchMatchingCount = async() => {
+            try {
+                const res = await fetch(`http://localhost:3000/profiles-count?userId=${userId}&ageMin=${ageGap[0]}&ageMax=${ageGap[1]}&fameMin=${fameRating}&tagsMin=${tagsInCommon}`);
+                const data = await res.json();
+                setMatchingProfilesCount(data.count);
+            } catch (error) {
+                console.error("Erereur lors du fetch du nombre de profils:", error);
+            }
+        }
+        fetchMatchingCount();
+    }, [ageGap, fameRating, tagsInCommon, userId]);
+
+    const handleSubmit = () => {
+        if (ageGap[0] > ageGap[1]) {
+            setError("Minimum age must be less than or equal to maximum age.");
+            return ;
+        }
+        const filters = {
+            ageMin: ageGap[0],
+            ageMax: ageGap[1],
+            fameMin: fameRating,
+            tagsMin: tagsInCommon
+        }
+        console.log("Filtres selectionnes:", {
+            ageGap, fameRating, location, tagsInCommon
+        });
+        //TODO: BACKEND REQUEST
+    }
+
+    useEffect(() => {
+        if (ageGap[0] <= ageGap[1]) {
+            setError("");
+        }
+    }, [ageGap]);
+
     return (
-        <div>
-            <p>Search Module incoming</p>
+        <div className="flex p-6 gap-6 items-start">
+            <div className="flex flex-col justify-center gap-3 p-4 w-3/5">
+                <h2 className="text-2xl font-bold font-sans">Adjust your research</h2>
+                <div className="flex flex-col gap-1  ">
+
+
+                    <div className="flex flex-col flex-grow">
+                        <label className="mb-2 text-lg font-semibold font-sans tracking-wide">Age range</label>
+                        <span className="italic text-sm -mb-2.5">Age min</span>
+                        <div className="flex flex-row items-center gap-4">
+                            <input
+                                type="range"
+                                min={18}
+                                max={100}
+                                value={ageGap[0]}
+                                onChange={(e) => setAgeGap([Number(e.target.value), ageGap[1]])}
+                                className="w-full accent-green-500"
+                            />
+                            <span className="w-16 text-3xl font-extrabold font-mono text-green-700 self-center">{ageGap[0]}</span>
+                        </div>
+                        {error && (
+                            <span className="text-red-600 text-sm -mt-2">{error}</span>
+                        )}
+                    </div>
+
+                    <div className="flex flex-col flex-grow border-b border-gray-300 pb-4 mb-4">
+                        <span className="italic text-sm -mb-2.5">Age max</span>
+                        <div className="flex flex-row items-center gap-4">
+                            <input
+                                type="range"
+                                min={18}
+                                max={100}
+                                value={ageGap[1]}
+                                onChange={(e) => setAgeGap([ageGap[0], Number(e.target.value)])}
+                                className="w-full accent-green-500"
+                            />
+                            <span className="w-16 text-3xl font-extrabold font-mono text-green-700 self-center">{ageGap[1]}</span>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col flex-grow border-b border-gray-300 pb-4 mb-4">
+                        <label className="mb-2 text-lg font-semibold font-sans tracking-wide">Fame</label>
+                        <div className="flex flex-row items-center gap-4">
+                            <input
+                                type="range"
+                                min={0}
+                                max={1000}
+                                value={fameRating}
+                                onChange={(e) => setFameRating(Number(e.target.value))}
+                                className="w-full accent-green-500"
+                            />
+                            <span className="w-16 text-3xl font-extrabold font-mono text-green-700 self-center">{fameRating}</span>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col flex-grow border-b border-gray-300 pb-4 mb-4">
+                        <label className="mb-2 text-lg font-semibold font-sans tracking-wide">Location (in kms)</label>
+                        <div className="flex flex-row items-center gap-4">
+                            <input
+                                type="range"
+                                min={1}
+                                max={500}
+                                value={location}
+                                onChange={(e) => setLocation(Number(e.target.value))}
+                                className="w-full accent-green-500"
+                            />
+                            <span className="w-16 text-3xl font-extrabold font-mono text-green-700 self-center">{location}</span>
+                        </div>
+                    </div>
+                    <div className="flex flex-col flex-grow border-b border-gray-300 pb-4 mb-4">
+                        <label className="mb-2 text-lg font-semibold font-sans tracking-wide">Common passions</label>
+                        <div className="flex flex-row items-center gap-4">
+                            <input
+                                type="range"
+                                min={0}
+                                max={5}
+                                value={tagsInCommon}
+                                onChange={(e) => setTagsInCommon(Number(e.target.value))}
+                                className="w-full accent-green-500"
+                            />
+                            <span className="w-16 text-3xl font-extrabold font-mono text-green-700 self-center">{tagsInCommon}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button
+                    onClick={handleSubmit}
+                    className="mt-6 bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg shadow"
+                >
+                    Save filters
+                </button>
+            </div>
+            <div className="w-2/5 m-auto flex flex-col justify-center items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-6 shadow-lg">
+                <span className="text-7xl font-extrabold text-green-600">{matchingProfilesCount}</span>
+                <span className="text-md font-medium text-gray-600 dark:text-gray-300 mt-2">Number of profiles</span>
+            </div>
         </div>
     )
 }

@@ -4,11 +4,13 @@ import { WebSocketServer } from "ws";
 import { createWebSocketStream } from "ws";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
+import ProfileModal from "./ProfileModal";
 
 const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal, unreadCountTrigger, matchesGlobal}) => {
     const [matches, setMatches] = useState([]);
     const userId = localStorage.getItem("userId");
     const [currentTime, setCurrentTime] = useState(new Date());
+    const [showProfilModal, setShowProfilModal] = useState(null);
 
     useEffect(() => {
         const fetchMatches = async () => {
@@ -148,6 +150,10 @@ const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal, unreadC
                                 src={`http://localhost:3000${match.photo}`}
                                 alt={match.name}
                                 className="w-10 h-10 rounded-full border-2 border-white shadow-md"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowProfilModal(match.user_id)  
+                                } }
                             />
                             <div className="flex flex-col">
                                 <div className="flex items-center gap-x-2">
@@ -169,6 +175,9 @@ const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal, unreadC
                     ))}
                 </ul>
             )}
+        {showProfilModal && (
+            <ProfileModal userId={showProfilModal} onClose={() => setShowProfilModal(null)} />
+        )}
         </div>
     )
 }

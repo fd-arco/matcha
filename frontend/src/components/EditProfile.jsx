@@ -187,6 +187,9 @@ export default function EditProfile() {
                 <div className="bg-white dark:bg-black border rounded-lg px-8 py-6 mx-auto my-8 max-w-5xl w-full flex flex-wrap md:flex-nowrap justify-between gap-6">
                     <div className="w-full md:w-[48%] flex flex-col">
                         <h2 className="text-2xl font-medium mb-4">Modify your information</h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 italic">
+                            The more complete your profile is (bio, passions, photos), the more <span className="font-semibold text-green-600">fame</span> you gain!
+                        </p>
                         <form onSubmit={handleSubmit} className="flex flex-col flex-grow">
                             <div className="mb-4">
                                 <label htmlFor="name" className="block text-gray-700 font-medium mb-2">Name</label>

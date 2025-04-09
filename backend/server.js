@@ -12,6 +12,7 @@ const initWebSocket = require("./websocket");
 const http = require("http");
 const { queryObjects } = require('v8');
 const { user } = require('pg/lib/defaults');
+const { profile } = require('console');
 
 
 const server = http.createServer(app);
@@ -79,11 +80,27 @@ app.post("/create-profil", upload.array("photos", 6), async(req, res) => {
             }
         }
         const photosUrls = req.files.map(file => `/uploads/${file.filename}`);
-        console.log("SALUT");
+        const numberOfPhotos = photosUrls.length;
+
+        let fame = 500;
+        let fameBio = false;
+        const passionsCount = Math.min(passionArray.length, 5);
+        let photoCount = photosUrls.length;
+        if (bio && bio.trim() !== "") {
+            fame+= 20;
+            fameBio = true;
+        }
+
+        if (passionsCount > 0){
+            fame += 10 * passionsCount;
+        }
+        if (photoCount > 0) {
+            fame += Math.min(photoCount, 6) * 10;
+        }
         const result = await pool.query(
-            `INSERT INTO profiles (user_id, name, dob, age, gender, interested_in, looking_for, passions, bio)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
-            [user_id, name, dob, age, gender, interestedIn, lookingFor, passionArray ,bio]
+            `INSERT INTO profiles (user_id, name, dob, age, gender, interested_in, looking_for, passions, bio, fame, fame_bio, passions_count, photo_count)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id`,
+            [user_id, name, dob, age, gender, interestedIn, lookingFor, passionArray, bio, fame, fameBio, passionsCount, photoCount]
         );
 
         const profile_id = result.rows[0].id;
@@ -280,7 +297,7 @@ app.get('/user/:userId', async (req, res) => {
     try {
         const userQuery = `
         SELECT u.id AS user_id, u.email, u.firstname, u.lastname,
-        p.id AS profile_id, p.name, p.dob, p.gender, p.interested_in, p.looking_for, p.passions, p.bio
+        p.id AS profile_id, p.name, p.dob, p.gender, p.interested_in, p.looking_for, p.passions, p.bio, p.fame
         FROM users u
         LEFT JOIN profiles p ON u.id = p.user_id
         WHERE u.id = $1`;
@@ -367,7 +384,11 @@ app.get('/matches/:userId', async (req, res) => {
             ELSE m.user1_id
         END
         JOIN profiles p ON p.user_id = u.id
-        JOIN profile_photos pp ON pp.profile_id = p.id
+        JOIN (
+            SELECT DISTINCT ON (profile_id) profile_id, photo_url
+            FROM profile_photos
+            ORDER BY profile_id, id
+        ) pp ON pp.profile_id = p.id
         LEFT JOIN LATERAL (
             SELECT content, created_at
                 FROM messages
@@ -648,13 +669,15 @@ app.get('/profiles/:userId', async (req, res) => {
                 p.interested_in,
                 p.looking_for,
                 p.passions,
-                pp.photo_url AS photo
+                p.fame,
+                json_agg(pp.photo_url ORDER BY pp.id) AS photos
             FROM profiles p
             JOIN profile_photos pp ON pp.profile_id = p.id
             WHERE p.user_id != $1
             AND p.user_id NOT IN (
                 SELECT liked_id FROM likes WHERE liker_id = $1
             )
+            GROUP BY p.id
             ORDER BY RANDOM()
         `;
 
@@ -895,6 +918,7 @@ app.get("/modalprofile/:userId", async(req, res) => {
                 prof.bio,
                 prof.dob,
                 prof.name,
+                prof.fame,
                 prof.id AS profile_id
             FROM profiles prof
             JOIN users u ON u.id = prof.user_id
@@ -954,37 +978,52 @@ app.put("/edit-profile/:userId", upload.array("photos", 6), async(req, res) => {
     try {
         const {userId} = req.params;
         const {name, dob, gender, interestedIn, lookingFor, bio, passions, existingPhotos} = req.body;
-
-        const age = calculateAge(dob);
-        let passionArray = [];
-
-        if (passions) {
-            try {
-                passionArray = JSON.parse(passions);
-            } catch (error) {
-                console.error("erreur json parse passions:", error);
-            }
-        }
-
-        const photosToKeep = existingPhotos ? JSON.parse(existingPhotos) : [];
-        console.log("📸 photosToKeep =", photosToKeep);
-
-        await pool.query(
-            `UPDATE profiles SET name = $1, dob = $2, age=$3, gender=$4, interested_in=$5, looking_for=$6, passions=$7, bio=$8 WHERE user_id = $9`,
-            [name, dob, age, gender, interestedIn, lookingFor, passionArray, bio, userId]
-        );
         
+        const age = calculateAge(dob);
+        const passionArray = passions ? JSON.parse(passions): [];
+        const newPassionCount = passionArray.length;
+        const photosToKeep = existingPhotos ? JSON.parse(existingPhotos) : [];
+        const newPhotos = req.files.map(file => `/uploads/${file.filename}`);
+        const totalPhotos = photosToKeep.length + newPhotos.length;
+
         const profileRes = await pool.query(
-            `SELECT id FROM profiles WHERE user_id = $1`, 
+            `SELECT id, fame, fame_bio, passions_count, photo_count FROM profiles WHERE user_id = $1`, 
             [userId]
         );
         const profileId = profileRes.rows[0]?.id;
+        const profile = profileRes.rows[0];
+        if (!profile) return res.status(404).json({error: "Profile not found"});
+
+        let fameChange = 0;
+
+
+        const hadBio = profile.fame_bio;
+        const hasBioNow = bio && bio.trim().length > 0;
+        if (hadBio && !hasBioNow) fameChange -= 20;
+        else if (!hadBio && hasBioNow) fameChange += 20;
+
+        
+        const oldPassionCount = profile.passions_count || 0;
+        const cappedOldPassions = Math.min(oldPassionCount, 5);
+        const cappedNewPassions = Math.min(newPassionCount, 5);
+        fameChange += (cappedNewPassions - cappedOldPassions) * 10;
+
+        const oldCount = profile.photo_count || 0;
+        const cappedOld = Math.min(oldCount, 6);
+        const cappedNow = Math.min(totalPhotos, 6);
+        fameChange += (cappedNow - cappedOld) * 10;
+
+        const newFame = Math.max(0, Math.min(1000, profile.fame + fameChange));
+        const newFameBio = hasBioNow === true;
+
+        await pool.query(
+            `UPDATE profiles SET name = $1, dob = $2, age=$3, gender=$4, interested_in=$5, looking_for=$6, passions=$7, bio=$8, fame=$9, fame_bio=$10, passions_count=$11, photo_count=$12 WHERE user_id = $13`,
+            [name, dob, age, gender, interestedIn, lookingFor, passionArray, bio, newFame, newFameBio, newPassionCount, totalPhotos, userId]
+        );
+        
         
         console.log("🧩 profileId trouvé:", profileId);
-        
-        if (!profileId) {
-            return res.status(400).json({ error: "Profile not found for user" });
-        }
+    
         
         if (photosToKeep.length > 0) {
             const placeholders = photosToKeep.map((_, i) => `$${i + 2}`).join(", ");
@@ -1019,3 +1058,20 @@ app.put("/edit-profile/:userId", upload.array("photos", 6), async(req, res) => {
         res.status(500).json({error:"Error servor during updating profile"});
     }
 })
+
+app.get("/profiles-count", async(req, res) => {
+    const {userId, ageMin, ageMax, fameMin, tagsMin} = req.query;
+    try {
+        const result = await pool.query(`
+            SELECT COUNT(*) FROM profiles
+            WHERE user_id != $1
+            AND age BETWEEN $2 AND $3
+            AND FAME >= $4
+            AND passions IS NOT NULL AND array_length(string_to_array(replace(replace(passions, '{', ''), '}', ''), ','), 1) >= $5
+            `, [userId, ageMin, ageMax, fameMin, tagsMin]);
+        res.json({count:parseInt(result.rows[0].count, 10)});
+    } catch (error) {
+        console.error("Erreur lors du comptage des profils:", error);
+        res.status(500).json({error: "erreur serveur"});
+    }
+});

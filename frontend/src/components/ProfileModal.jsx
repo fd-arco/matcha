@@ -65,7 +65,10 @@ const ProfileModal = ({userId, onClose}) => {
 
                 <div className="space-y-3 text-gray-800">
                     <h2 className="text-2xl font-bold">{profile.name}, {profile.age}</h2>
-
+                    <div className="flex items-center gap-1 mt-1">
+                        <span className="text-yellow-300 text-sm">⭐</span>
+                        <span className="text-sm text-black">Fame: {profile.fame}</span>
+                    </div>
                     {profile.bio && (
                         <p className="text-gray-600 italic">"{profile.bio}"</p>
                     )}

@@ -1,9 +1,11 @@
 import {useEffect, useState} from "react"
 import MatchModal from "./MatchModal";
+import {ChevronLeft, ChevronRight} from "lucide-react"
 
 const Matchs = ({socket}) => {
     const [profiles, setProfiles] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
     const userId = localStorage.getItem("userId");
     const [showMatchModal, setShowMatchModal] = useState(false);
     const [matchedProfile, setMatchedProfile] = useState(null);
@@ -15,6 +17,7 @@ const Matchs = ({socket}) => {
                 console.log("RESPONSE : ", response);
                 const data = await response.json();
                 setProfiles(data);
+                setCurrentPhotoIndex(0);
             } catch (error) {
                 console.log("erreur lors du chargement des profils: ", error);
             }
@@ -81,7 +84,7 @@ const Matchs = ({socket}) => {
                     }
                     console.log("Liked:", likedProfile.name);
                 } else {
-                    setCurrentIndex((prev) => prev + 1);
+                    nextProfile();
                 }
             } catch (error) {
                 console.error("Erreur lors du like: ", error);
@@ -89,11 +92,27 @@ const Matchs = ({socket}) => {
         }
     };
 
+    const nextProfile = () => {
+        setCurrentIndex((prev) => prev + 1);
+        setCurrentPhotoIndex(0);
+    }
+
+        
     const handlePass = () => {
-        if (currentIndex < profiles.length) {
-            setCurrentIndex((prev) => prev + 1);
-        }
+        nextProfile();
     };
+
+    const handlePrevPhoto = () => {
+        if (profile && profile.photos.length > 0) {
+            setCurrentPhotoIndex((prev) => (prev === 0 ? profile.photos.length - 1 : prev -1));
+        }
+    }
+
+    const handleNextPhoto = () => {
+        if (profile && profile.photos.length > 0) {
+            setCurrentPhotoIndex((prev) => (prev === profile.photos.length -1 ? 0 : prev + 1));
+        }
+    }
 
     if (profiles.length === 0 || currentIndex >= profiles.length) {
         return (
@@ -104,6 +123,8 @@ const Matchs = ({socket}) => {
     }
 
     const profile = profiles[currentIndex];
+    console.log("📷 Image path:", `http://localhost:3000${profile.photos[currentPhotoIndex]}`);
+
     let passionsArray = [];
     try {
         if (profile.passions) {
@@ -119,12 +140,34 @@ const Matchs = ({socket}) => {
     return (
         <div className="bg-gray-100 dark:bg-gray-700 flex flex-col items-center justify-center h-full">
             <div className="bg-white dark:bg-gray-900 p-4 shadow-lg rounded-lg w-96 text-center">
-                <img
-                    src={`http://localhost:3000${profile.photo}`}
-                    alt={profile.name}
-                    className="w-full h-64 object-cover round-lg"
-                />
+                <div className="relative mb-4">
+                    {profile.photos && (
+                        <>
+                            <img
+                                src={`http://localhost:3000${profile.photos[currentPhotoIndex]}`}
+                                alt={`Photo ${currentPhotoIndex + 1}`}
+                                className="w-full h-64 object-cover round-lg"
+                            />
+                            <button
+                                onClick={handlePrevPhoto}
+                                className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 p-1 rounded-full hover:bg-opacity-100"
+                            >
+                                <ChevronLeft />
+                            </button>
+                            <button
+                                onClick={handleNextPhoto}
+                                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 p-1 rounded-full hover:bg-opacity-100"
+                            >
+                                <ChevronRight />
+                            </button>
+                        </>
+                    )}
+                </div>
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white mt-3">{profile.name}, {profile.age}</h2>
+                <div className="flex items-center justify-center mt-1">
+                    <span className="text-yellow-400 mr-1">⭐</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Fame: {profile.fame}</span>
+                </div>
                 <p className="text-md text-gray-500 dark:text-gray-400">{profile.gender}</p>
                 <p className="text-gray-500 dark:text-gray-400 mt-2">{profile.bio}</p>
                 <p className="text-md text-gray-700 dark:text-gray-300 mt-2">

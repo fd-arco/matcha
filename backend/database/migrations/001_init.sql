@@ -22,6 +22,10 @@ CREATE TABLE IF NOT EXISTS profiles (
     passions TEXT,
     bio TEXT,
     age INTEGER,
+    fame INTEGER DEFAULT 500,
+    fame_bio BOOLEAN DEFAULT FALSE,
+    passions_count INTEGER DEFAULT 0,
+    photo_count INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
