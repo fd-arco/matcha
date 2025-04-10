@@ -1,8 +1,10 @@
 import {useEffect, useState} from "react"
 import MatchModal from "./MatchModal";
 import {ChevronLeft, ChevronRight} from "lucide-react"
+import {useFilters} from "../context/FilterContext"
 
 const Matchs = ({socket}) => {
+    const {filters} = useFilters();
     const [profiles, setProfiles] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
@@ -13,17 +15,32 @@ const Matchs = ({socket}) => {
     useEffect(() => {
         const fetchProfiles = async() => {
             try {
-                const response = await fetch(`http://localhost:3000/profiles/${userId}`);
-                console.log("RESPONSE : ", response);
-                const data = await response.json();
+                let url = `http://localhost:3000/profiles/${userId}`;
+                if (filters) {
+                    const query = new URLSearchParams({
+                        ageMin:filters.ageMin,
+                        ageMax:filters.ageMax,
+                        fameMin:filters.fameMin,
+                        tagsMin:filters.tagsMin,
+                    });
+                    url += `?${query.toString()}`;
+                }
+                const res = await fetch(url);
+                const data = await res.json();
+                console.log("DATA === ",data);
                 setProfiles(data);
+
+                // const response = await fetch(`http://localhost:3000/profiles/${userId}`);
+                // console.log("RESPONSE : ", response);
+                // const data = await response.json();
+                // setProfiles(data);
                 setCurrentPhotoIndex(0);
             } catch (error) {
                 console.log("erreur lors du chargement des profils: ", error);
             }
         };
         fetchProfiles();
-    }, [userId]);
+    }, [filters]);
 
     useEffect(() => {
         const sendView = async () => {
@@ -139,15 +156,24 @@ const Matchs = ({socket}) => {
 
     return (
         <div className="bg-gray-100 dark:bg-gray-700 flex flex-col items-center justify-center h-full">
-            <div className="bg-white dark:bg-gray-900 p-4 shadow-lg rounded-lg w-96 text-center">
+            <div className="bg-white dark:bg-gray-900 p-6 shadow-lg rounded-2xl w-full max-w-md text-center">
+
                 <div className="relative mb-4">
                     {profile.photos && (
                         <>
                             <img
                                 src={`http://localhost:3000${profile.photos[currentPhotoIndex]}`}
                                 alt={`Photo ${currentPhotoIndex + 1}`}
-                                className="w-full h-64 object-cover round-lg"
+                                className="w-full h-100 object-cover rounded-2xl"
+
                             />
+
+                            {profile.commonPassions && profile.commonPassions.length > 0 && (
+                                <div className="absolute bottom-0 left-0 w-full bg-black bg-opacity-50 text-white text-sm font-semibold px-3 py-1 rounded-b-lg">
+                                    🔥 {profile.commonPassions.length} passions en commun
+                                </div>
+                            )}
+
                             <button
                                 onClick={handlePrevPhoto}
                                 className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 p-1 rounded-full hover:bg-opacity-100"
@@ -178,11 +204,15 @@ const Matchs = ({socket}) => {
                 </p>
                 {passionsArray && passionsArray.length > 0 && (
                     <div className="mt-3 flex flex-wrap justify-center gap-2">
-                        {passionsArray.map((passion, index) => (
-                            <span key={index} className="px-3 py-1 text-xs font-semibold text-white bg-green-500 rounded-full">
-                                {passion}
-                            </span>
-                        ))}
+                        {passionsArray.map((passion, index) => {
+                            const isCommon = profile.commonPassions?.includes(passion);
+                            const colorClass = isCommon ? "bg-purple-500" : "bg-green-500";
+                            return (
+                                <span key={index} className={`px-3 py-1 text-xs font-semibold text-white ${colorClass} rounded-full`}>
+                                    {passion}
+                                </span>
+                            )
+                        })}
                     </div>
                 )}
 

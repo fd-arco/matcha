@@ -1,5 +1,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
+import {useFilters} from "../context/FilterContext"
+import UpdateModal from "./UpdateModal";
 
 const SearchModule = () => {
     const [ageGap, setAgeGap] = useState([18, 100]);
@@ -8,6 +10,8 @@ const SearchModule = () => {
     const [tagsInCommon, setTagsInCommon] = useState(0);
     const [error, setError] = useState('');
     const [matchingProfilesCount, setMatchingProfilesCount] = useState(0);
+    const {setFilters} = useFilters();
+    const [showUpdateModal, setShowUpdateModal] = useState(false);
 
     const userId = Number(localStorage.getItem("userId"));
 
@@ -31,12 +35,14 @@ const SearchModule = () => {
             setError("Minimum age must be less than or equal to maximum age.");
             return ;
         }
-        const filters = {
+        const newFilters = {
             ageMin: ageGap[0],
             ageMax: ageGap[1],
             fameMin: fameRating,
             tagsMin: tagsInCommon
         }
+        setShowUpdateModal(true);
+        setFilters(newFilters);
         console.log("Filtres selectionnes:", {
             ageGap, fameRating, location, tagsInCommon
         });
@@ -146,6 +152,9 @@ const SearchModule = () => {
                 <span className="text-7xl font-extrabold text-green-600">{matchingProfilesCount}</span>
                 <span className="text-md font-medium text-gray-600 dark:text-gray-300 mt-2">Number of profiles</span>
             </div>
+            {showUpdateModal && (
+                <UpdateModal onClose={() => setShowUpdateModal(false)} />
+            )}
         </div>
     )
 }

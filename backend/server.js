@@ -657,9 +657,36 @@ app.get('/messages/:userId/:matchId', async(req, res) => {
 
 app.get('/profiles/:userId', async (req, res) => {
     const {userId} = req.params;
+    const {ageMin, ageMax, fameMin, tagsMin} = req.query;
 
+
+    
     try {
-        const query = `
+        const userResult = await pool.query(
+            `SELECT gender, interested_in, passions FROM profiles WHERE user_id = $1`,
+            [userId]
+        );
+    
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({error:"Profil utilisateur non trouve"});
+        }
+
+        const { gender, interested_in, passions} = userResult.rows[0];
+
+        const currentUser = {
+            gender: gender?.toLowerCase(),
+            interested_in: interested_in?.toLowerCase(),
+        };
+
+        const userPassions = JSON.parse(
+            passions
+                .replace(/^{/, '[')
+                .replace(/}$/, ']')
+                .replace(/([^",\[\]\s]+)(?=,|\])/g, '"$1"')
+        );
+        console.log("🔍 userPassions:", userPassions);
+
+        let query = `
             SELECT
                 p.user_id,
                 p.name,
@@ -677,12 +704,101 @@ app.get('/profiles/:userId', async (req, res) => {
             AND p.user_id NOT IN (
                 SELECT liked_id FROM likes WHERE liker_id = $1
             )
+        `;
+        
+        const values = [userId];
+        let paramIndex = 2;
+
+        if (ageMin && ageMax) {
+            query += ` AND p.age BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
+            values.push(ageMin, ageMax);
+            paramIndex += 2;
+        }
+
+        if (fameMin) {
+            query += `AND p.fame >= $${paramIndex}`;
+            values.push(fameMin);
+            paramIndex++;
+        }
+
+        query += `
             GROUP BY p.id
-            ORDER BY RANDOM()
         `;
 
-        const result = await pool.query(query, [userId]);
-        res.json(result.rows);
+        const result = await pool.query(query, values);
+
+        const genderToInterestedMap = {
+            male:'men',
+            female:'women',
+            other:'beyondBinary'
+        };
+
+        const interestedInToGenderMap = {
+            men:'male',
+            women:'female',
+            beyondBinary:'other',
+        };
+
+        const isOrientationMatch = (user, profile) => {
+            const profileGender = profile.gender?.toLowerCase();
+            const profileInterestedIn = profile.interested_in?.toLowerCase();
+            const userGender = user.gender?.toLowerCase();
+            const userInterestedIn = user.interested_in?.toLowerCase();
+
+            const profileOkForUser =
+                profileInterestedIn === "everyone" || profileInterestedIn === genderToInterestedMap[userGender];
+
+            const userOkForProfile =
+                userInterestedIn === "everyone" || profileGender === interestedInToGenderMap[userInterestedIn];
+
+            return profileOkForUser && userOkForProfile;
+        };
+
+        let filteredProfiles = result.rows.filter(profile => isOrientationMatch(currentUser, profile));
+
+        if (tagsMin && userPassions) {
+            filteredProfiles = filteredProfiles.filter(profile => {
+                try {
+                    const profilePassions = JSON.parse(
+                        profile.passions
+                            .replace(/^{/, '[')
+                            .replace(/}$/, ']')
+                            .replace(/([^",\[\]\s]+)(?=,|\])/g, '"$1"')
+                    );
+                    const common = profilePassions.filter(p => userPassions.includes(p));
+                    return common.length >= Number(tagsMin);
+                } catch (e) {
+                    console.error("erreur parsin json passions:", e);
+                    return false;
+                }
+            })
+        }
+
+        filteredProfiles = filteredProfiles
+            .map(profile => {
+                try {
+                    const profilePassions = JSON.parse(
+                        profile.passions
+                            .replace(/^{/, '[')
+                            .replace(/}$/, ']')
+                            .replace(/([^",\[\]\s]+)(?=,|\])/g, '"$1"')
+                    );
+                    const common = profilePassions.filter(p => userPassions.includes(p));
+                    const score = (common.length * 3) + (profile.fame / 100);
+                    return {
+                        ...profile,
+                        score,
+                        commonPassions: common
+                    };
+                } catch (e) {
+                    console.error("erreur parsing ponderation score:", e.message);
+                    return null;
+                }
+            })
+            .filter(Boolean)
+            .sort((a, b) => b.score - a.score);
+
+        res.json(filteredProfiles);
     } catch (error) {
         console.error("Erreur lors de la recuperation des profils a swipe: ", error);
         res.status(500).json({error: "Erreur serveur"});
@@ -1061,15 +1177,130 @@ app.put("/edit-profile/:userId", upload.array("photos", 6), async(req, res) => {
 
 app.get("/profiles-count", async(req, res) => {
     const {userId, ageMin, ageMax, fameMin, tagsMin} = req.query;
+
+    console.log("🔍 Requête /profiles-count reçue avec :");
+    console.log("🔸 userId:", userId);
+    console.log("🔸 ageMin:", ageMin, "ageMax:", ageMax);
+    console.log("🔸 fameMin:", fameMin, "tagsMin:", tagsMin);
+
     try {
-        const result = await pool.query(`
-            SELECT COUNT(*) FROM profiles
-            WHERE user_id != $1
-            AND age BETWEEN $2 AND $3
-            AND FAME >= $4
-            AND passions IS NOT NULL AND array_length(string_to_array(replace(replace(passions, '{', ''), '}', ''), ','), 1) >= $5
-            `, [userId, ageMin, ageMax, fameMin, tagsMin]);
-        res.json({count:parseInt(result.rows[0].count, 10)});
+            const userResult = await pool.query(
+                `SELECT passions, gender, interested_in FROM profiles WHERE user_id = $1`,
+                [userId]
+            );
+
+            if (userResult.rows.length === 0) {
+                return res.status.error(404).json({error : "Profil utilisateur non trouve"});
+            }
+
+            const {passions, gender, interested_in} = userResult.rows[0];
+
+            const currentUser = {
+                gender: gender?.toLowerCase(),
+                interested_in: interested_in?.toLowerCase()
+            };
+
+            console.log("👤 Utilisateur connecté → gender:", gender, "| interested_in:", interested_in);
+            console.log("📦 Passions brutes:", passions);
+
+            const userPassions = JSON.parse(
+                passions
+                    .replace(/^{/, '[')
+                    .replace(/}$/, ']')
+                    .replace(/([^",\[\]\s]+)(?=,|\])/g, '"$1"')
+            );
+
+            console.log("GENDER = ", gender, "INTERESTED IN = ", interested_in);
+            const debugResult = await pool.query(`
+                SELECT user_id, gender, interested_in, passions
+                FROM profiles
+                WHERE user_id != $1
+            `, [userId]);
+            
+            console.log("🧾 TOUS LES PROFILS (hors moi-même) :");
+            debugResult.rows.forEach((row, i) => {
+                console.log(`— Profil #${i + 1} —`);
+                console.log(`   • user_id: ${row.user_id}`);
+                console.log(`   • gender: ${row.gender}`);
+                console.log(`   • interested_in: ${row.interested_in}`);
+                console.log(`   • passions: ${row.passions}`);
+            });
+
+            const result = await pool.query(`
+                SELECT
+                    user_id, gender, interested_in, passions
+                FROM profiles p
+                WHERE p.user_id != $1
+                AND p.user_id NOT IN (
+                    SELECT liked_id FROM likes WHERE liker_id = $1    
+                )
+                AND p.age BETWEEN $2 AND $3
+                AND p.fame >= $4
+                AND p.passions IS NOT NULL
+                `, [userId, ageMin, ageMax, fameMin]);
+                
+            console.log("🧪 Résultats après filtres SQL:", result.rows.length);
+            result.rows.forEach((p, i) => {
+                console.log(`— Profil #${i + 1} —`);
+                console.log("   • user_id:", p.user_id);
+                console.log("   • passions (raw):", p.passions);
+            });
+            
+            const genderToInterestedMap = {
+                male:'men',
+                female:'women',
+                other:'beyondBinary'
+            };
+
+            const interestedInToGenderMap = {
+                men:'male',
+                women:'female',
+                beyondBinary:'other'
+            };
+
+            const isOrientationMatch = (user,profile) => {
+                const profileGender = profile.gender?.toLowerCase();
+                const profileInterestedIn = profile.interested_in?.toLowerCase();
+                const userGender = user.gender?.toLowerCase();
+                const userInterestedIn = user.interested_in?.toLowerCase();
+
+                const profileOkForUser = 
+                    profileInterestedIn === "everyone" || profileInterestedIn === genderToInterestedMap[userGender];
+                const userOkForProfile =
+                    userInterestedIn === "everyone" || profileGender === interestedInToGenderMap[userInterestedIn];
+                
+                    
+                console.log(`🧩 Check orientation for profile ${profile.user_id}`);
+                console.log(`   ↪ profileGender: ${profileGender}, profileInterestedIn: ${profileInterestedIn}`);
+                console.log(`   ↪ userGender: ${user.gender}, userInterestedIn: ${user.interested_in}`);
+                console.log(`   ✅ profileOkForUser: ${profileOkForUser}`);
+                console.log(`   ✅ userOkForProfile: ${userOkForProfile}`);
+
+                return profileOkForUser && userOkForProfile;
+            }
+
+
+            let filtered = result.rows.filter((profile) => {
+                if (!isOrientationMatch(currentUser, profile)) return false;
+                if (!tagsMin || !userPassions) return true;
+                try {
+                    const profilePassions = JSON.parse(
+                        profile.passions
+                            .replace(/^{/, '[')
+                            .replace(/}$/, ']')
+                            .replace(/([^",\[\]\s]+)(?=,|\])/g, '"$1"')
+                    );
+                    const common = profilePassions.filter(p => userPassions.includes(p));
+                    console.log(`🧮 ${profile.user_id} → ${common.length} passions communes`);
+                    return common.length >= Number(tagsMin);
+                } catch(e) {
+                    console.error("Erreur parsing passions dans profile-count:", e.message);
+                    return false;
+                }
+            });
+
+        console.log("✅ Total après tout filtrage:", filtered.length);
+        res.json({count:parseInt(filtered.length, 10)});
     } catch (error) {
         console.error("Erreur lors du comptage des profils:", error);
         res.status(500).json({error: "erreur serveur"});

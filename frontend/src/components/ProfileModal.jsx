@@ -46,7 +46,7 @@ const ProfileModal = ({userId, onClose}) => {
                     <img
                         src={`http://localhost:3000${photos[currentIndex]}`}
                         alt="Profile"
-                        className="w-full h-64 object-cover rounded-lg cursor-pointer"
+                        className="w-full h-100 object-cover rounded-2xl cursor-pointer"
                     />
 
                     <button

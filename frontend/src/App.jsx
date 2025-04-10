@@ -11,6 +11,7 @@ import Swipe from "./pages/Swipe.jsx";
 import Profile from "./pages/Profile.jsx"
 import Dashboard from './pages/Dashboard.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
+import { FilterProvider } from './context/FilterContext.jsx';
 
 const router = createBrowserRouter([
     {path: '/user', element: <TestUser/>},
@@ -32,9 +33,9 @@ function Homepage(){
 
 function App() {
   return (
-      <div>
-          <RouterProvider router={router}/>
-    </div>
+      <FilterProvider>
+        <RouterProvider router={router}/>
+      </FilterProvider>
   );
 }
 export default App;
