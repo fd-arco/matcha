@@ -208,7 +208,7 @@ const Matchs = ({socket}) => {
                             const isCommon = profile.commonPassions?.includes(passion);
                             const colorClass = isCommon ? "bg-purple-500" : "bg-green-500";
                             return (
-                                <span key={index} className={`px-3 py-1 text-xs font-semibold text-white ${colorClass} rounded-full`}>
+                                <span key={index} className={`px-4 py-2 text-sm font-semibold text-white ${colorClass} rounded-full`}>
                                     {passion}
                                 </span>
                             )
