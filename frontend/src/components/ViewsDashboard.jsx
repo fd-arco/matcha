@@ -14,11 +14,12 @@ const ViewsDashboard = ({ notifications, userId }) => {
             photo: notif.sender_photo,
         })
     }
-    console.log("SENT = ", sent);
     return (
         <div className="p-4 max-h-[800px] overflow-y-auto">
             <h2 className="text-xl font-semibold mb-4">👁️ Views</h2>
-
+            <p className="text-xs text-gray-500 mb-6">
+                🔒 Anti-flood system active: only one notification is generated every 30 minutes per unique profile, both for profiles you view and people who view you.
+            </p>
             {/* 🔎 Utilisateurs qui ont vu mon profil */}
             <section className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">Users who viewed your profile</h3>

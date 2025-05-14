@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { X, ChevronLeft, ChevronRight} from "lucide-react";
+import { useSocket } from "../context/SocketContext";
 
 const ProfileModal = ({userId, onClose}) => {
     const [profile, setProfile] = useState(null);
     const [photos, setPhotos] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const {socket} = useSocket();
+    const viewerId = localStorage.getItem("userId");
 
     useEffect(() => {
         const fetchProfile = async() => {
@@ -19,6 +22,42 @@ const ProfileModal = ({userId, onClose}) => {
         }
         fetchProfile();
     }, [userId]);
+
+    useEffect(() => {
+        if (!socket || !viewerId || !userId) {
+            console.log("❌ Pas de socket, viewerId ou userId");
+            return;
+        }
+    
+        if (viewerId === userId) {
+            console.log("ℹ️ Pas d’envoi car l’utilisateur consulte son propre profil");
+            return;
+        }
+
+        const sendView = async () => {
+            try {
+                await fetch("http://localhost:3000/view", {
+                    method:"POST",
+                    headers:{"Content-Type": "application/json"},
+                    body:JSON.stringify({
+                        viewerId:viewerId,
+                        viewedId:userId
+                    })
+                });
+                socket.send(
+                    JSON.stringify({
+                        type: "viewNotification",  
+                        senderId: viewerId,
+                        receiverId: userId,
+                    })
+                );
+            } catch (error) {
+                console.error("erreur lors de l envoi de la notif vue dans profilemodal:", error);
+            }
+        }
+        sendView();
+    }, [socket, viewerId, userId]);
+    
 
     if (!userId || !profile || photos.length === 0) return null;
 

@@ -260,6 +260,22 @@ const initWebSocket = (server) => {
                 if (data.type === "viewNotification") {
                     const {senderId, receiverId} = data;
 
+                    const lastNotif = await pool.query(`
+                        SELECT created_at
+                        FROM notifications
+                        WHERE sender_id = $1 AND user_id =$2 AND type='view'
+                        ORDER BY created_at DESC
+                        LIMIT 1
+                        `, [senderId, receiverId]);
+
+                    const now = new Date();
+                    const lastDate = lastNotif.rows[0]?.created_at;
+                    const diffMinutes = lastDate?Math.abs(now - new Date(lastDate)) / (1000 * 60) : Infinity;
+                    if (diffMinutes < 30) {
+                        console.log("Antiflood active");
+                        return;
+                    }
+
                     const senderInfo = await pool.query(`
                         SELECT u.firstname, prof.id AS profile_id
                         FROM users u
@@ -281,6 +297,25 @@ const initWebSocket = (server) => {
                             `, [profileId]);
                         senderPhoto = photoRes.rows[0]?.photo_url || null;
                     }
+                    const receiverInfo = await pool.query(
+                        `SELECT u.firstname, prof.id AS profile_id
+                        FROM users u
+                        LEFT JOIN profiles prof ON prof.user_id = u.id
+                        WHERE u.id = $1
+                        `,[receiverId]);
+                    const receiverName = receiverInfo.rows[0]?.firstname || "Someone";
+                    const receiverProfileId = receiverInfo.rows[0]?.profile_id;
+                    let receiverPhoto = null;
+                    if (receiverProfileId) {
+                        const photoRes = await pool.query(`
+                            SELECT photo_url
+                            FROM profile_photos
+                            WHERE profile_id = $1
+                            ORDER BY uploaded_at ASC
+                            LIMIT 1
+                            `, [receiverProfileId]);
+                            receiverPhoto = photoRes.rows[0]?.photo_url || null;
+                        }
                     if (clients.has(receiverId.toString())) {
                         clients.get(receiverId.toString()).send(JSON.stringify({
                             type: "newNotification",
@@ -289,12 +324,31 @@ const initWebSocket = (server) => {
                                 sender_id: senderId,
                                 sender_name: senderName,
                                 sender_photo: senderPhoto,
+                                receiver_id:receiverId,
+                                receiver_name:receiverName,
+                                receiver_photo:receiverPhoto,
                                 is_read: false,
                                 created_at: new Date().toISOString(), // TODO:afficher l heure de la notification de like
                             }
                         }));
                     }
-
+                    if (clients.has(senderId.toString())) {
+                        console.log("yoyoyoyoy");
+                        clients.get(senderId.toString()).send(JSON.stringify({
+                            type:"newNotification",
+                            category:"views",
+                            notification: {
+                                sender_id:receiverId,
+                                sender_name:receiverName,
+                                sender_photo:receiverPhoto,
+                                receiver_id:receiverId,
+                                receiver_name:receiverName,
+                                receiver_photo:receiverPhoto,
+                                is_read:false,
+                                created_at:new Date().toISOString()
+                            }
+                        }))
+                    }
                 }
             } catch (error) {
                 console.error("Erreur lors de l'envoi du message:", error);

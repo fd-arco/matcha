@@ -1,13 +1,11 @@
 import React, {useEffect, useState} from "react";
-import { useNavigate } from "react-router-dom";
-import { WebSocketServer } from "ws";
-import { createWebSocketStream } from "ws";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import ProfileModal from "./ProfileModal";
-
-const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal, unreadCountTrigger, matchesGlobal}) => {
+import { useSocket } from "../context/SocketContext";
+const Messages = ({onSelectMatch, selectedMatch}) => {
     const [matches, setMatches] = useState([]);
+    const {matchesGlobal, messagesGlobal, unreadCountTrigger} = useSocket();
     const userId = localStorage.getItem("userId");
     const [currentTime, setCurrentTime] = useState(new Date());
     const [showProfilModal, setShowProfilModal] = useState(null);
@@ -61,7 +59,7 @@ const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal, unreadC
                 return m.user_id === selectedMatch?.user_id ? {...m, unread_count:0} : m
             })
         );
-    }, [unreadCountTrigger]);
+    }, [unreadCountTrigger, selectedMatch?.user_id]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -71,8 +69,6 @@ const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal, unreadC
     }, []);
 
     useEffect(() => {
-        if (!socket)
-            return;
         if (messagesGlobal.length === 0)
             return ;
 
@@ -104,7 +100,7 @@ const Messages = ({onSelectMatch, selectedMatch, socket, messagesGlobal, unreadC
                 return dateB - dateA;
             })
         })
-    }, [messagesGlobal]);
+    }, [messagesGlobal, userId]);
 
     console.log("MATCHES STATE DANS LE COMPOSANT :", matches);
 

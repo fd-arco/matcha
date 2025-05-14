@@ -848,11 +848,22 @@ app.post("/view", async (req, res) => {
     const {viewerId, viewedId} = req.body;
 
     try {
-        await pool.query(
-            `INSERT INTO notifications (user_id, sender_id, type)
-             VALUES ($1, $2, 'view')`,
-             [viewedId, viewerId]
-        );
+        const recent = await pool.query(`
+            SELECT 1 FROM notifications
+            WHERE type = 'view'
+            AND sender_id=$1
+            AND user_id=$2
+            AND created_at >= NOW() - interval '30 minutes'
+            LIMIT 1
+            `, [viewerId, viewedId]);
+
+        if (recent.rowCount === 0) {
+            await pool.query(
+                `INSERT INTO notifications (user_id, sender_id, type)
+                 VALUES ($1, $2, 'view')`,
+                 [viewedId, viewerId]
+            );
+        }
         res.status(200).json({success:true, message:"View enregistree"});
     } catch (error) {
         console.error("Erreur lors de l enregistrement de la view:", error);

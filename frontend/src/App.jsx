@@ -12,6 +12,7 @@ import Profile from "./pages/Profile.jsx"
 import Dashboard from './pages/Dashboard.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import { FilterProvider } from './context/FilterContext.jsx';
+import { SocketProvider } from './context/SocketContext.jsx';
 
 const router = createBrowserRouter([
     {path: '/user', element: <TestUser/>},
@@ -34,7 +35,9 @@ function Homepage(){
 function App() {
   return (
       <FilterProvider>
-        <RouterProvider router={router}/>
+        <SocketProvider>
+          <RouterProvider router={router}/>
+        </SocketProvider>
       </FilterProvider>
   );
 }

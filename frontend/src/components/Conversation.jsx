@@ -1,13 +1,12 @@
 import React, {useEffect, useState} from "react";
-import { useNavigate } from "react-router-dom";
-import { EventEmitter } from "ws";
 import { ArrowLeft } from "lucide-react";
+import {useSocket} from "../context/SocketContext"
 
-const Conversation = ({match, onBack, socket, messagesGlobal}) => {
+const Conversation = ({match, onBack}) => {
+    const {messagesGlobal, socket} = useSocket();
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const userId = localStorage.getItem("userId");
-    const [hasClicked, setHasClicked] = useState(false);
 
     useEffect(() => {
         const fetchMessages = async () => {
@@ -41,7 +40,7 @@ const Conversation = ({match, onBack, socket, messagesGlobal}) => {
             setMessages(prevMessages => [...prevMessages, lastMessage]);
     }  
     
-    }, [messagesGlobal, match.user_id]);
+    }, [messagesGlobal, match.user_id, socket, userId]);
 
     const sendMessage = () => {
         if (newMessage.trim() !== "" && socket) {

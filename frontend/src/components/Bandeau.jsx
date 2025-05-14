@@ -2,10 +2,12 @@ import React, {useEffect, useState} from "react";
 import { useNavigate } from "react-router-dom";
 import {LayoutDashboard, Settings} from "lucide-react";
 import ProfileModal from "./ProfileModal";
+import { useSocket } from "../context/SocketContext";
 
-const Bandeau = ({hasNotification}) => {
+const Bandeau = () => {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
+    const {hasNotification} = useSocket();
     const userId = localStorage.getItem("userId");
     const [showProfilModal, setShowProfilModal] = useState(false);
     useEffect(() => {
@@ -32,7 +34,7 @@ const Bandeau = ({hasNotification}) => {
             <div className="flex space-x-5 items-center">
                 <img
                     src={`http://localhost:3000${user.photos[0]}`}
-                    alt="Photo de profil"
+                    alt={`${user.name}`}
                     className="w-16 h-16 rounded-full border-2 border-white shadow-md hover:opacity-80 transition  cursor-pointer"
                     onClick={() => setShowProfilModal(true)}
                 />

@@ -2,8 +2,9 @@ import {useEffect, useState} from "react"
 import MatchModal from "./MatchModal";
 import {ChevronLeft, ChevronRight} from "lucide-react"
 import {useFilters} from "../context/FilterContext"
+import {useSocket} from "../context/SocketContext"
 
-const Matchs = ({socket}) => {
+const Matchs = () => {
     const {filters} = useFilters();
     const [profiles, setProfiles] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -11,6 +12,7 @@ const Matchs = ({socket}) => {
     const userId = localStorage.getItem("userId");
     const [showMatchModal, setShowMatchModal] = useState(false);
     const [matchedProfile, setMatchedProfile] = useState(null);
+    const {socket} = useSocket();
 
     useEffect(() => {
         const fetchProfiles = async() => {
@@ -40,7 +42,7 @@ const Matchs = ({socket}) => {
             }
         };
         fetchProfiles();
-    }, [filters]);
+    }, [filters, userId]);
 
     useEffect(() => {
         const sendView = async () => {
@@ -65,7 +67,7 @@ const Matchs = ({socket}) => {
             }
         }
         sendView();
-    }, [currentIndex, profiles, userId]);
+    }, [currentIndex, profiles, userId, socket]);
 
     const handleLike = async () => {
         if (currentIndex < profiles.length) {
@@ -163,7 +165,7 @@ const Matchs = ({socket}) => {
                         <>
                             <img
                                 src={`http://localhost:3000${profile.photos[currentPhotoIndex]}`}
-                                alt={`Photo ${currentPhotoIndex + 1}`}
+                                alt={`${currentPhotoIndex + 1}`}
                                 className="w-full h-100 object-cover rounded-2xl"
 
                             />

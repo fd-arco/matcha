@@ -6,8 +6,9 @@ import LikesDashboard from "../components/LikesDashboard";
 import MatchsDashboard from "../components/MatchsDashboard";
 import MessagesDashboard from "../components/MessagesDashboard";
 import Navbar from "../components/Navbar";
-
+import { useSocket } from "../context/SocketContext";
 const Dashboard = ({setHasNotification}) => {
+    const {socket} = useSocket();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("views");
     const [messageNotifications, setMessageNotifications] = useState([]);
@@ -96,13 +97,8 @@ const Dashboard = ({setHasNotification}) => {
     }, [userId])
 
     useEffect(() => {
-        const socket = new WebSocket(`ws://localhost:3000`);
-        socket.onopen = () => {
-            console.log("WEBSOCKET dashboard connected");
-            socket.send(JSON.stringify({type: "register", userId}));
-        }
-
-        socket.onmessage = (event) => {
+        if (!socket) return;
+        const handleMessage = (event) => {
             const message = JSON.parse(event.data);
 
             if (message.type === "newNotification") {
@@ -123,39 +119,26 @@ const Dashboard = ({setHasNotification}) => {
                     }));
                 }
                 if (message.category === "views" && message.notification) {
-                    const isSender = message.notification.sender_id === Number(userId);
-                
+                    const isMyView = message.notification.receiver_id === Number(userId);
+                    // const isSender = message.notification.sender_id === Number(userId);
+                    console.log("icii");
                     setViewNotifications(prev => ({
-                        received: !isSender
+                        received: isMyView
                             ? [message.notification, ...(prev.received || [])]
                             : prev.received,
-                        sent: isSender
+                        sent: !isMyView
                             ? [message.notification, ...(prev.sent || [])]
                             : prev.sent
                     }));
                 }
-                // if (message.category === "views" && message.notification) {
-                //     setViewNotifications(prev => ({
-                //         ...prev,
-                //         received: message.notification.sender_id
-                //         ? [message.notification, ...(prev.received || [])]
-                //         : prev.received,
-                //         sent: message.notification.sender_name
-                //         ? [message.notification, ...(prev.sent || [])]
-                //         : prev.sent
-                //     }));
-                // }
             }
         }
-
-        socket.onclose = () => {
-            console.log("WEBSOCKET dashboard disconnected");
-        };
+        socket.addEventListener("message", handleMessage);
 
         return () => {
-            socket.close();
+            socket.removeEventListener("message", handleMessage);
         }
-    }, [userId]);
+    }, [socket, userId]);
 
     const markAsRead = async (category) => {
         setNotifications((prev) => ({ ...prev, [category]:0}));
