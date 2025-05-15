@@ -3,9 +3,11 @@ import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import ProfileModal from "./ProfileModal";
 import { useSocket } from "../context/SocketContext";
+import { fetchOnlineStatuses } from "../hooks/fetchOnlineStatuses";
+
 const Messages = ({onSelectMatch, selectedMatch}) => {
     const [matches, setMatches] = useState([]);
-    const {matchesGlobal, messagesGlobal, unreadCountTrigger} = useSocket();
+    const {matchesGlobal, messagesGlobal, unreadCountTrigger, onlineStatuses, setOnlineStatuses} = useSocket();
     const userId = localStorage.getItem("userId");
     const [currentTime, setCurrentTime] = useState(new Date());
     const [showProfilModal, setShowProfilModal] = useState(null);
@@ -39,6 +41,13 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
         };
         fetchMatches();
     }, [userId]);
+
+    useEffect(() => {
+        if (matches.length > 0) {
+            const userIds = matches.map(m => m.user_id);
+            fetchOnlineStatuses(userIds, setOnlineStatuses);
+        }
+    }, [matches, setOnlineStatuses]);
 
     useEffect(() => {
         if (!matchesGlobal.length) return;
@@ -136,21 +145,39 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
                 </div>
             ) : (
                 <ul className="space-y-2">
-                    {matches.map((match) => (
+                    {matches.map((match) => {
+                        const userStatus = onlineStatuses[match.user_id];
+                        console.log(`Status utilisateur ${match.user_id}:`, userStatus?.online, userStatus?.lastOnline);
+                        return (
                         <li
                             key={match.user_id}
                             onClick={() => handleSelectMatch(match)}
                             className="p-2 flex items-center space-x-3 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-700 rounded-lg relative"
                         >
+                        <div className="relative">
                             <img
                                 src={`http://localhost:3000${match.photo}`}
                                 alt={match.name}
-                                className="w-10 h-10 rounded-full border-2 border-white shadow-md"
+                                className="min-w-[40px] min-h-[40px] max-w-[40px] max-h-[40px] rounded-full border-2 border-white shadow-md"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setShowProfilModal(match.user_id)  
                                 } }
                             />
+                            <span
+                                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
+                                    userStatus?.online ? 'bg-green-500' : 'bg-red-500'
+                                }`}
+                                title={
+                                    userStatus?.online
+                                        ? 'En ligne'
+                                        : userStatus?.lastOnline
+                                            ? `Vu il y a ${formatDistanceToNow(new Date(userStatus.lastOnline), { addSuffix: true, locale: fr })}`
+                                            : 'Hors ligne'
+                                }
+                            ></span>
+                        </div>
+
                             <div className="flex flex-col">
                                 <div className="flex items-center gap-x-2">
                                     <span className="text-gray-900 dark:text-white font-medium">{match.name}</span>
@@ -168,7 +195,8 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
                                 )}
                             </div>
                         </li>
-                    ))}
+                        )
+                    })}
                 </ul>
             )}
         {showProfilModal && (

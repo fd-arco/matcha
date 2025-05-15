@@ -24,6 +24,21 @@ const initWebSocket = (server) => {
                 if (data.type === "register") {
                     clients.set(data.userId, ws);
                     console.log(`Utilisateur ${data.userId} connected.`);
+                    await pool.query(
+                        `UPDATE users SET last_online = NOW() WHERE id =$1`,
+                        [data.userId]
+                    );
+
+                    clients.forEach((clientWs, clientId) => {
+                        if (clientId !== data.userId.toString()) {
+                            clientWs.send(JSON.stringify({
+                                type:"userStatusChanged",
+                                userId:data.userId,
+                                online:true
+                            }));
+                        }
+                    })
+
                 }
                 console.log("DANS WS READ_MESSAGES")
                 if (data.type === "read_messages") {
@@ -355,16 +370,29 @@ const initWebSocket = (server) => {
             }
         });
 
-        ws.on('close', () => {
+        ws.on('close', async () => {
             const disconnectedUser = [...clients.entries()].find(([userId, clientWs]) => clientWs === ws);
             if (disconnectedUser) {
                 console.log(`User ${disconnectedUser[0]} disconnected`);
                 clients.delete(disconnectedUser[0]);
 
+                await pool.query(
+                    `UPDATE users SET last_online = NOW() WHERE id = $1`,
+                    [disconnectedUser[0]]
+                );
+
+                clients.forEach((clientWs) => {
+                    clientWs.send(JSON.stringify({
+                        type:"userStatusChanged",
+                        userId: disconnectedUser[0],
+                        online:false,
+                        lastOnline: new Date().toISOString()
+                    }));
+                })
             }
         })
     })
 }
 
-module.exports = initWebSocket;
+module.exports = {initWebSocket, clients};
 

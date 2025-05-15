@@ -8,7 +8,8 @@ export const SocketProvider = ({children}) => {
     const [matchesGlobal, setMatchesGlobal] = useState([]);
     const [unreadCountTrigger, setUnreadCountTrigger] = useState(false);
     const [hasNotification, setHasNotification] = useState(false);
-
+    const [onlineStatuses, setOnlineStatuses] = useState({});
+    const [userPhoto, setUserPhoto] = useState(null);
     const userId = localStorage.getItem("userId");
 
     useEffect(() => {
@@ -41,6 +42,15 @@ export const SocketProvider = ({children}) => {
             if (message.type === "newMatch") {
                 setMatchesGlobal(prev => [...prev, message.match]);
             }
+            if (message.type === "userStatusChanged") {
+                setOnlineStatuses(prev => ({
+                    ...prev,
+                    [message.userId]: {
+                        online: message.online,
+                        lastOnline:message.lastOnline || null
+                    }
+                }));
+            }
         }
 
         newSocket.onclose = () => {
@@ -62,7 +72,11 @@ export const SocketProvider = ({children}) => {
             unreadCountTrigger,
             setUnreadCountTrigger,
             hasNotification,
-            setHasNotification
+            setHasNotification,
+            onlineStatuses,
+            setOnlineStatuses,
+            userPhoto,
+            setUserPhoto,
         }}>
             {children}
         </SocketContext.Provider>

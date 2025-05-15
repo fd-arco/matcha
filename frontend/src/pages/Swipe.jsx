@@ -33,48 +33,6 @@ const Swipe = () => {
         setSelectedMatch(null);
     }
     const userId = localStorage.getItem("userId");
-    // useEffect(() => {
-    //   const newSocket = new WebSocket("ws://localhost:3000");
-    //   setSocket(newSocket);
-
-    //   newSocket.onopen = () => {
-    //     console.log("Websocket swipe connecte");
-    //     newSocket.send(JSON.stringify({type:"register", userId}));
-    //   };
-
-    //   newSocket.onmessage = (event) => {
-    //     const message = JSON.parse(event.data);
-    //     console.log("📦 [WS] Message reçu :", message);
-    //     if (message.type === "newMessage") {
-    //       console.log("DANS WEBSOCKET SWIPE NEWMESSAGE")
-    //       const newMessage = message.message;
-
-    //       setMessagesGlobal((prev) => [...prev, newMessage]);
-    //     }
-
-    //     if (message.type === "read_messages") {
-    //       console.log("message.matchid = " , message.matchId);
-    //       setUnreadCountTrigger(prev => !prev);
-    //     }
-
-    //     if (message.type === "newNotification") {
-    //       setHasNotification(true);
-    //     }
-
-    //     if (message.type === "newMatch") {
-    //       setMatchesGlobal(prev => [...prev, message.match]);
-    //     }
-
-    //   }
-
-    //   newSocket.onclose = () => {
-    //     console.log("Websocket swipe deconnecte");
-    //   }
-
-    //   return () => {
-    //     newSocket.close();
-    //   }
-    // }, [userId]);
 
     useEffect(() => {
       if (userId) {

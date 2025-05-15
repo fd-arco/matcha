@@ -1,9 +1,12 @@
 import React, {useEffect, useState} from "react";
 import { ArrowLeft } from "lucide-react";
 import {useSocket} from "../context/SocketContext"
+import { formatDistanceToNow } from "date-fns";
+import { enUS } from "date-fns/locale";
+import { UNSAFE_decodeViaTurboStream } from "react-router-dom";
 
 const Conversation = ({match, onBack}) => {
-    const {messagesGlobal, socket} = useSocket();
+    const {messagesGlobal, socket, onlineStatuses, userPhoto} = useSocket();
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const userId = localStorage.getItem("userId");
@@ -85,13 +88,66 @@ const Conversation = ({match, onBack}) => {
 
     return (
         <div className="bg-gray-100 dark:bg-gray-700 flex flex-col items-center justify-center h-full p-4 shadow-lg">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{match.name}</h2>
+            <div className="flex items-center gap-3 mb-4">
+                <div className="relative">
+                    <img
+                        src={`http://localhost:3000${match.photo}`}
+                        alt={match.name}
+                        className="w-12 h-12 rounded-full border-2 border-white shadow-md"
+                    />
+                    <span
+                        className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ${
+                            onlineStatuses[match.user_id]?.online ? "bg-green-500" : "bg-red-500"
+                        } border-2 border-white`}
+                        title={onlineStatuses[match.user_id]?.online ? "Online" : "Offline"}
+                    ></span>
+                </div>
+                <div>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">{match.name}</h2>
+                    {!onlineStatuses[match.user_id]?.online && onlineStatuses[match.user_id]?.lastOnline && (
+                        <p className="text-xs text-gray-500 dark:text-gray-300">
+                            Seen {formatDistanceToNow(new Date(onlineStatuses[match.user_id].lastOnline), {addSuffix: true, locale: enUS})} ago.
+                        </p>
+                    )}
+                </div>
+            </div>
             <div className="flex-1 overflow-y-auto w-full mt-4 p-2 border rounded-lg bg-white dark:bg-gray-800" onClick={handleClick} style={{ maxHeight: "70vh" }}>
                 {messages.map((msg, index) => (
-                    <div key={index} className={`flex my-2 ${msg.sender_id === userIdInt ? "justify-end" : "justify-start"}`}>
-                        <p className={`p-3 rounded-lg max-w-xs break-words ${msg.sender_id === userIdInt ? "bg-green-500 text-white self-end" : "bg-gray-300 text-gray-900 self-start"}`}>
-                            {msg.content}
-                        </p>
+                    <div key={index} className={`flex items-end my-2 ${msg.sender_id === userIdInt ? "justify-end" : "justify-start"}`}>
+                        {msg.sender_id !== userIdInt && (
+                            <>
+                                <img
+                                    src={`http://localhost:3000${match.photo}`}
+                                    alt="avatar"
+                                    className="w-8 h-8 rounded-full mr-2"
+                                />
+                                <div className="flex flex-col">
+                                    <p className="p-3 rounded-lg max-w-xs break-words bg-gray-300 text-gray-900 self-start">
+                                        {msg.content}
+                                    </p>
+                                    <span className="text-xs text-gray-400 ml-1">
+                                        {formatDistanceToNow(new Date(msg.created_at), {addSuffix: true, locale:enUS  })}
+                                    </span>
+                                </div>
+                            </>
+                        )}
+                        {msg.sender_id === userIdInt && (
+                            <>
+                                <div className="flex flex-col items-end">
+                                    <p className="p-3 rounded-lg max-w-xs break-words bg-green-500 text-white self-end">
+                                        {msg.content}
+                                    </p>
+                                    <span className="text-xs text-gray-400 mr-1">
+                                        {formatDistanceToNow(new Date(msg.created_at), {addSuffix: true, locale: enUS})}
+                                    </span>
+                                </div>
+                                <img
+                                    src={`http://localhost:3000${userPhoto}`}
+                                    alt="myavatar"
+                                    className="w-8 h-8 rounded-full ml-2"
+                                />
+                            </>
+                        )}
                     </div>
                 ))}
             </div>

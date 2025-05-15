@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { X, ChevronLeft, ChevronRight} from "lucide-react";
 import { useSocket } from "../context/SocketContext";
-
+import { formatDistanceToNow } from "date-fns";
+import { enUS } from "date-fns/locale";
 const ProfileModal = ({userId, onClose}) => {
     const [profile, setProfile] = useState(null);
     const [photos, setPhotos] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
-    const {socket} = useSocket();
+    const {socket, onlineStatuses} = useSocket();
     const viewerId = localStorage.getItem("userId");
 
     useEffect(() => {
@@ -69,6 +70,7 @@ const ProfileModal = ({userId, onClose}) => {
         setCurrentIndex((prev) => (prev === photos.length -1 ? 0 : prev + 1));
     }
 
+    const userStatus = onlineStatuses[userId];
 
 
     return (
@@ -103,7 +105,21 @@ const ProfileModal = ({userId, onClose}) => {
                 </div>
 
                 <div className="space-y-3 text-gray-800">
-                    <h2 className="text-2xl font-bold">{profile.name}, {profile.age}</h2>
+                    <div>
+                        <h2 className="text-2xl font-bold">{profile.name}, {profile.age}
+                        <span
+                            className={`w-4 h-4 ml-2 inline-block align-middle rounded-full ${
+                                userStatus?.online ? "bg-green-500" : "bg-red-500"
+                            } border-2 border-white`}
+                            title={userStatus?.online ? "En ligne" : "Hors ligne"}
+                        ></span>
+                        </h2>
+                        {!userStatus?.online && userStatus?.lastOnline && (
+                            <p className="text-xs text-gray-500">
+                                Last seen {formatDistanceToNow(new Date(userStatus.lastOnline), {addSuffix:true, locale:enUS})}
+                            </p>
+                        )}
+                    </div>
                     <div className="flex items-center gap-1 mt-1">
                         <span className="text-yellow-300 text-sm">⭐</span>
                         <span className="text-sm text-black">Fame: {profile.fame}</span>

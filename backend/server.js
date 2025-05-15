@@ -8,7 +8,7 @@ const { Pool } = require('pg');
 const multer = require('multer');
 const nodemailer = require('nodemailer');
 require('dotenv').config({ path: './.env' });
-const initWebSocket = require("./websocket");
+const {initWebSocket, clients} = require("./websocket");
 const http = require("http");
 const { queryObjects } = require('v8');
 const { user } = require('pg/lib/defaults');
@@ -1315,5 +1315,32 @@ app.get("/profiles-count", async(req, res) => {
     } catch (error) {
         console.error("Erreur lors du comptage des profils:", error);
         res.status(500).json({error: "erreur serveur"});
+    }
+});
+
+app.get("/online-statuses", async (req, res) => {
+    try {
+        const userIdsParam = req.query.userIds;
+        if (!userIdsParam) {
+            return res.status(400).json({error:"userIds query param required"})
+        }
+
+        const userIds = userIdsParam.split(",").map(id => parseInt(id)).filter(Boolean);
+
+        const result = await pool.query(
+            `SELECT id as "userId", last_online AS "lastOnline" FROM users WHERE id = ANY($1)`,
+            [userIds]
+        );
+        
+        const statuses = result.rows.map(user => ({
+            userId: user.userId,
+            online: clients.has(user.userId.toString()),
+            lastOnline: user.lastOnline
+        }));
+
+        res.json(statuses);
+    } catch (error) {
+        console.error("erreur recuperation online statuses dans server.js fetch:", err);
+        res.status(500).json({error:"Internal server error"});
     }
 });

@@ -7,7 +7,7 @@ import { useSocket } from "../context/SocketContext";
 const Bandeau = () => {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
-    const {hasNotification} = useSocket();
+    const {hasNotification, setUserPhoto} = useSocket();
     const userId = localStorage.getItem("userId");
     const [showProfilModal, setShowProfilModal] = useState(false);
     useEffect(() => {
@@ -16,7 +16,7 @@ const Bandeau = () => {
                 const response = await fetch(`http://localhost:3000/user/${userId}`);
                 const data = await response.json();
                 setUser(data);
-                console.log(data.photos[0]);
+                setUserPhoto(data.photos[0]);
             } catch (error) {
                 console.error("Erreur lors du chargement du profil: ", error);
             }
@@ -30,14 +30,20 @@ const Bandeau = () => {
 
     return (
         //TODO:AJOUTER ONCLICK SUR LE DIV POUR REDIRIGER VERS LES EDIT PROFILE
-        <div className="bg-green-600 dark:bg-green-800 text-white p-4 flex items-center justify-between space-x-5"> 
-            <div className="flex space-x-5 items-center">
-                <img
-                    src={`http://localhost:3000${user.photos[0]}`}
-                    alt={`${user.name}`}
-                    className="w-16 h-16 rounded-full border-2 border-white shadow-md hover:opacity-80 transition  cursor-pointer"
-                    onClick={() => setShowProfilModal(true)}
-                />
+        <div className="bg-green-600 dark:bg-green-800 text-white p-4 flex flex-wrap items-center justify-between gap-4"> 
+            <div className="flex gap-4 items-center flex-shrink-0 max-w-[calc(100% - 120px)]">
+                <div className="relative flex-shrink-0">
+                    <img
+                        src={`http://localhost:3000${user.photos[0]}`}
+                        alt={`${user.name}`}
+                        className="w-16 h-16 min-w-16 min-h-16 rounded-full border-2 border-white shadow-md hover:opacity-80 transition cursor-pointer"
+                        onClick={() => setShowProfilModal(true)}
+                    />
+                    <span
+                        className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-green-500 border-2 border-white"
+                        title="En ligne"
+                    ></span>
+                </div>
                 <div className="m-auto">
                     <h2 className="text-lg font-semibold hover:underline cursor-pointer">{user.name}</h2>
                     <p className="text-sm text-gray-200">{user.bio || ""}</p>
@@ -47,7 +53,7 @@ const Bandeau = () => {
                     </div>
                 </div>
             </div>
-            <div className="flex">
+                <div className="flex gap-2 flex-shrink-0 basis-full justify-center xl:basis-auto xl:justify-end">
                 <button
                     onClick={() => navigate("/dashboard")}
                     className="p-2 rounded-full hover:bg-gray-100 transition relative">
