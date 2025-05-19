@@ -15,32 +15,43 @@ const initWebSocket = (server) => {
     const wss = new WebSocket.Server({server});
 
     wss.on("connection", (ws, req) => {
-        console.log("Nouvelle connection websocket");
-        
         ws.on("message", async (message) => {
             try {
                 const data = JSON.parse(message);
 
                 if (data.type === "register") {
+                    console.log(`[WS] Tentative d'enregistrement pour user ${data.userId}`);
                     clients.set(data.userId, ws);
-                    console.log(`Utilisateur ${data.userId} connected.`);
+                    console.log(`[WS] Socket enregistré pour user ${data.userId}`);
                     await pool.query(
                         `UPDATE users SET last_online = NOW() WHERE id =$1`,
                         [data.userId]
                     );
-
+                    console.log(`[WS] last_online mis à jour pour ${data.userId}`);
                     clients.forEach((clientWs, clientId) => {
                         if (clientId !== data.userId.toString()) {
+                            console.log(`[WS] Notifie ${clientId} que ${data.userId} est en ligne`);    
                             clientWs.send(JSON.stringify({
                                 type:"userStatusChanged",
                                 userId:data.userId,
                                 online:true
                             }));
                         }
+                    });
+
+                    const currentlyOnline = Array.from(clients.keys())
+                        .filter(id => id !== data.userId.toString());
+                    console.log(`[WS] Utilisateurs déjà en ligne:`, currentlyOnline);
+                    currentlyOnline.forEach(id => {
+                        ws.send(JSON.stringify({
+                            type:"userStatusChanged",
+                            userId:id,
+                            online:true
+                        }))
+                        console.log(`[WS] Envoie à ${data.userId} que ${id} est en ligne`);
                     })
 
                 }
-                console.log("DANS WS READ_MESSAGES")
                 if (data.type === "read_messages") {
                     const {userId, matchId} = data;
                     await pool.query(

@@ -435,7 +435,6 @@ app.put('/messages/read', async(req, res) => {
 app.get('/notifications/:userId', async(req, res) => {
     try {
         const { userId } = req.params;
-        console.log("🔎 API Notifications : Requête pour userID =", userId);
 
         const query = `
             WITH counts AS (
@@ -684,7 +683,6 @@ app.get('/profiles/:userId', async (req, res) => {
                 .replace(/}$/, ']')
                 .replace(/([^",\[\]\s]+)(?=,|\])/g, '"$1"')
         );
-        console.log("🔍 userPassions:", userPassions);
 
         let query = `
             SELECT
@@ -826,7 +824,6 @@ app.post("/like", async(req,res) => {
             OR (liker_id = $2 AND liked_id = $1)`,
             [likerId, likedId]
         );
-        console.log("CHECKMATCH = ", checkMatch.rows[0].count);
         if (parseInt(checkMatch.rows[0].count, 10) === 2) {
             await pool.query(
                 `INSERT INTO matches (user1_id, user2_id) VALUES ($1, $2)`,
@@ -835,7 +832,6 @@ app.post("/like", async(req,res) => {
             console.log("Match cree");
             return res.json({match:true, message:"C'est un match!"});
         }
-        console.log("Like enregistre");
         res.json({match:false, message:"Like enregistre"});
     } catch (error) {
         console.error("Erreur lors de l enregistrement du like: ", error);
@@ -1342,5 +1338,41 @@ app.get("/online-statuses", async (req, res) => {
     } catch (error) {
         console.error("erreur recuperation online statuses dans server.js fetch:", err);
         res.status(500).json({error:"Internal server error"});
+    }
+});
+
+app.post('/report', async(req,res) => {
+    try {
+        const {reporterId, reportedId, reason} = req.body;
+
+        if (!reporterId || !reportedId || reporterId === reportedId) {
+            return res.status(400).json({error: "Invalid report data"});
+        }
+
+        await pool.query(
+            `INSERT INTO reports (reporter_id, reported_id, reason)
+             VALUES ($1, $2, $3)`,
+            [reporterId, reportedId, reason || "no reason"]
+        );
+
+        res.json({success:true});
+    } catch (error) {
+        console.error("Erreur lors du report: ", error);
+        res.status(500).json({error:"erreur serveur report"})
+    }
+});
+
+app.get('/my-account/:id', async(req,res) => {
+    const {id} = req.params;
+
+    try {
+        const result = await pool.query(`SELECT * FROM users WHERE id=$1`, [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({error:"Utilisateur pas trouve"});
+        }
+        res.json(result.rows[0]);
+    } catch(error) {
+        console.error("erreur lors de la recuperation de l utilisateur:", error);
+        res.status(500).json({error:"Erreur serveur"});
     }
 });

@@ -2,7 +2,7 @@ import { useState } from "react";
 import Navbar from "../components/Navbar";
 import { Navigate, useNavigate } from "react-router-dom";
 
-export default function CreateProfil() {
+export default function CreateProfil({refreshUser}) {
     const [selectedPassions, setSelectedPassions] = useState([]);
     const [selectedValue, setSelectedValue] = useState("");
     const [photos, setPhotos] = useState([]);
@@ -125,6 +125,7 @@ export default function CreateProfil() {
             if (response.ok) {
                 alert("Profil cree avec succes"); //TODO:ameliorer la mise en page
                 console.log("reponse du serveur : ", data);
+                refreshUser();
                 navigate("/swipe");
             } else {
                 alert("Erreur serveur:", data.error);
@@ -138,7 +139,6 @@ export default function CreateProfil() {
 
     return (
         <div className="min-h-screen bg-gray-200 text-black dark:bg-gray-800 dark:text-white transition-colors duration-300 flex flex-col">
-            <Navbar />
             <div className="flex-1 flex items-center justify-center px-4">
                 <div className="bg-white dark:bg-black border rounded-lg px-8 py-6 mx-auto my-8 max-w-5xl w-full flex flex-wrap md:flex-nowrap justify-between gap-6">
                     
@@ -264,7 +264,6 @@ export default function CreateProfil() {
                             </div>
                             {formErrors.passions && (<p className="text-red-500 text-sm mb-2">{formErrors.passions}</p>)}
 
-                            {/* Affichage des passions sélectionnées */}
                             <div className="mb-4 flex flex-wrap gap-2">
                                 {selectedPassions.map((passion, index) => (
                                     <span
@@ -277,7 +276,6 @@ export default function CreateProfil() {
                                 ))}
                             </div>
 
-                            {/* Bio */}
                             <div className="mb-4">
                                 <label htmlFor="bio" className="block text-gray-700 font-medium mb-2">Bio</label>
                                 <textarea id="bio" name="bio" placeholder="Put a bio to get more likes"
@@ -292,11 +290,9 @@ export default function CreateProfil() {
                         </form>
                     </div>
 
-                    {/* SECTION DROITE: UPLOAD DES PHOTOS */}
                     <div className="w-full md:w-[48%] flex flex-col">
                     <h2 className={`text-2xl font-medium mb-4`}>Upload your photos (max 6)</h2>
                     {formErrors.photos && (<p className="text-red-500 text-sm mt-1 mb-3">{formErrors.photos}</p>)}
-                    {/* Conteneur principal pour bien aligner les éléments */}
                     {photos.length === 0 && (
                     <div className="flex flex-col flex-grow items-center justify-center">
                         <div class="flex-grow flex items-center justify-center">
@@ -313,13 +309,11 @@ export default function CreateProfil() {
                         </div>
                     </div>
                     )}
-                        {/* Affichage des photos uploadées */}
                         {photos.length > 0 && (
                         <div className="grid grid-cols-2 gap-2 flex-grow">
                             {photos.map((photo, index) => (
                                 <div key={index} className="relative">
                                     <img src={photo.preview} alt={`Uploaded ${index}`} className="w-full h-60 object-cover rounded-lg" />
-                                    {/* Bouton de suppression */}
                                     <button 
                                         onClick={() => handleRemovePhoto(index)}
                                         className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center"

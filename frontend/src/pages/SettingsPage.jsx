@@ -11,7 +11,6 @@ const SettingsPage = () => {
 
     return (
         <div className="h-screen flex flex-col">
-              <Navbar />
             <div className="p-6 bg-gray-100 h-screen">
                 <button
                     onClick={() => navigate("/swipe")}

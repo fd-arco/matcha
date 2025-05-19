@@ -70,4 +70,12 @@ CREATE TABLE notifications (
     is_read BOOLEAN DEFAULT FALSE,
     message_id INTEGER REFERENCES messages(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT NOW()
-)
+);
+
+CREATE TABLE reports (
+    id SERIAL PRIMARY KEY,
+    reporter_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    reported_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    reason TEXT DEFAULT 'No reason',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

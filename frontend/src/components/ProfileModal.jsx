@@ -3,12 +3,16 @@ import { X, ChevronLeft, ChevronRight} from "lucide-react";
 import { useSocket } from "../context/SocketContext";
 import { formatDistanceToNow } from "date-fns";
 import { enUS } from "date-fns/locale";
+import ConfirmActionModal from "./ConfirmActionModal";
+
 const ProfileModal = ({userId, onClose}) => {
     const [profile, setProfile] = useState(null);
     const [photos, setPhotos] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const {socket, onlineStatuses} = useSocket();
     const viewerId = localStorage.getItem("userId");
+    const [isReportModalOpen, setIsReportModalOpen]=useState(false);
+    const [reportReason, setReportReason] = useState("");
 
     useEffect(() => {
         const fetchProfile = async() => {
@@ -72,6 +76,22 @@ const ProfileModal = ({userId, onClose}) => {
 
     const userStatus = onlineStatuses[userId];
 
+    const handleReport = async () => {
+        try {
+            await fetch("http://localhoset:3000/report", {
+                method:"POST",
+                headers:{"Content-Type":"application/json"},
+                body:JSON.stringify({
+                    reporterId:viewerId,
+                    reportedId:userId,
+                    reason:reportReason,    
+                }),
+            });
+        } catch (err) {
+            console.error(err);
+            alert("erreur lors du signalement");
+        }
+    }
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -145,8 +165,8 @@ const ProfileModal = ({userId, onClose}) => {
                             <h3 className="font-semibold text-lg">Passions:</h3>
                             <div className="flex flex-wrap gap-2 mt-2">
                                 {profile.passions
-                                .replace(/[{}"]/g, "").
-                                split(",")
+                                .replace(/[{}"]/g, "")
+                                .split(",")
                                 .map((passion, idx) => (
                                     <span key={idx} className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
                                         {passion.trim()}
@@ -155,6 +175,24 @@ const ProfileModal = ({userId, onClose}) => {
                             </div>
                         </div>
                     )}
+                    <div className="mt-6 flex justify-end">
+                        <button
+                            onClick={() => setIsReportModalOpen(true)}
+                            className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded"
+                        >
+                            Report this account
+                        </button>
+                    </div>
+                    <ConfirmActionModal
+                        isOpen={isReportModalOpen}
+                        onClose={()=> setIsReportModalOpen(false)}
+                        onConfirm={handleReport}
+                        onReasonChange={setReportReason}
+                        title="Report this user?"
+                        message="You will still be able to view and interact with this user after submitting the report. Are you sure you want to report this profile?"
+                        confirmLabel="Report"
+                        cancelLabel="Cancel"
+                    />
                 </div>
 
             </div>

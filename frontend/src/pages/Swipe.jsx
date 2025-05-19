@@ -6,13 +6,19 @@ import Matchs from "../components/Matchs";
 import {useState, useEffect} from "react";
 import Conversation from "../components/Conversation";
 import { useSocket } from "../context/SocketContext";
-const Swipe = () => {
+const Swipe = ({setUserId}) => {
     const [selectedMatch, setSelectedMatch] = useState(null);
     // const [messagesGlobal, setMessagesGlobal] = useState([]);
     // const [unreadCountTrigger, setUnreadCountTrigger] = useState(false);
     // const [hasNotification, setHasNotification] = useState(false);
     // const [matchesGlobal, setMatchesGlobal] = useState([]);
     const {setHasNotification} = useSocket();
+    useEffect(() => {
+      const userId = localStorage.getItem("userId");
+      if (userId) {
+        setUserId(userId);
+      }
+    }, []);
     const fetchNotifications = async () => {
       try {
         const res = await fetch(`http://localhost:3000/notifications/${userId}`);
@@ -42,7 +48,6 @@ const Swipe = () => {
 
   return (
     <div className="h-screen flex flex-col">
-      <Navbar />
       <div className="flex flex-1">
         {/* Colonne de gauche */}
         <div className="w-1/4 flex flex-col">
