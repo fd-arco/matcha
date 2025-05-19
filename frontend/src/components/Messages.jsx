@@ -49,15 +49,19 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
         }
     }, [matches, setOnlineStatuses]);
 
-    useEffect(() => {
-        if (!matchesGlobal.length) return;
+    // useEffect(() => {
+    //     if (!matchesGlobal.length) return;
 
-        setMatches(prev => {
-            const newMatch = matchesGlobal[matchesGlobal.length -1];
-            const alreadyExists = prev.some(m => m.user_id === newMatch.user_id);
-            if (alreadyExists) return prev;
-            return [newMatch, ...prev];
-        });
+    //     setMatches(prev => {
+    //         const newMatch = matchesGlobal[matchesGlobal.length -1];
+    //         const alreadyExists = prev.some(m => m.user_id === newMatch.user_id);
+    //         if (alreadyExists) return prev;
+    //         return [newMatch, ...prev];
+    //     });
+    // }, [matchesGlobal]);
+
+    useEffect(() => {
+        setMatches(matchesGlobal);
     }, [matchesGlobal]);
 
     useEffect(() => {

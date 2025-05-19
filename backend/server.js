@@ -702,6 +702,11 @@ app.get('/profiles/:userId', async (req, res) => {
             AND p.user_id NOT IN (
                 SELECT liked_id FROM likes WHERE liker_id = $1
             )
+            AND p.user_id NOT IN (
+                SELECT blocked_id FROM blocks WHERE blocker_id = $1
+                UNION
+                SELECT blocker_id FROM blocks WHERE blocked_id = $1
+            )
         `;
         
         const values = [userId];
@@ -1376,3 +1381,66 @@ app.get('/my-account/:id', async(req,res) => {
         res.status(500).json({error:"Erreur serveur"});
     }
 });
+
+app.get('/has-match/:user1/:user2', async(req, res) => {
+    const {user1, user2} = req.params;
+    try {
+        const result = await pool.query(
+            `SELECT * FROM matches
+             WHERE (user1_id = $1 AND user2_id = $2)
+             OR (user1_id = $2 AND user2_id = $1)`,
+            [user1, user2]
+        );
+        res.json({hasMatch:result.rows.length > 0});
+    } catch (error) {
+        console.error("erreur has-match:", error);
+        res.status(500).json({error: "server error"});
+    }
+});
+
+app.post('/block', async(req,res) => {
+    const {blockerId, blockedId} = req.body;
+    if (!blockerId || !blockedId || blockerId === blockedId) {
+        return res.status(400).json({error:"Invalid Data"});
+    }
+    try {
+        await pool.query(
+            `DELETE FROM matches
+             WHERE (user1_id = $1 AND user2_id = $2)
+             OR (user1_id = $2 AND user2_id = $1)`,
+             [blockerId, blockedId]
+        );
+
+        await pool.query(
+            `INSERT INTO blocks (blocker_id, blocked_id)
+             VALUES ($1, $2)`,
+             [blockerId, blockedId]
+        );
+
+        await pool.query(
+            `DELETE FROM notifications WHERE
+            (user_id = $1 AND sender_id=$2)
+            OR (user_id = $2 AND sender_id = $1)`,
+            [blockerId, blockedId]
+        );
+
+        await pool.query(
+            `DELETE FROM likes WHERE
+            (liker_id = $1 AND liked_id=$2)
+            OR (liker_id = $2 AND liked_id=$1)`,
+            [blockerId, blockedId]
+        );
+
+        await pool.query(
+            `DELETE FROM messages WHERE
+            (sender_id = $1 AND receiver_id=$2)
+            OR (sender_id = $2 AND receiver_id = $1)`,
+            [blockerId, blockedId]
+        );
+
+        res.json({success:true});
+    } catch (error) {
+        console.error("Erreur lors du blocage: ", error);
+        res.status(500).json({error: "server error"});
+    }
+})

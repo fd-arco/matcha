@@ -71,6 +71,24 @@ const initWebSocket = (server) => {
                     console.log("JE DOIS RENVOYER LE MESSAGE RECU AUX UTILISATEURS CONNECTES")
                     const { senderId, receiverId, content} = data;
                     
+                    const matchCheck = await pool.query(`
+                        SELECT * FROM matches
+                        WHERE (user1_id = $1 AND user2_id = $2)
+                        OR (user1_id = $2 AND user2_id = $1)
+                        `, [senderId, receiverId]);
+                    
+                    if (matchCheck.rows.length === 0) {
+                        console.log(`[WS] ❌ Pas de match entre ${senderId} et ${receiverId}`);
+                        if (clients.has(senderId.toString())) {
+                            clients.get(senderId.toString()).send(JSON.stringify({
+                                type:"messageBlocked",
+                                reason:"No active match. You may have been blocked.",
+                                receiverId,
+                            }));
+                        }
+                        return ;
+                    }
+
                     const result = await pool.query(
                         `INSERT INTO messages (sender_id, receiver_id, content, is_read) VALUES ($1, $2, $3, FALSE) RETURNING *`,
                         [senderId, receiverId, content]
@@ -374,6 +392,45 @@ const initWebSocket = (server) => {
                                 created_at:new Date().toISOString()
                             }
                         }))
+                    }
+                }
+                if (data.type === "userBlocked") {
+                    const {blockerId, blockedId} = data;
+                    if (clients.has(blockerId.toString())) {
+                        console.log(`[WS BLOCK] Envoi de refreshUI à BLOCKER: ${blockerId}`);
+                        clients.get(blockerId.toString()).send(JSON.stringify({
+                            type:"refreshUI",
+                        }));
+                    } else {
+                        console.log(`[WS BLOCK] BLOCKER ${blockerId} non connecté`);
+                    }
+                    if (clients.has(blockedId.toString())) {
+                        console.log(`[WS BLOCK] Envoi de refreshUI à BLOCKED: ${blockedId}`);
+                        clients.get(blockedId.toString()).send(JSON.stringify({
+                            type:"refreshUI",
+                        }));
+                    } else {
+                        console.log(`[WS BLOCK] BLOCKED ${blockedId} non connecté`);
+                    }
+                }
+                if (data.type === "matchBlocked") {
+                    const {blockerId, blockedId} = data;
+                    const sent = {
+                        type:"refreshMatchUI",
+                        blockerId,
+                        blockedId
+                    };
+                    if (clients.has(blockerId.toString())) {
+                        console.log(`[WS BLOCK] Envoi de refreshUI à BLOCKER: ${blockerId}`);
+                        clients.get(blockerId.toString()).send(JSON.stringify(sent));
+                    } else {
+                        console.log(`[WS BLOCK] BLOCKER ${blockerId} non connecté`);
+                    }
+                    if (clients.has(blockedId.toString())) {
+                        console.log(`[WS BLOCK] Envoi de refreshUI à BLOCKED: ${blockedId}`);
+                        clients.get(blockedId.toString()).send(JSON.stringify(sent));
+                    } else {
+                        console.log(`[WS BLOCK] BLOCKED ${blockedId} non connecté`);
                     }
                 }
             } catch (error) {

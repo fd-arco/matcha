@@ -10,6 +10,7 @@ const ConfirmActionModal = ({
     message="Do you really want to proceed?",
     confirmLabel = "Confirm",
     cancelLabel="Cancel",
+    showTextarea=true,
 }) => {
     if (!isOpen) return null;
 
@@ -30,18 +31,22 @@ const ConfirmActionModal = ({
                 >
                     <h2 className="text-xl font-bold text-gray-800 mb-3">{title}</h2>
                     <p className="text-gray-700 mb-6">{message}</p>
-                    <textarea
-                        onChange={(e) => onReasonChange(e.target.value)}
-                        placeholder="Optional: add a reason for your action"
-                        className="w-full h-24 p-2 border border-gray-300 rounded-md resize-none mb-4 text-sm"
-                    />
+                    {showTextarea && (
+                        <textarea
+                            onChange={(e) => onReasonChange(e.target.value)}
+                            placeholder="Optional: add a reason for your action"
+                            className="w-full h-24 p-2 border border-gray-300 rounded-md resize-none mb-4 text-sm"
+                        />
+                    )}
                     <div className="flex justify-center gap-4">
-                        <button
-                            onClick={onClose}
-                            className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
-                        >
-                            {cancelLabel}
-                        </button>
+                        {cancelLabel && (
+                            <button
+                                onClick={onClose}
+                                className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
+                            >
+                                {cancelLabel}
+                            </button>
+                        )}
                         <button
                             onClick={() => {
                                 onConfirm();

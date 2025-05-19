@@ -16,7 +16,6 @@ import { SocketProvider } from './context/SocketContext.jsx';
 import { useState } from 'react';
 import RootLayout from './components/RootLayout.jsx';
 import MyAccount from './pages/MyAccount.jsx';
-
 const getRoutes = (userId, setUserId, refreshFlag, refreshUser, hasProfile, setHasProfile) => createBrowserRouter([
   {
     path:'/',

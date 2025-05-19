@@ -13,6 +13,27 @@ const ProfileModal = ({userId, onClose}) => {
     const viewerId = localStorage.getItem("userId");
     const [isReportModalOpen, setIsReportModalOpen]=useState(false);
     const [reportReason, setReportReason] = useState("");
+    const [isReportSuccessModalOpen, setIsReportSuccessModalOpen] = useState(false);
+    const [hasMatch, setHasMatch] = useState(false);
+    const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
+    const [isBlockSuccessModalOpen, setIsBlockSuccessModalOpen] = useState(false);
+
+    useEffect(() => {
+        const checkMatch = async() => {
+            console.log("viewerid = ", viewerId);
+            console.log("userId = ", userId);
+            if (!viewerId || !userId || viewerId === userId) return;
+            try {
+                const res = await fetch(`http://localhost:3000/has-match/${viewerId}/${userId}`);
+                const data = await res.json();
+                setHasMatch(data.hasMatch);
+                console.log("✅ hasMatch reçu du backend:", data.hasMatch);
+            } catch (err) {
+                console.error("Erreur lors du check match:", err);
+            }
+        }
+        checkMatch();
+    },[viewerId, userId]);
 
     useEffect(() => {
         const fetchProfile = async() => {
@@ -78,7 +99,7 @@ const ProfileModal = ({userId, onClose}) => {
 
     const handleReport = async () => {
         try {
-            await fetch("http://localhoset:3000/report", {
+            await fetch("http://localhost:3000/report", {
                 method:"POST",
                 headers:{"Content-Type":"application/json"},
                 body:JSON.stringify({
@@ -87,9 +108,43 @@ const ProfileModal = ({userId, onClose}) => {
                     reason:reportReason,    
                 }),
             });
+            setIsReportSuccessModalOpen(true);
         } catch (err) {
-            console.error(err);
+            console.error("Error lors du report: ", err);
             alert("erreur lors du signalement");
+        }
+    }
+
+    const handleBlock = async() => {
+        try {
+            const res = await fetch(`http://localhost:3000/block`, {
+                method:"POST",
+                headers:{"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    blockerId:viewerId,
+                    blockedId:userId
+                }),
+            });
+            if (!res.ok) throw new Error("echec du blocage");
+            socket.send(
+                JSON.stringify({
+                    type:"userBlocked",
+                    blockerId:viewerId,
+                    blockedId:userId,
+                })
+            )
+            socket.send(
+                JSON.stringify({
+                    type:"matchBlocked",
+                    blockerId:viewerId,
+                    blockedId:userId,
+                })
+            )
+            onClose();
+            setIsBlockSuccessModalOpen(true);
+        } catch(err) {
+            console.error("Erreur blocage:", err);
+            alert("an errror occured while blocking this user.")
         }
     }
 
@@ -131,7 +186,7 @@ const ProfileModal = ({userId, onClose}) => {
                             className={`w-4 h-4 ml-2 inline-block align-middle rounded-full ${
                                 userStatus?.online ? "bg-green-500" : "bg-red-500"
                             } border-2 border-white`}
-                            title={userStatus?.online ? "En ligne" : "Hors ligne"}
+                            title={userStatus?.online ? "Online" : "Offline"}
                         ></span>
                         </h2>
                         {!userStatus?.online && userStatus?.lastOnline && (
@@ -175,14 +230,24 @@ const ProfileModal = ({userId, onClose}) => {
                             </div>
                         </div>
                     )}
-                    <div className="mt-6 flex justify-end">
+                    {viewerId !== userId && (
+                    <div className={`mt-6 flex justify-center gap-10`}>
                         <button
                             onClick={() => setIsReportModalOpen(true)}
                             className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded"
                         >
-                            Report this account
+                            Report
                         </button>
+                        {hasMatch && (
+                            <button
+                                onClick={() => setIsBlockModalOpen(true)}
+                                className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded"
+                            >
+                                Block
+                            </button>
+                        )}
                     </div>
+                    )}
                     <ConfirmActionModal
                         isOpen={isReportModalOpen}
                         onClose={()=> setIsReportModalOpen(false)}
@@ -192,6 +257,40 @@ const ProfileModal = ({userId, onClose}) => {
                         message="You will still be able to view and interact with this user after submitting the report. Are you sure you want to report this profile?"
                         confirmLabel="Report"
                         cancelLabel="Cancel"
+                        showTextarea={true}
+                    />
+                    <ConfirmActionModal
+                        isOpen={isReportSuccessModalOpen}
+                        onClose={()=> setIsReportSuccessModalOpen(false)}
+                        onConfirm={()=>{}}
+                        onReasonChange={()=>{}}
+                        title="Report submitted"
+                        message="Thank you for help us keep the community safe. Our moderators will review your report."
+                        confirmLabel="OK"
+                        cancelLabel=""
+                        showTextarea={false}
+                    />
+                    <ConfirmActionModal
+                        isOpen={isBlockModalOpen}
+                        onClose={()=> setIsBlockModalOpen(false)}
+                        onConfirm={handleBlock}
+                        onReasonChange={()=>{}}
+                        title="Block this user?"
+                        message="This will remove the match. You and the user won't be able to interact each other. Are you sure you want to block this profile?"
+                        confirmLabel="Block"
+                        cancelLabel="Cancel"
+                        showTextarea={false}
+                    />
+                    <ConfirmActionModal
+                        isOpen={isBlockSuccessModalOpen}
+                        onClose={()=> setIsBlockSuccessModalOpen(false)}
+                        onConfirm={()=>{}}
+                        onReasonChange={()=>{}}
+                        title="Block submitted"
+                        message="This user has been blocked and removed from your matches."
+                        confirmLabel="OK"
+                        cancelLabel=""
+                        showTextarea={false}
                     />
                 </div>
 

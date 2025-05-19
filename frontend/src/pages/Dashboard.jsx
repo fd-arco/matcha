@@ -7,9 +7,11 @@ import MatchsDashboard from "../components/MatchsDashboard";
 import MessagesDashboard from "../components/MessagesDashboard";
 import Navbar from "../components/Navbar";
 import { useSocket } from "../context/SocketContext";
+
 const Dashboard = ({setHasNotification}) => {
     const {socket} = useSocket();
     const navigate = useNavigate();
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [activeTab, setActiveTab] = useState("views");
     const [messageNotifications, setMessageNotifications] = useState([]);
     const [matchNotifications, setMatchNotifications] = useState([]);
@@ -48,7 +50,7 @@ const Dashboard = ({setHasNotification}) => {
             }
         }
         fetchNotifications();
-    }, [userId]);
+    }, [userId, refreshTrigger]);
 
     useEffect(() => {
         const fetchLikeNotifications = async() => {
@@ -65,7 +67,7 @@ const Dashboard = ({setHasNotification}) => {
             }
         }
         fetchLikeNotifications();
-    }, [userId]);
+    }, [userId, refreshTrigger]);
 
     useEffect(() => {
         const fetchMatchNotifications = async() => {
@@ -78,7 +80,7 @@ const Dashboard = ({setHasNotification}) => {
             }
         }
         fetchMatchNotifications();
-    }, [userId]);
+    }, [userId, refreshTrigger]);
 
     useEffect(() => {
         const fetchViewNotifications = async() => {
@@ -94,7 +96,7 @@ const Dashboard = ({setHasNotification}) => {
             }
         }
         fetchViewNotifications();
-    }, [userId])
+    }, [userId, refreshTrigger])
 
     useEffect(() => {
         if (!socket) return;
@@ -131,6 +133,11 @@ const Dashboard = ({setHasNotification}) => {
                             : prev.sent
                     }));
                 }
+            }
+            if (message.type === "refreshUI") {
+                const currentUser = localStorage.getItem("userId");
+                console.log(`[WS FRONT] 👤 Utilisateur ${currentUser} a reçu le message WS : refreshUI`);
+                setRefreshTrigger(prev => prev + 1);
             }
         }
         socket.addEventListener("message", handleMessage);

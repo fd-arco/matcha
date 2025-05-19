@@ -79,3 +79,10 @@ CREATE TABLE reports (
     reason TEXT DEFAULT 'No reason',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE blocks (
+    id SERIAL PRIMARY KEY,
+    blocker_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    blocked_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

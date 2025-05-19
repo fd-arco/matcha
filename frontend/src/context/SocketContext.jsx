@@ -11,6 +11,7 @@ export const SocketProvider = ({children}) => {
     const [onlineStatuses, setOnlineStatuses] = useState({});
     const [userPhoto, setUserPhoto] = useState(null);
     const userId = localStorage.getItem("userId");
+    const [blockedUserId, setBlockedUserId] = useState(null);
 
     useEffect(() => {
         if (!userId) return;
@@ -51,6 +52,22 @@ export const SocketProvider = ({children}) => {
                     }
                 }));
             }
+            if (message.type === "refreshMatchUI") {
+                const {blockerId, blockedId} = message;
+                const currentUser = localStorage.getItem("userId");
+                console.log(`[WS FRONT] 👤 Utilisateur ${currentUser} a reçu le message WS : refreshMatchUI`);
+                if (userId === blockerId.toString() || userId === blockedId.toString()) {
+                    setMatchesGlobal(prev =>
+                        prev.filter(m =>
+                            String(m.user_id) !== (userId === blockerId.toString() ? blockedId.toString() : blockerId.toString())
+                        )
+                    )
+                }
+            }
+            if (message.type === "messageBlocked") {
+                console.log("Blocage detecte:", message);
+                setBlockedUserId(message.receiverId);
+            }
         }
 
         newSocket.onclose = () => {
@@ -77,6 +94,8 @@ export const SocketProvider = ({children}) => {
             setOnlineStatuses,
             userPhoto,
             setUserPhoto,
+            blockedUserId,
+            setBlockedUserId,
         }}>
             {children}
         </SocketContext.Provider>
