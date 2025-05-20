@@ -9,10 +9,16 @@ const multer = require('multer');
 const nodemailer = require('nodemailer');
 require('dotenv').config({ path: './.env' });
 
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
+
 app.use(express.json());
 
 const PORT = 3000;
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:3001",
+    credentials: true
+}));
 app.use(bodyParser.json());
 
 const storage = multer.diskStorage({
@@ -117,6 +123,13 @@ app.post("/register", async (req, res) => {
         const user = result.rows[0];
         const token = jwt.sign({ userId: user.id }, SECRET_KEY, { expiresIn: "7d" });
 
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "Lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
         const verifLink = `http://localhost:3000/verify-email?token=${verifTokenMail}`;
 
         const mailOptions = {
@@ -141,7 +154,6 @@ app.post("/register", async (req, res) => {
 
             message: `Utilisateur ${firstname} ${lastname} ajouté avec succès!`,
             user,
-            token
         });
     } 
     catch (error) {

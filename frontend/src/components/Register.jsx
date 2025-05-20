@@ -30,6 +30,7 @@ export default function Register (){
                 headers: {
                     "Content-Type": "application/json",
                 },
+                credentials: "include",
                 body: JSON.stringify({ email, firstname, lastname, password }),
             });
     
@@ -48,7 +49,7 @@ export default function Register (){
                 localStorage.setItem("userId", data.user.id); //TODO:ponctuel on fera avec les cookies apres 
                 console.log("JE redirige bien vers create-profil");
 
-                sessionStorage.setItem("token", token);
+                // sessionStorage.setItem("token", token);
                 setTimeout(() => { navigate("/create-profil") }, 3000);
             }
             else {
