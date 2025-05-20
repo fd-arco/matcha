@@ -27,6 +27,7 @@ export default function Register ({setUserId}){
                 headers: {
                     "Content-Type": "application/json",
                 },
+                credentials: "include",
                 body: JSON.stringify({ email, firstname, lastname, password }),
             });
     

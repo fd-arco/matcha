@@ -17,10 +17,16 @@ const { profile } = require('console');
 
 const server = http.createServer(app);
 initWebSocket(server);
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
+
 app.use(express.json());
 
 const PORT = 3000;
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:3001",
+    credentials: true
+}));
 app.use(bodyParser.json());
 
 const storage = multer.diskStorage({
@@ -68,7 +74,7 @@ function calculateAge(dob) {
 
 app.post("/create-profil", upload.array("photos", 6), async(req, res) => {
     try {
-        const { user_id, name, dob, gender, interestedIn, lookingFor, bio} = req.body;
+        const { user_id, name, dob, gender, interestedIn, lookingFor, bio, latitude, longitude} = req.body;
 
         const age = calculateAge(dob);
         let passionArray = [];
@@ -98,9 +104,9 @@ app.post("/create-profil", upload.array("photos", 6), async(req, res) => {
             fame += Math.min(photoCount, 6) * 10;
         }
         const result = await pool.query(
-            `INSERT INTO profiles (user_id, name, dob, age, gender, interested_in, looking_for, passions, bio, fame, fame_bio, passions_count, photo_count)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id`,
-            [user_id, name, dob, age, gender, interestedIn, lookingFor, passionArray, bio, fame, fameBio, passionsCount, photoCount]
+            `INSERT INTO profiles (user_id, name, dob, age, gender, interested_in, looking_for, passions, bio, fame, fame_bio, passions_count, photo_count, latitude, longitude)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id`,
+            [user_id, name, dob, age, gender, interestedIn, lookingFor, passionArray, bio, fame, fameBio, passionsCount, photoCount, latitude, longitude]
         );
 
         const profile_id = result.rows[0].id;
@@ -117,6 +123,7 @@ app.post("/create-profil", upload.array("photos", 6), async(req, res) => {
         res.status(500).json({error: "Erreur serveur"});
     }
 })
+
 function generateVerificationToken() {
     return crypto.randomBytes(20).toString('hex');
 }
@@ -139,6 +146,13 @@ app.post("/register", async (req, res) => {
 
         const user = result.rows[0];
         const token = jwt.sign({ userId: user.id }, SECRET_KEY, { expiresIn: "7d" });
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "Lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
 
         const verifLink = `http://localhost:3000/verify-email?token=${verifTokenMail}`;
 
@@ -164,7 +178,6 @@ app.post("/register", async (req, res) => {
 
             message: `Utilisateur ${firstname} ${lastname} ajouté avec succès!`,
             user,
-            token
         });
     } 
     catch (error) {
@@ -1444,3 +1457,23 @@ app.post('/block', async(req,res) => {
         res.status(500).json({error: "server error"});
     }
 })
+app.get("/config", async(req, res) => {
+    res.json({kk: process.env.REACT_APP_GOOGLE_API_KEY,});
+}
+)
+
+app.post("/longitude", async(req, res) => {
+
+    const { latitude, longitude } = req.body
+    if(!latitude || !longitude){
+       return res.status(400).json("pas les directiosn ma couillasse")
+    }
+    try{
+
+        const result = await pool.query('INSERT INTO profiles(latitude, longitude) VALUES ($1::DOUBLE PRECISION, $2::DOUBLE PRECISION) RETURNING *', [latitude, longitude]);
+    }
+    catch(error)
+    {
+        res.status(400).json(error, "erreur lors de lenregistrement de la localisastion")
+    }
+});

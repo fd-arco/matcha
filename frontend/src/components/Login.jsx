@@ -51,6 +51,25 @@ export default function Login({setUserId}) {
             navigate("/create-profil");
           }
         }, 10);
+
+        /*setTimeout(() => { navigate("/profil") }, 1500);*/
+
+    }
+
+      // if (response.ok) {
+
+      //     const token = data.token
+      //     console.log("ca token :::", token)
+      //     sessionStorage.setItem("token", token);
+      //     setTimeout(() => {
+      //       navigate("/profil");
+      //   }, 1500);
+      // }
+
+      else {
+        setModal(true);
+        console.log("caca boudin")
+        setMessage(data.error);
       }
     } 
   catch (error) 

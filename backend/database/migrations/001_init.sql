@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS profiles (
     fame_bio BOOLEAN DEFAULT FALSE,
     passions_count INTEGER DEFAULT 0,
     photo_count INTEGER DEFAULT 0,
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

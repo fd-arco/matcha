@@ -1,6 +1,8 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import { Navigate, useNavigate } from "react-router-dom";
+import ModalLocal from "../util/modalLocal.jsx"
+import { getUserLocation } from "../util/geo.js";
 
 export default function CreateProfil({refreshUser}) {
     const [selectedPassions, setSelectedPassions] = useState([]);
@@ -8,6 +10,7 @@ export default function CreateProfil({refreshUser}) {
     const [photos, setPhotos] = useState([]);
     const navigate = useNavigate();
     const userId = localStorage.getItem("userId");
+    const [modalLocal, setModalLocal] = useState(false);
 
     const passionsList = ["Music", "Sports", "Reading", "Traveling", "Cooking", 
         "Gaming", "Dancing", "Art", "Photography", "Movies"
@@ -47,6 +50,11 @@ export default function CreateProfil({refreshUser}) {
     const handleRemovePhoto = (index) => {
         setPhotos(photos.filter((_, i) => i !== index));
     };
+
+    async function handleLocalModal(){
+        console.log("ca reeeeeeeeeeeeeeeeeeeentre")
+        setModalLocal(true);
+    }
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -100,7 +108,9 @@ export default function CreateProfil({refreshUser}) {
         if (Object.keys(errors).length > 0) {
             return ;
         }
-        
+
+        const location = await getUserLocation();
+
         const finalFormData = new FormData();
         finalFormData.append("user_id", userId); //TODO:RECUPERER USER_ID DEPUIS LA CREATION DU COMPTE
         finalFormData.append("name", name);
@@ -110,6 +120,8 @@ export default function CreateProfil({refreshUser}) {
         finalFormData.append("lookingFor", lookingFor);
         finalFormData.append("bio", bio);
         finalFormData.append("passions", JSON.stringify(selectedPassions));
+        finalFormData.append("latitude", location.latitude);
+        finalFormData.append("longitude", location.longitude);
         
         photos.forEach((photo) => {
             finalFormData.append("photos", photo.file);
@@ -133,6 +145,10 @@ export default function CreateProfil({refreshUser}) {
         } catch (error) {
             console.error("Erreur lors de l'envoi du profil:", error);
             alert("Impossible de creer le profil.");
+        }
+
+        async function handleLocalModal(){
+            setModalLocal(true);
         }
 
     }
@@ -283,13 +299,29 @@ export default function CreateProfil({refreshUser}) {
                             </div>
 
                             <div>
-                                <button type="submit" className="bg-green-600 hover:bg-green-500 dark:bg-green-800 dark:hover:bg-green-700 text-white px-4 py-2 rounded-lg w-full">
-                                    Submit
-                                </button>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 font-medium mb-2">Autorisez vous Matcha a utiliser votre localisation?</label>
                             </div>
+                            <div className="flex space-x-8">
+                                <div>
+                                    <button  type="button" onClick={ handleLocalModal } className="bg-green-600 hover:bg-green-500 dark:bg-green-800 dark:hover:bg-green-700 rounded-lg w-full sm:w-auto">
+                                        oui
+                                    </button>
+                                    <button type="button" className="bg-green-600 hover:bg-green-500 dark:bg-green-800 dark:hover:bg-green-700 rounded-lg w-full sm:w-auto" >
+                                        non
+                                    </button>
+                                </div>
+                            </div>
+                            <br></br>
+                            <button type="submit" className="bg-green-600 hover:bg-green-500 dark:bg-green-800 dark:hover:bg-green-700 text-white px-4 py-2 rounded-lg w-full">
+                                Submit
+                            </button>
+                            </div>
+
                         </form>
                     </div>
-
+                    {modalLocal && <ModalLocal onClose={() => setModalLocal(false)}/>}                   
+                    {/* SECTION DROITE: UPLOAD DES PHOTOS */}
                     <div className="w-full md:w-[48%] flex flex-col">
                     <h2 className={`text-2xl font-medium mb-4`}>Upload your photos (max 6)</h2>
                     {formErrors.photos && (<p className="text-red-500 text-sm mt-1 mb-3">{formErrors.photos}</p>)}
