@@ -47,15 +47,22 @@ const ConfirmActionModal = ({
                                 {cancelLabel}
                             </button>
                         )}
-                        <button
-                            onClick={() => {
-                                onConfirm();
-                                onClose();
-                            }}
-                            className="px-4 py-2 bg-red-500 dark:bg-red-800 dark:hover:bg-red-900 rounded-lg hover:bg-red-400 transition"
-                        >
-                            {confirmLabel}
-                        </button>
+                        {confirmLabel && (
+                            <button
+                                onClick={() => {
+                                    onConfirm();
+                                    onClose();
+                                }}
+                                className={`px-4 py-2 rounded-lg transition ${
+                                    confirmLabel === "OK"
+                                        ? "bg-green-500 dark:bg-green-800 dark:hover:bg-green-900 hover:bg-green-400"
+                                        : "bg-red-500 hover:bg-red-400 dark:bg-red-800 dark:hover:bg-red-900"
+                                }`}
+                            >
+                                {confirmLabel}
+                            </button>
+                        )
+                        }
                     </div>
                 </motion.div>
             </motion.div>

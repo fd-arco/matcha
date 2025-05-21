@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar";
 import { Navigate, useNavigate } from "react-router-dom";
 import ModalLocal from "../util/modalLocal.jsx"
 import { getUserLocation } from "../util/geo.js";
+import ConfirmActionModal from "../components/ConfirmActionModal.jsx";
 
 export default function CreateProfil({refreshUser}) {
     const [selectedPassions, setSelectedPassions] = useState([]);
@@ -11,12 +12,26 @@ export default function CreateProfil({refreshUser}) {
     const navigate = useNavigate();
     const userId = localStorage.getItem("userId");
     const [modalLocal, setModalLocal] = useState(false);
+    const [infoModal, setInfoModal] = useState({
+        isOpen:false,
+        title:"",
+        message:"",
+    });
 
     const passionsList = ["Music", "Sports", "Reading", "Traveling", "Cooking", 
         "Gaming", "Dancing", "Art", "Photography", "Movies"
     ];
 
     const [formErrors, setFormErrors] = useState({});
+
+    const showInfoModal = (title, message, onConfirm) => {
+        setInfoModal({
+            isOpen:true,
+            title,
+            message,
+            onConfirm,
+        })
+    };
 
     const handleAddPassion = (event) => {
         const passion = event.target.value;
@@ -35,7 +50,7 @@ export default function CreateProfil({refreshUser}) {
 
     const handleUploadPhoto = async (event) => {
         if (photos.length >= 6) {
-            alert("You can only upload up to 6 photos.");
+            showInfoModal("Upload limit", "You can only upload up to 6 photos.");
             return;
         }
 
@@ -135,10 +150,12 @@ export default function CreateProfil({refreshUser}) {
 
             const data = await response.json();
             if (response.ok) {
-                alert("Profil cree avec succes"); //TODO:ameliorer la mise en page
-                console.log("reponse du serveur : ", data);
-                refreshUser();
-                navigate("/swipe");
+                showInfoModal("Profile created", "Your profile has been successfully created.",
+                    () => {
+                        refreshUser();
+                        navigate("/swipe");
+                    }
+                ); //TODO:ameliorer la mise en page
             } else {
                 alert("Erreur serveur:", data.error);
             }
@@ -373,6 +390,22 @@ export default function CreateProfil({refreshUser}) {
                     </div>
                 </div>
             </div>
+            <ConfirmActionModal
+                isOpen={infoModal.isOpen}
+                onClose={()=> {
+                    setInfoModal({...infoModal, isOpen:false})
+                }}
+                onConfirm={()=> {
+                    setInfoModal({...infoModal, isOpen:false})
+                    infoModal.onConfirm?.();
+                }}
+                onReasonChange={()=>{}}
+                title={infoModal.title}
+                message={infoModal.message}
+                confirmLabel="OK"
+                cancelLabel=""
+                showTextarea={false}
+            />
         </div>
     );
 }
