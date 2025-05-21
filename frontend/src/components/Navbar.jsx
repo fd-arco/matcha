@@ -49,11 +49,6 @@ export default function Navbar({userId, setUserId, refreshFlag, setHasProfile}){
         navigate("/");
     };
 
-    const handleLangues = () => {
-        navigate("/");
-        //TODO:gerer le bouton langues
-    }
-
     return (
         <nav className="flex items-center justify-between px-6 py-4 bg-white dark:bg-gray-900 shadow-md">
             <div class="w-1/3 text-left">
@@ -72,7 +67,7 @@ export default function Navbar({userId, setUserId, refreshFlag, setHasProfile}){
                         {localHasProfile ? (
                             <Link 
                                 to="/my-account"
-                                className="p-2 rounded-lg shadow-lg text-white transition duration-300 ease-in-out bg-blue-600 hover:bg-blue-500 dark:bg-blue-800 dark:hover:bg-blue-700 flex items-center space-x-1"
+                                className="p-2 rounded-lg shadow-lg text-white transition duration-300 ease-in-out bg-blue-500 hover:bg-blue-400 dark:bg-blue-800 dark:hover:bg-blue-900 flex items-center space-x-1"
                             >
                                 <User className="w-5 h-5" />
                                 <span>My account</span>
@@ -95,14 +90,14 @@ export default function Navbar({userId, setUserId, refreshFlag, setHasProfile}){
                         )}
                         <button
                             onClick={handleSignOut}
-                            className="p-2 rounded-lg shadow-lg text-white bg-red-600 hover:bg-red-500 dark:bg-red-800 dark:hover:bg-red-700 "
+                            className="p-2 rounded-lg shadow-lg text-white bg-red-500 hover:bg-red-400 dark:bg-red-800 dark:hover:bg-red-900 "
                         >
                             Sign out
                         </button>
                     </div>
                 ) : (
                 <Link to="/login"
-                    class="p-2 rounded-lg shadow-lg text-white transition duration-300 ease-in-out bg-green-600 hover:bg-green-500 dark:bg-green-800 dark:hover:bg-green-700"
+                    class="p-2 rounded-lg shadow-lg text-white transition duration-300 ease-in-out bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900"
                 >
                     Sign in
                 </Link>

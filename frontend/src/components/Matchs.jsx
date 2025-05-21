@@ -135,7 +135,7 @@ const Matchs = () => {
 
     if (profiles.length === 0 || currentIndex >= profiles.length) {
         return (
-            <div className="flex justify-center items-center h-full text-center bg-gray-100 dark:bg-gray-700">
+            <div className="flex justify-center items-center h-full text-center bg-gray-200 dark:bg-gray-800">
                 <p className="text-gray-500 dark:text-white text-3xl font-bold">No more profiles available!</p>
             </div>
         )
@@ -157,12 +157,12 @@ const Matchs = () => {
 
 
     return (
-        <div className="bg-gray-100 dark:bg-gray-700 flex flex-col items-center justify-center h-full">
+        <div className="bg-gray-200 dark:bg-gray-800 flex flex-col items-center justify-center h-full">
             <div className="bg-white dark:bg-gray-900 p-6 shadow-lg rounded-2xl w-full max-w-md text-center">
 
                 <div className="relative mb-4">
                     {profile.photos && (
-                        <>
+                        <div classname="p-5">
                             <img
                                 src={`http://localhost:3000${profile.photos[currentPhotoIndex]}`}
                                 alt={`${currentPhotoIndex + 1}`}
@@ -171,24 +171,24 @@ const Matchs = () => {
                             />
 
                             {profile.commonPassions && profile.commonPassions.length > 0 && (
-                                <div className="absolute bottom-0 left-0 w-full bg-black bg-opacity-50 text-white text-sm font-semibold px-3 py-1 rounded-b-lg">
+                                <div className="absolute bottom-0 left-0 w-full bg-purple-500 dark:bg-purple-800 text-white text-sm font-semibold px-6 py-1 rounded-b-lg">
                                     🔥 {profile.commonPassions.length} passions en commun
                                 </div>
                             )}
 
                             <button
                                 onClick={handlePrevPhoto}
-                                className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 p-1 rounded-full hover:bg-opacity-100"
+                                className="absolute -left-5 top-1/2 transform -translate-y-1/2 bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-600 hover:bg-gray-400 bg-opacity-70 p-1 rounded-full hover:bg-opacity-100"
                             >
-                                <ChevronLeft />
+                                <ChevronLeft className="text-black dark:text-white" />
                             </button>
                             <button
                                 onClick={handleNextPhoto}
-                                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 p-1 rounded-full hover:bg-opacity-100"
+                                className="absolute -right-5 top-1/2 transform -translate-y-1/2 bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-600 hover:bg-gray-400 bg-opacity-70 p-1 rounded-full hover:bg-opacity-100"
                             >
-                                <ChevronRight />
+                                <ChevronRight className="text-black dark:text-white" />
                             </button>
-                        </>
+                        </div>
                     )}
                 </div>
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white mt-3">{profile.name}, {profile.age}</h2>
@@ -208,7 +208,7 @@ const Matchs = () => {
                     <div className="mt-3 flex flex-wrap justify-center gap-2">
                         {passionsArray.map((passion, index) => {
                             const isCommon = profile.commonPassions?.includes(passion);
-                            const colorClass = isCommon ? "bg-purple-500" : "bg-green-500";
+                            const colorClass = isCommon ? "bg-purple-500 dark:bg-purple-800" : "bg-green-500 dark:bg-green-800";
                             return (
                                 <span key={index} className={`px-4 py-2 text-sm font-semibold text-white ${colorClass} rounded-full`}>
                                     {passion}
@@ -221,12 +221,12 @@ const Matchs = () => {
                 <div className="items-center justify-center flex space-x-4 mt-4">
                     <button
                         onClick={handlePass}
-                        className="p-3 bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-800 rounded-full text-white shadow-lg hover:bg-gray-400"
+                        className="p-3 bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-800 rounded-full shadow-lg hover:bg-gray-400"
                     >❌
                     </button>
                     <button
                         onClick={handleLike}
-                        className="p-3 bg-red-500 rounded-full text-white shadow-lg hover:bg-red-600"
+                        className="p-3 bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-800 rounded-full shadow-lg hover:bg-gray-400"
                     >❤️
                     </button>
                 </div>

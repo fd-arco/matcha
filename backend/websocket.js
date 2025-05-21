@@ -29,14 +29,12 @@ const initWebSocket = (server) => {
                     );
                     console.log(`[WS] last_online mis à jour pour ${data.userId}`);
                     clients.forEach((clientWs, clientId) => {
-                        if (clientId !== data.userId.toString()) {
                             console.log(`[WS] Notifie ${clientId} que ${data.userId} est en ligne`);    
                             clientWs.send(JSON.stringify({
                                 type:"userStatusChanged",
                                 userId:data.userId,
                                 online:true
                             }));
-                        }
                     });
 
                     const currentlyOnline = Array.from(clients.keys())

@@ -33,21 +33,21 @@ const LikesDashboard = ({ notifications, setLikeNotifications, userId}) => {
     }
 
     return (
-        <div className="p-4 max-h-[800px] overflow-y-auto">
+        <div className="text-black dark:text-white p-4 max-h-[800px] overflow-y-auto">
             <h2 className="text-xl font-semibold mb-4">❤️ Likes</h2>
 
             {/* ✅ Utilisateurs qui t'ont liké */}
             <section className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Users who liked you</h3>
+                <h3 className="text-lg font-semibold mb-2">Users who liked you</h3>
                 {received.length === 0 ? (
-                    <p className="text-gray-600">Nobody has liked you yet.</p>
+                    <p>Nobody has liked you yet.</p>
                 ) : (
                     <ul>
                         {received.map((notif) => (
-                            <li key={`received-${notif.notification_id}`} className={`p-3 mb-2 rounded-lg shadow-md ${notif.is_read ? "bg-white" : "bg-green-100"}`}>
+                            <li key={`received-${notif.notification_id}`} className={`p-3 mb-2 rounded-lg shadow-md ${notif.is_read ? "dark:bg-gray-800 bg-gray-200" : "dark:bg-green-900 bg-green-200"}`}>
                                 <div className="flex justify-between items-center">
                                     <div>
-                                        <p className="font-semibold text-gray-900">
+                                        <p>
                                             {notif.sender_name} liked you!
                                         </p>
                                         <p className="text-sm text-gray-500 mt-1">
@@ -71,16 +71,16 @@ const LikesDashboard = ({ notifications, setLikeNotifications, userId}) => {
 
             {/* 🫵 Profils que tu as likés */}
             <section>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Profiles you liked</h3>
+                <h3 className="text-lg font-semibold mb-2">Profiles you liked</h3>
                 {sent.length === 0 ? (
-                    <p className="text-gray-600">You haven't liked any profiles yet.</p>
+                    <p>You haven't liked any profiles yet.</p>
                 ) : (
                     <ul>
                         {sent.map((notif) => (
-                            <li key={`sent-${notif.notification_id}`} className="p-3 mb-2 rounded-lg shadow-md bg-white">
+                            <li key={`sent-${notif.notification_id}`} className="p-3 mb-2 rounded-lg shadow-md dark:bg-gray-800 bg-gray-200">
                                 <div className="flex justify-between items-center">
                                     <div>
-                                        <p className="font-semibold text-gray-900">
+                                        <p>
                                             You liked {notif.sender_name}
                                         </p>
                                         <p className="text-sm text-gray-500 mt-1">
@@ -90,10 +90,10 @@ const LikesDashboard = ({ notifications, setLikeNotifications, userId}) => {
 
                                     <div className="flex items-center gap-4">
                                         {notif.is_matched ? (
-                                            <span className="text-green-600 font-semibold">✅ It's a match!</span>
+                                            <span className="text-green-500 dark:text-green-800 font-semibold">✅ It's a match!</span>
                                         ) : (
                                             <button
-                                                className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+                                                className="px-3 py-1 bg-red-500 dark:bg-red-800 rounded-md hover:bg-red-400 dark:hover:bg-red-900 transition"
                                                 onClick={() => handleUnlike(notif)}
                                             >
                                                 Unlike

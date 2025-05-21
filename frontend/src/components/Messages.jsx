@@ -138,7 +138,7 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
 
 
     return (
-        <div className="bg-gray-200 dark:bg-gray-800 p-4 shadow-md h-full w-full">
+        <div className="bg-gray-100 dark:bg-gray-700 p-4 shadow-md h-full w-full">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Messages</h2>
 
             {matches.length === 0 ? (
@@ -156,7 +156,7 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
                         <li
                             key={match.user_id}
                             onClick={() => handleSelectMatch(match)}
-                            className="p-2 flex items-center space-x-3 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-700 rounded-lg relative"
+                            className="p-2 flex items-center space-x-3 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600 rounded-lg relative"
                         >
                         <div className="relative">
                             <img
