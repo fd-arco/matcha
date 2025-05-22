@@ -11,6 +11,7 @@ export default function Navbar({userId, setUserId, refreshFlag, setHasProfile}){
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [localHasProfile, setLocalHasProfile] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
 
     useEffect(() => {
         if (userId) {
@@ -50,59 +51,257 @@ export default function Navbar({userId, setUserId, refreshFlag, setHasProfile}){
     };
 
     return (
-        <nav className="flex items-center justify-between px-6 py-4 bg-white dark:bg-gray-900 shadow-md">
-            <div class="w-1/3 text-left">
-            <h1 class="text-black dark:text-white font-bold text-xl italic">
-                <Link to='/'>
-                    Matcha
-                </Link>
-            </h1>
+        <nav className="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 py-4 bg-white dark:bg-gray-900 shadow-md">
+            <div className="w-1/3 text-left">
+                <h1 className="text-black dark:text-white font-bold italic text-[clamp(1rem,5vw,1.375rem)] min-w-0 max-w-full truncate">
+                <Link to="/">Matcha</Link>
+                </h1>
             </div>
-            <div class="w-1/3 text-center">
-                <DarkModeToggle/>
+
+            <div className="flex-1 flex justify-center">
+                <div className="md:hidden min-w-[48px] flex justify-center">
+                <DarkModeToggle compact />
+                </div>
+
+                <div className="hidden md:block">
+                <DarkModeToggle />
+                </div>
             </div>
-            <div class="w-1/3 flex justify-end space-x-2">
+
+            <div className="w-1/3 justify-end space-x-2 hidden md:flex">
                 {isAuthenticated ? (
                     <div className="flex items-center space-x-2">
                         {localHasProfile ? (
-                            <Link 
+                            <Link
                                 to="/my-account"
-                                className="p-2 rounded-lg shadow-lg text-white transition duration-300 ease-in-out bg-blue-500 hover:bg-blue-400 dark:bg-blue-800 dark:hover:bg-blue-900 flex items-center space-x-1"
+                                className="p-2 rounded-lg shadow-lg text-white bg-blue-500 hover:bg-blue-400 dark:bg-blue-800 dark:hover:bg-blue-900 flex items-center space-x-1"
                             >
-                                <User className="w-5 h-5" />
+                            {user?.photos?.[0] && (
+                                <img
+                                    src={`http://localhost:3000${user.photos[0]}`}
+                                    alt="Profil"
+                                    className="w-6 h-6 rounded-full border-white shadow-md"
+                                />
+                            )}
                                 <span>My account</span>
                             </Link>
-                        ) : (
-                            location.pathname !== "/create-profil" && (
+                        ) : location.pathname !== "/create-profil" && (
                             <Link
                                 to="/create-profil"
-                                className="p-2 rounded-lg shadow-lg text-white bg-yellow-600 hover:bg-yellow-500 dark:bg-yellow-800 dark:hover:bg-yellow-700">
+                                className="p-2 rounded-lg shadow-lg text-white bg-yellow-600 hover:bg-yellow-500 dark:bg-yellow-800 dark:hover:bg-yellow-700"
+                            >
                                 Complete your profile
                             </Link>
-                            )
                         )}
-                        {localHasProfile && user?.photos?.[0] && (
-                            <img 
-                                src={`http://localhost:3000${user.photos[0]}`}
-                                alt="Profil"
-                                className="w-10 h-10 rounded-full border-2 border-white shadow-md "
-                            />
-                        )}
+
                         <button
                             onClick={handleSignOut}
-                            className="p-2 rounded-lg shadow-lg text-white bg-red-500 hover:bg-red-400 dark:bg-red-800 dark:hover:bg-red-900 "
+                            className="p-2 rounded-lg shadow-lg text-white bg-red-500 hover:bg-red-400 dark:bg-red-800 dark:hover:bg-red-900"
                         >
                             Sign out
                         </button>
                     </div>
                 ) : (
-                <Link to="/login"
-                    class="p-2 rounded-lg shadow-lg text-white transition duration-300 ease-in-out bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900"
-                >
-                    Sign in
-                </Link>
+                    <Link
+                        to="/login"
+                        className="p-2 rounded-lg shadow-lg text-white bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900"
+                        >
+                        Sign in
+                    </Link>
                 )}
             </div>
+
+            <div className="w-1/3 flex justify-end md:hidden">
+                <button
+                    onClick={() => setMenuOpen(!menuOpen)}
+                    aria-label="Toggle Menu"
+                    className="p-2 z-50 dark:text-white text-black"
+                >
+                    <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+
+            {/* Overlay sombre */}
+
+            {menuOpen && (
+            <div className="fixed inset-y-0 right-0 w-64 bg-white dark:bg-gray-900 shadow-lg z-50 animate-slide-in flex flex-col items-center justify-center space-y-4 p-6">
+                <div className="w-full flex justify-end mb-2">
+                    <button
+                        onClick={() => setMenuOpen(false)}
+                        className="absolute top-8 right-8 text-black dark:text-white hover:text-red-500 dark:hover:text-red-400 transition"
+                        aria-label="Close menu"
+                    >
+                        <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                        >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                {isAuthenticated ? (
+                <div className="flex flex-col space-y-4 w-full items-center">
+                    {localHasProfile ? (
+                        <Link
+                        to="/my-account"
+                        onClick={() => setMenuOpen(false)}
+                        className="w-11/12 text-center px-6 py-3 rounded-lg shadow-lg text-white bg-blue-500 hover:bg-blue-400 dark:bg-blue-800 dark:hover:bg-blue-900 flex items-center justify-center gap-x-2"
+                        >
+                        {user?.photos?.[0] && (
+                            <img
+                            src={`http://localhost:3000${user.photos[0]}`}
+                            alt="Profil"
+                            className="w-6 h-6 rounded-full border-white shadow-md"
+                            />
+                        )}
+                        <span>My account</span>
+                        </Link>
+                    ) : (
+                    location.pathname !== "/create-profil" && (
+                        <Link
+                        to="/create-profil"
+                        onClick={() => setMenuOpen(false)}
+                        className="w-11/12 text-center px-6 py-3 rounded-lg shadow-lg text-white bg-yellow-600 hover:bg-yellow-500 dark:bg-yellow-800 dark:hover:bg-yellow-700"
+                        >
+                        Complete your profile
+                        </Link>
+                    )
+                    )}
+                    <button
+                        onClick={() => {
+                            handleSignOut();
+                            setMenuOpen(false);
+                        }}
+                        className="w-11/12 text-center px-6 py-3 rounded-lg shadow-lg text-white bg-red-500 hover:bg-red-400 dark:bg-red-800 dark:hover:bg-red-900"
+                    >
+                        Sign out
+                    </button>
+                </div>
+                ) : (
+                <div className="flex flex-col space-y-4 w-full items-center">
+                    <Link
+                    to="/login"
+                    onClick={()=>setMenuOpen(false)}
+                    className="w-11/12 text-center px-6 py-3 rounded-lg shadow-lg text-white bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-700"
+                    >
+                    Sign in
+                    </Link>
+                </div>
+                )}
+            </div>
+            )}
+
         </nav>
     );
+
+
+
+    //     <nav className="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 py-4 bg-white dark:bg-gray-900 shadow-md">
+    //         <div class="w-1/3 text-left">
+    //         <h1 class="text-black dark:text-white font-bold text-xl italic">
+    //             <Link to='/'>
+    //                 Matcha
+    //             </Link>
+    //         </h1>
+    //         </div>
+    //         <div class="w-1/3 text-center hidden md:block">
+    //             <DarkModeToggle/>
+    //         </div>
+    //         <div class="w-1/3 justify-end space-x-2 hidden md:flex">
+    //             <button
+    //                 className="p-2"
+    //                 onClick={()=>setMenuOpen(!menuOpen)}
+    //                 aria-label="Toggle Menu"
+    //             >
+    //                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"
+    //                      viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    //                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+    //                 </svg>
+    //             </button>
+    //             {isAuthenticated ? (
+    //                 <div className="flex items-center space-x-2">
+    //                     {localHasProfile ? (
+    //                         <Link 
+    //                             to="/my-account"
+    //                             className="p-2 rounded-lg shadow-lg text-white transition duration-300 ease-in-out bg-blue-500 hover:bg-blue-400 dark:bg-blue-800 dark:hover:bg-blue-900 flex items-center space-x-1"
+    //                         >
+    //                             <User className="w-5 h-5" />
+    //                             <span>My account</span>
+    //                         </Link>
+    //                     ) : (
+    //                         location.pathname !== "/create-profil" && (
+    //                         <Link
+    //                             to="/create-profil"
+    //                             className="p-2 rounded-lg shadow-lg text-white bg-yellow-600 hover:bg-yellow-500 dark:bg-yellow-800 dark:hover:bg-yellow-700">
+    //                             Complete your profile
+    //                         </Link>
+    //                         )
+    //                     )}
+    //                     {localHasProfile && user?.photos?.[0] && (
+    //                         <img 
+    //                             src={`http://localhost:3000${user.photos[0]}`}
+    //                             alt="Profil"
+    //                             className="w-10 h-10 rounded-full border-2 border-white shadow-md "
+    //                         />
+    //                     )}
+    //                     <button
+    //                         onClick={handleSignOut}
+    //                         className="p-2 rounded-lg shadow-lg text-white bg-red-500 hover:bg-red-400 dark:bg-red-800 dark:hover:bg-red-900 "
+    //                     >
+    //                         Sign out
+    //                     </button>
+    //                 </div>
+    //             ) : (
+    //             <Link to="/login"
+    //                 class="p-2 rounded-lg shadow-lg text-white transition duration-300 ease-in-out bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900"
+    //             >
+    //                 Sign in
+    //             </Link>
+    //             )}
+    //         </div>
+    //         {menuOpen && (
+    //             <div className="md:hidden bg-white dark:bg-gray-900 shadow-lg px-4 py-3 space-y-2">
+    //                 <div className="flex justify-between items-center border-b border-gray-300 dark:border-gray-700 pb-2 mb-2">
+    //                     <DarkModeToggle />
+    //                 </div>
+    //                 {isAuthenticated ? (
+    //                     <div className="flex flex-col space-y-2">
+    //                         {localHasProfile ? (
+    //                             <Link to="/my-account" className="text-left text-blue-600 dark:text-blue-400">
+    //                                 My account
+    //                             </Link>
+    //                         ) : location.pathname !== "/create-profil" && (
+    //                             <Link to="/create-profil" className="text-left text-yellow-600 dark:text-yellow-400">
+    //                                 Complete your profile
+    //                             </Link>
+    //                         )}
+    //                         <button
+    //                             onClick={handleSignOut}
+    //                             className="text-left text-red-600 dark:text-red-400"
+    //                         >
+    //                             Sign out
+    //                         </button>
+    //                     </div>
+    //                 ) : (
+    //                     <Link to="/login" className="text-left text-green-600 dark:text-green-400">
+    //                         Sign in
+    //                     </Link>
+    //                 )}
+    //             </div>
+    //         )}
+    //     </nav>
+    // );
 }

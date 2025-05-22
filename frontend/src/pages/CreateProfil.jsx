@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Navbar from "../components/Navbar";
 import { Navigate, useNavigate } from "react-router-dom";
 import ModalLocal from "../util/modalLocal.jsx"
 import { getUserLocation } from "../util/geo.js";
