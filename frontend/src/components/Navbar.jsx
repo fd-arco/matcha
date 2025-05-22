@@ -35,10 +35,6 @@ export default function Navbar(){
         navigate("/");
     };
 
-    const handleLangues = () => {
-        navigate("/");
-        //TODO:gerer le bouton langues
-    }
 
     return (
         <nav className="flex items-center justify-between px-6 py-4 bg-white dark:bg-gray-900 shadow-md">
@@ -53,7 +49,6 @@ export default function Navbar(){
                 <DarkModeToggle/>
             </div>
             <div class="w-1/3 flex justify-end space-x-2">
-                <button onClick={handleLangues} className="p-2 rounded-lg shadow-lg text-white transition duration-300 ease-in-out bg-green-600 hover:bg-green-500 dark:bg-green-800 dark:hover:bg-green-700">Langues</button>
                 {isAuthenticated ? (
                     <div className="flex items-center space-x-2 p-2 rounded-lg shadow-lg text-white transition duration-300 ease-in-out bg-red-600 hover:bg-red-500 dark:bg-red-800 dark:hover:bg-red-700">
                         {user?.photos?.[0] && (
