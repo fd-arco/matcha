@@ -133,11 +133,11 @@ export default function Navbar({userId, setUserId, refreshFlag, setHasProfile}){
             {/* Overlay sombre */}
 
             {menuOpen && (
-            <div className="fixed inset-y-0 right-0 w-64 bg-white dark:bg-gray-900 shadow-lg z-50 animate-slide-in flex flex-col items-center justify-center space-y-4 p-6">
+            <div className="fixed inset-y-0 right-0 w-64 bg-gray-200 dark:bg-gray-800 shadow-lg z-50 animate-slide-in flex flex-col items-center justify-center space-y-4 p-6">
                 <div className="w-full flex justify-end mb-2">
                     <button
                         onClick={() => setMenuOpen(false)}
-                        className="absolute top-8 right-8 text-black dark:text-white hover:text-red-500 dark:hover:text-red-400 transition"
+                        className="absolute top-4 right-4 text-black dark:text-white hover:text-red-500 dark:hover:text-red-400 transition"
                         aria-label="Close menu"
                     >
                         <svg

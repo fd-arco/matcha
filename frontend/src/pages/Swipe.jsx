@@ -3,22 +3,33 @@ import Navbar from "../components/Navbar";
 import Bandeau from "../components/Bandeau";
 import Messages from "../components/Messages";
 import Matchs from "../components/Matchs";
-import {useState, useEffect} from "react";
+import {useState, useRef, useEffect} from "react";
 import Conversation from "../components/Conversation";
 import { useSocket } from "../context/SocketContext";
+import MobileDrawerMenu from "../components/MobileDrawerMenu";
 const Swipe = ({setUserId}) => {
     const [selectedMatch, setSelectedMatch] = useState(null);
-    // const [messagesGlobal, setMessagesGlobal] = useState([]);
-    // const [unreadCountTrigger, setUnreadCountTrigger] = useState(false);
-    // const [hasNotification, setHasNotification] = useState(false);
-    // const [matchesGlobal, setMatchesGlobal] = useState([]);
     const {setHasNotification} = useSocket();
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
     useEffect(() => {
       const userId = localStorage.getItem("userId");
       if (userId) {
         setUserId(userId);
       }
     }, []);
+
+    useEffect(() => {
+      const handleResize = () => {
+        setIsMobile(window.innerWidth <= 768);
+      }
+
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    
+
     const fetchNotifications = async () => {
       try {
         const res = await fetch(`http://localhost:3000/notifications/${userId}`);
@@ -47,23 +58,29 @@ const Swipe = ({setUserId}) => {
     }, [userId]);
 
   return (
-    <div className="h-screen flex flex-col">
-      <div className="flex flex-1">
-        {/* Colonne de gauche */}
-        <div className="w-1/4 flex flex-col">
-          <Bandeau/>
-          <Messages onSelectMatch={setSelectedMatch} selectedMatch={selectedMatch}/>
-        </div>
+    <div className="flex flex-col h-full">
+      <div className="flex">
+        {!isMobile && (
+          <div className="w-1/4 flex flex-col">
+            <Bandeau/>
+            <Messages onSelectMatch={setSelectedMatch} selectedMatch={selectedMatch}/>
+          </div>
+        )}
 
-        {/* Colonne de droite */}
-        <div className="w-3/4">
+        <div className={`${isMobile ? "h-full w-full" : "w-3/4"}`}>
           {selectedMatch ? (
             <Conversation match={selectedMatch} onBack={handleBackToSwipes} />
            ) : (
-           <Matchs/>
+           <Matchs onSelectMatch={setSelectedMatch}/>
             )}
         </div>
       </div>
+      {/* {isMobile && (
+        <MobileDrawerMenu
+          selectedMatch={selectedMatch}
+          onSelectMatch={setSelectedMatch}
+        />
+      )} */}
     </div>
   );
 };

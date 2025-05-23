@@ -3,7 +3,6 @@ import { ArrowLeft } from "lucide-react";
 import {useSocket} from "../context/SocketContext"
 import { formatDistanceToNow } from "date-fns";
 import { enUS } from "date-fns/locale";
-import { UNSAFE_decodeViaTurboStream } from "react-router-dom";
 import ConfirmActionModal from "./ConfirmActionModal";
 
 const Conversation = ({match, onBack}) => {
@@ -12,7 +11,6 @@ const Conversation = ({match, onBack}) => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const userId = localStorage.getItem("userId");
-    const [isBlocked, setIsBlocked] = useState(false);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [reportReason, setReportReason] = useState("");
     const [isReportSuccessModalOpen, setIsReportSuccessModalOpen] = useState(false);
