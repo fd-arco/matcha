@@ -177,8 +177,8 @@ const Dashboard = ({setHasNotification}) => {
     }
 
     return (
-        <div className="h-screen flex flex-col">
-            <div className="p-6 text-black dark:text-white bg-gray-200 dark:bg-gray-800 h-screen">
+        <div className="min-h-[calc(100vh-72px)] flex flex-col">
+            <div className="p-6 flex-1 text-black dark:text-white bg-gray-200 dark:bg-gray-800">
                 <button
                     onClick={() => navigate("/swipe")}
                     className="mb-4 px-4 py-2 bg-green-500 dark:bg-green-800 hover:bg-green-400 dark:hover:bg-green-900 dark:text-white text-black rounded-lg transition flex items-center space-x-2">

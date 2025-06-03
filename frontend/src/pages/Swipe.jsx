@@ -58,30 +58,44 @@ const Swipe = ({setUserId}) => {
     }, [userId]);
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex">
-        {!isMobile && (
-          <div className="w-1/4 flex flex-col">
-            <Bandeau/>
-            <Messages onSelectMatch={setSelectedMatch} selectedMatch={selectedMatch}/>
-          </div>
-        )}
-
-        <div className={`${isMobile ? "h-full w-full" : "w-3/4"}`}>
-          {selectedMatch ? (
-            <Conversation match={selectedMatch} onBack={handleBackToSwipes} />
-           ) : (
-           <Matchs onSelectMatch={setSelectedMatch}/>
-            )}
-        </div>
+    <div className="flex flex-col min-h-[calc(100vh-72px)]">
+  <div className="flex flex-1">
+    {!isMobile && (
+      <div className="w-1/4 flex flex-col">
+        <Bandeau />
+        <Messages onSelectMatch={setSelectedMatch} selectedMatch={selectedMatch} />
       </div>
-      {/* {isMobile && (
-        <MobileDrawerMenu
-          selectedMatch={selectedMatch}
-          onSelectMatch={setSelectedMatch}
-        />
-      )} */}
+    )}
+
+    <div className={`${isMobile ? "w-full flex-1" : "w-3/4 flex-1"} bg-gray-200 dark:bg-gray-800`}>
+      {selectedMatch ? (
+        <Conversation match={selectedMatch} onBack={handleBackToSwipes} />
+      ) : (
+        <Matchs onSelectMatch={setSelectedMatch} />
+      )}
     </div>
+  </div>
+</div>
+
+
+    // <div className="flex flex-col min-h-[calc(100vh-72px)]">
+    //   <div className="flex">
+    //     {!isMobile && (
+    //       <div className="w-1/4 flex flex-col">
+    //         <Bandeau/>
+    //         <Messages onSelectMatch={setSelectedMatch} selectedMatch={selectedMatch}/>
+    //       </div>
+    //     )}
+
+    //     <div className={`${isMobile ? "h-full w-full" : "w-3/4"}`}>
+    //       {selectedMatch ? (
+    //         <Conversation match={selectedMatch} onBack={handleBackToSwipes} />
+    //        ) : (
+    //        <Matchs onSelectMatch={setSelectedMatch}/>
+    //         )}
+    //     </div>
+    //   </div>
+    // </div>
   );
 };
 

@@ -32,7 +32,7 @@ const MessagesDashboard = ({notifications}) => {
                                     <p>
                                         {notif.sender_name} sent you a message:
                                     </p>
-                                    <p className="dark:text-gray-400 text-gray-700">{notif.message_content || "Message indisponible"}</p>
+                                    <p className="dark:text-gray-400 text-gray-700 break-words">{notif.message_content || "Message indisponible"}</p>
                                     {notif.message_created_at && (
                                         <p className="text-sm text-gray-500 mt-1">
                                             {new Date(notif.message_created_at).toLocaleString()}

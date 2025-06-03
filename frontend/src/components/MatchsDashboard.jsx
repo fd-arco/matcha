@@ -56,23 +56,26 @@ const MatchsDashboard = ({notifications, setMatchNotifications, userId}) => {
                                     </p>
                                 </div>
 
-                                <div className="flex items-center gap-4">
-                                    <button
-                                        className="px-3 py-1 bg-red-500 rounded-md hover:bg-red-400 dark:bg-red-800 dark:hover:bg-red-900 transition"
-                                        onClick={() => handleUnmatch(notif)}
-                                    >
-                                        Unmatch
-                                    </button>
+                                <div className="flex items-center gap-4 flex-shrink-0">
+                                <button
+                                    className="px-3 py-1 bg-red-500 rounded-md hover:bg-red-400 dark:bg-red-800 dark:hover:bg-red-900 transition"
+                                    onClick={() => handleUnmatch(notif)}
+                                >
+                                    Unmatch
+                                </button>
 
-                                    {notif.sender_photo && (
-                                        <img
+                                {notif.sender_photo && (
+                                    <div className="w-12 h-12 shrink-0">
+                                    <img
                                         src={`http://localhost:3000${notif.sender_photo}`}
                                         alt={notif.sender_name}
-                                        className="w-12 h-12 rounded-full object-cover border ml-4 cursor-pointer"
+                                        className="w-full h-full rounded-full object-cover border cursor-pointer"
                                         onClick={() => handleImageClick(notif)}
-                                        />
-                                    )}
+                                    />
+                                    </div>
+                                )}
                                 </div>
+
                             </div>
                         </li>
                     ))}

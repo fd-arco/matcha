@@ -186,9 +186,10 @@ const Conversation = ({match, onBack}) => {
                                     className="w-8 h-8 rounded-full mr-2"
                                 />
                                 <div className="flex flex-col">
-                                    <p className="p-3 rounded-lg max-w-xs break-words bg-gray-300 text-gray-900 self-start">
-                                        {msg.content}
+                                    <p className="p-3 rounded-lg break-words whitespace-pre-wrap bg-gray-300 text-gray-900 self-start">
+                                    {msg.content}
                                     </p>
+
                                     <span className="text-xs text-gray-400 ml-1">
                                         {formatDistanceToNow(new Date(msg.created_at), {addSuffix: true, locale:enUS  })}
                                     </span>
@@ -198,9 +199,10 @@ const Conversation = ({match, onBack}) => {
                         {msg.sender_id === userIdInt && (
                             <>
                                 <div className="flex flex-col items-end">
-                                    <p className="p-3 rounded-lg max-w-xs break-words bg-green-500 dark:bg-green-800 text-black dark:text-white self-end">
-                                        {msg.content}
+                                    <p className="p-3 rounded-lg break-words whitespace-pre-wrap bg-green-500 dark:bg-green-800 text-black dark:text-white self-end">
+                                    {msg.content}
                                     </p>
+
                                     <span className="text-xs text-gray-400 mr-1">
                                         {formatDistanceToNow(new Date(msg.created_at), {addSuffix: true, locale: enUS})}
                                     </span>
