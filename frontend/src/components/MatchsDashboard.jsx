@@ -35,7 +35,7 @@ const MatchsDashboard = ({notifications, setMatchNotifications, userId}) => {
 
     return (
         <div className="text-black dark:text-white p-4 max-h-[800px] overflow-y-auto">
-            <h2 className="text-xl font-semibold mb-4">Matchs</h2>
+            <h2 className="text-xl font-semibold mb-4">💘 Matchs</h2>
             {notifications.length === 0 ? (
                 <p>Aucune notification</p>
             ) : (

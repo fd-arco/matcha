@@ -131,19 +131,12 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Messages</h2>
             <div className="pr-2">
             {matches.length === 0 ? (
-                <ul className="space-y-2 mt-6 border-t pt-4">
-  {[...Array(15)].map((_, i) => (
-    <li key={`test-${i}`} className="p-2 bg-yellow-100 text-black rounded">
-      FAKE MATCH {i + 1}
-    </li>
-  ))}
-</ul>
 
-                // <div className="flex flex-col text-center">
-                //     <p className="text-gray-600 dark:text-gray-400 text-3xl flex justify-center mt-5 items-center">Start swiping to get matches!</p>
-                //     <p className="text-gray-600 dark:text-gray-400 text-md flex justify-center mt-5 items-center">Your matches will appear here once you start swiping. Click on a match to start a conversation and exchange messages with your new connection.</p>
-                //     <p className="text-gray-600 dark:text-gray-400 text-3xl flex justify-center mt-5 items-center">🚀</p>
-                // </div>
+                <div className="flex flex-col text-center">
+                    <p className="text-gray-600 dark:text-gray-400 text-3xl flex justify-center mt-5 items-center">Start swiping to get matches!</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-md flex justify-center mt-5 items-center">Your matches will appear here once you start swiping. Click on a match to start a conversation and exchange messages with your new connection.</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-3xl flex justify-center mt-5 items-center">🚀</p>
+                </div>
             ) : (
                 <ul className="space-y-2">
                     {matches.map((match) => {

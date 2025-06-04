@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import UpdateModal from "../components/UpdateModal";
 import { useNavigate } from "react-router-dom";
+import ConfirmActionModal from "./ConfirmActionModal";
 
 export default function EditProfile() {
     const [formData, setFormData] = useState({
@@ -19,13 +20,16 @@ export default function EditProfile() {
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
     const userId = localStorage.getItem("userId");
-
+    const [infoModal, setInfoModal] = useState({
+        isOpen:false,
+        title:"",
+        message:"",
+    });
     const passionsList = [
         "Music", "Sports", "Reading", "Traveling", "Cooking", 
         "Gaming", "Dancing", "Art", "Photography", "Movies"
     ];
 
-    // Récupérer les informations de profil existantes
     useEffect(() => {
         const fetchProfileData = async () => {
             try {
@@ -77,12 +81,32 @@ export default function EditProfile() {
         setSelectedPassions(selectedPassions.filter((p) => p !== passion));
     };
 
+    const showInfoModal = (title, message, onConfirm) => {
+        setInfoModal({
+            isOpen:true,
+            title,
+            message,
+            onConfirm,
+        })
+    };
+
     const handleUploadPhoto = async (event) => {
+        const file = event.target.files[0];
         if (existingPhotos.length + newPhotos.length >= 6) {
-            alert("You can only upload up to 6 photos.");
+            showInfoModal("Photo limit reached", "You can upload a maximum of 6 photos.")
             return;
         }
-        const file = event.target.files[0];
+        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+            showInfoModal("Invalid file type", "Only JPG, PNG, or WEBP formats are allowed.")
+            return;
+        }
+
+        const maxSize = 2 * 1024 * 1024;
+        if (file.size > maxSize) {
+            showInfoModal("File too large", "Each photo must be under 2MB.");
+            return ;
+        }
+
         console.log("file = ", file);
         if (!file) return;
 
@@ -125,6 +149,12 @@ export default function EditProfile() {
 
         if (!name) {
             errors.name = "Name is required.";
+        }
+        if (name.length > 15) {
+            errors.name = "Name cannot exceed 15 characters."
+        }
+        if (bio.length > 300) {
+            errors.bio = "Bio cannot exceed 300 characters."
         }
         if (!gender) {
             errors.gender = "Gender is required.";
@@ -385,6 +415,8 @@ export default function EditProfile() {
                                     className="dark:bg-gray-700 placeholder-gray-700 dark:placeholder-gray-400 border border-gray-400 p-2 w-full rounded-lg focus:outline-none focus:border-blue-400" 
                                     rows="2"
                                 />
+                                {formErrors.bio && (<p className="text-red-500 text-sm m-0 p-0">{formErrors.bio}</p>)}
+
                             </div>
                             <div>
                                 <button type="submit" className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 px-4 py-2 rounded-lg w-full">
@@ -457,6 +489,22 @@ export default function EditProfile() {
             {showModal && (
                 <UpdateModal onClose={() => setShowModal(false)} />
             )}
+            <ConfirmActionModal
+                isOpen={infoModal.isOpen}
+                onClose={()=> {
+                    setInfoModal({...infoModal, isOpen:false})
+                }}
+                onConfirm={()=> {
+                    setInfoModal({...infoModal, isOpen:false})
+                    infoModal.onConfirm?.();
+                }}
+                onReasonChange={()=>{}}
+                title={infoModal.title}
+                message={infoModal.message}
+                confirmLabel="OK"
+                cancelLabel=""
+                showTextarea={false}
+            />
         </div>
     );
 }

@@ -10,8 +10,8 @@ const SettingsPage = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="text-black dark:text-white flex flex-col">
-            <div className="p-6 dark:bg-gray-800 bg-gray-200">
+        <div className="min-h-[calc(100vh-72px)] text-black dark:text-white flex flex-col">
+            <div className="min-h-[calc(100vh-72px)] p-6 dark:bg-gray-800 bg-gray-200">
                 <button
                     onClick={() => navigate("/swipe")}
                     className="mb-4 px-4 py-2 bg-green-500 dark:bg-green-800 hover:bg-green-400 dark:hover:bg-green-900 rounded-lg transition flex items-center space-x-2">
@@ -28,7 +28,7 @@ const SettingsPage = () => {
                         
                     >
                         <Search size={32} />
-                        <span className="mt-2">Search</span>
+                        <span className="mt-2 text-center">Search</span>
                     </div>
                     <div
                         className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="settings" ? "dark:bg-green-800 bg-green-500 text-black dark:text-white" : "dark:hover:bg-gray-800 hover:bg-gray-200"}`}
@@ -37,7 +37,7 @@ const SettingsPage = () => {
                         }}
                     >
                         <Edit size={32} />
-                        <span className="mt-2">Edit your profile</span>
+                        <span className="mt-2 text-center">Edit your profile</span>
                     </div>
                 </div>
 

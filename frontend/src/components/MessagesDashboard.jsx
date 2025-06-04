@@ -16,7 +16,7 @@ const MessagesDashboard = ({notifications}) => {
 
     return (
         <div className="text-black dark:text-white p-4 max-h-[800px] overflow-y-auto">
-            <h2 className="text-xl font-semibold mb-4">Messages</h2>
+            <h2 className="text-xl font-semibold mb-4">💬 Messages</h2>
             {notifications.length === 0 ? (
                 <p>No notification</p>
             ) : (

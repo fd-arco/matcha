@@ -48,14 +48,31 @@ export default function CreateProfil({refreshUser}) {
     };
 
     const handleUploadPhoto = async (event) => {
+        const MAX_SIZE_MB = 2;
+        const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+        const file = event.target.files[0];
+        if (!file)
+            return;
+        console.log("FILE TYPE = ", file.type);
+
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            showInfoModal("Invalid file", "Only JPG, PNG, or WEBP images are allowed.");
+            return ;
+        }
+
+        console.log("FILE SIZE = ",file.size);
+        console.log("SIZE MAX =", 1024 * 1024 * MAX_SIZE_MB);
+        if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+            showInfoModal("File too large", `Each photo must be less than ${MAX_SIZE_MB}MB.`);
+            return;
+        }
+
         if (photos.length >= 6) {
             showInfoModal("Upload limit", "You can only upload up to 6 photos.");
             return;
         }
 
-        const file = event.target.files[0];
-        if (!file)
-            return;
 
         const photoUrl = URL.createObjectURL(file);
         setPhotos([...photos, {file, preview:photoUrl}]);
@@ -100,6 +117,12 @@ export default function CreateProfil({refreshUser}) {
 
         if (!name) {
             errors.name = "Name is required";
+        }
+        if (bio.length > 300) {
+            errors.bio = "Bio cannot exceed 300 characters."
+        }
+        if (name.length > 15) {
+            errors.name = "Name cannot exceed 15 characters."
         }
         if (!gender) {
             errors.gender = "Gender is required";
@@ -154,7 +177,7 @@ export default function CreateProfil({refreshUser}) {
                         refreshUser();
                         navigate("/swipe");
                     }
-                ); //TODO:ameliorer la mise en page
+                );
             } else {
                 alert("Erreur serveur:", data.error);
             }
@@ -311,7 +334,9 @@ export default function CreateProfil({refreshUser}) {
                             <div className="mb-4">
                                 <label htmlFor="bio" className="block font-medium mb-2">Bio</label>
                                 <textarea id="bio" name="bio" placeholder="Put a bio to get more likes"
-                                    className="dark:bg-gray-700 placeholder-gray-700 dark:placeholder-gray-400 border border-gray-400 p-2 w-full rounded-lg focus:outline-none focus:border-blue-400" rows="2"></textarea>
+                                    className="dark:bg-gray-700 placeholder-gray-700 dark:placeholder-gray-400 border border-gray-400 p-2 w-full rounded-lg focus:outline-none focus:border-blue-400" rows="2">
+                                </textarea>
+                                {formErrors.bio && (<p className="text-red-500 text-sm m-0 p-0">{formErrors.bio}</p>)}
                             </div>
 
                             <div>
