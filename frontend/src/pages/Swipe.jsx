@@ -58,24 +58,53 @@ const Swipe = ({setUserId}) => {
     }, [userId]);
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-72px)]">
-  <div className="flex flex-1">
-    {!isMobile && (
-      <div className="w-1/4 flex flex-col">
-        <Bandeau />
-        <Messages onSelectMatch={setSelectedMatch} selectedMatch={selectedMatch} />
-      </div>
-    )}
 
-    <div className={`${isMobile ? "w-full flex-1" : "w-3/4 flex-1"} bg-gray-200 dark:bg-gray-800`}>
-      {selectedMatch ? (
-        <Conversation match={selectedMatch} onBack={handleBackToSwipes} />
-      ) : (
-        <Matchs onSelectMatch={setSelectedMatch} />
+  <div className="flex flex-col h-[calc(100vh-72px)]">
+    <div className="flex flex-1">
+      {!isMobile && (
+        <div className="w-1/4 flex flex-col h-[calc(100vh-72px)]">
+          {/* Bandeau avec hauteur auto */}
+          <Bandeau />
+          {/* Messages prend le reste, scrollable si besoin */}
+          <div className="flex-1 overflow-y-auto bg-gray-100 dark:bg-gray-700">
+            <Messages onSelectMatch={setSelectedMatch} selectedMatch={selectedMatch} />
+          </div>
+        </div>
       )}
+
+      <div className={`${isMobile ? "w-full" : "w-3/4"} flex-1 bg-gray-200 dark:bg-gray-800`}>
+        {selectedMatch ? (
+          <Conversation match={selectedMatch} onBack={handleBackToSwipes} />
+        ) : (
+          <Matchs onSelectMatch={setSelectedMatch} />
+        )}
+      </div>
     </div>
   </div>
-</div>
+);
+
+
+
+//     <div className="flex flex-col min-h-[calc(100vh-72px)]">
+//   <div className="flex flex-1">
+//     {!isMobile && (
+//       <div className="w-1/4 flex flex-col min-h-[calc(100vh - 72px)]">
+//         <Bandeau />
+//         <div className="flex-1 overflow-auto">
+//           <Messages onSelectMatch={setSelectedMatch} selectedMatch={selectedMatch} />
+//         </div>
+//       </div>
+//     )}
+
+//     <div className={`${isMobile ? "w-full flex-1" : "w-3/4 flex-1"} bg-gray-200 dark:bg-gray-800`}>
+//       {selectedMatch ? (
+//         <Conversation match={selectedMatch} onBack={handleBackToSwipes} />
+//       ) : (
+//         <Matchs onSelectMatch={setSelectedMatch} />
+//       )}
+//     </div>
+//   </div>
+// </div>
 
 
     // <div className="flex flex-col min-h-[calc(100vh-72px)]">
@@ -96,7 +125,7 @@ const Swipe = ({setUserId}) => {
     //     </div>
     //   </div>
     // </div>
-  );
+
 };
 
 export default Swipe;

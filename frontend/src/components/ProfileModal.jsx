@@ -165,7 +165,7 @@ const ProfileModal = ({userId, onClose}) => {
                     <img
                         src={`http://localhost:3000${photos[currentIndex]}`}
                         alt="Profile"
-                        className="w-full h-auto aspect-[3/4] object-cover rounded-2xl cursor-pointer"
+                        className="w-full h-auto aspect-[3/2] object-cover rounded-2xl cursor-pointer"
                     />
 
                     <button
@@ -184,7 +184,7 @@ const ProfileModal = ({userId, onClose}) => {
 
                 <div className="space-y-3">
                     <div>
-                        <h2 className="text-2xl font-bold">{profile.name}, {profile.age}
+                        <h2 className="text-2xl font-bold truncate max-w-full">{profile.name}, {profile.age}
                         <span
                             className={`w-4 h-4 ml-2 inline-block align-middle rounded-full ${
                                 userStatus?.online ? "bg-green-500" : "bg-red-500"

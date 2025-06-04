@@ -1,9 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Bandeau from "./Bandeau";
 import Messages from "./Messages";
+import { LocateFixed } from "lucide-react";
 
 const MobileDrawerMenu = ({ selectedMatch, onSelectMatch }) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+
+    if (isOpen) {
+      document.addEventListener("keydown", handleKeyDown);
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.addEventListener('keydown', handleKeyDown);
+    } else {
+      document.body.style.position = '';
+      document.body.style.width = '';
+    }
+
+    return () => {
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.removeEventListener("keydown", handleKeyDown);
+    }
+  })
 
   return (
     <>
@@ -17,7 +40,16 @@ const MobileDrawerMenu = ({ selectedMatch, onSelectMatch }) => {
       </div>
 
       {isOpen && (
-        <div className="fixed top-0 left-0 w-3/5 h-full z-50 bg-white dark:bg-gray-800 shadow-lg">
+        <>
+        <div
+          className="fixed inset-0 bg-black bg-opacity-40 z-[998]"
+          onClick={() => setIsOpen(false)}
+        >
+        </div>
+        <div 
+          className="fixed top-0 left-0 w-3/5 h-screen z-[999] bg-white dark:bg-gray-800 shadow-lg flex flex-col"
+          onClick={(e) => e.stopPropagation()}  
+        >
         <button
             onClick={() => setIsOpen(false)}
             className="absolute top-2 right-2 text-gray-700 dark:text-white hover:text-red-500 text-3xl font-bold"
@@ -25,14 +57,17 @@ const MobileDrawerMenu = ({ selectedMatch, onSelectMatch }) => {
             ×
       </button>
       <Bandeau />
-      <Messages
-              selectedMatch={selectedMatch}
-              onSelectMatch={(match) => {
-                onSelectMatch(match);
-                setIsOpen(false);
-              }}
-            />
+      <div className="bg-gray-100 dark:bg-gray-700 flex-1 overflow-y-auto">
+        <Messages
+                selectedMatch={selectedMatch}
+                onSelectMatch={(match) => {
+                  onSelectMatch(match);
+                  setIsOpen(false);
+                }}
+              />
+      </div>
           </div>
+        </>
       )}
     </>
   );

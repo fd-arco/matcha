@@ -167,22 +167,22 @@ const Matchs = ({onSelectMatch}) => {
     }
 
     return (
-      <div className="min-h-[calc(100vh-72px)] flex-1 flex flex-col md:justify-center justify-between px-4 bg-gray-200 dark:bg-gray-800">
+      <div className="min-h-[calc(100vh-72px)] flex-1 flex flex-col md:justify-center justify-start px-4 bg-gray-200 dark:bg-gray-800">
         <div className="flex-1 flex items-center justify-center pt-4 pb-4">
           <div className="w-full max-w-md bg-white dark:bg-gray-900 p-4 rounded-2xl shadow-md text-center">
             <div className="text-left mb-4">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{profile.name}, {profile.age}</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white truncate max-w-full">{profile.name}, {profile.age}</h2>
               <div className="flex items-center mt-1">
                 <span className="text-yellow-400 mr-1">⭐</span>
                 <span className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Fame: {profile.fame}</span>
               </div>
             </div>
             <div className="relative mb-4">
-              <img
-                src={`http://localhost:3000${profile.photos[currentPhotoIndex]}`}
-                alt={`${currentPhotoIndex + 1}`}
-                className="w-full h-auto aspect-[3/4] rounded-xl object-cover shadow"
-              />
+                <img
+                  src={`http://localhost:3000${profile.photos[currentPhotoIndex]}`}
+                  alt={`${currentPhotoIndex + 1}`}
+                  className="w-full h-auto aspect-[3/2] rounded-xl object-cover shadow"
+                />
                 {profile.commonPassions?.length > 0  &&
                   (
                     <div className="absolute bottom-0 left-0 w-full bg-purple-500 dark:bg-purple-800 text-white text-sm font-semibold px-4 py-2 rounded-b-xl text-center">
@@ -191,13 +191,13 @@ const Matchs = ({onSelectMatch}) => {
                   )
                 }
               <button
-                onClick={()=>console.log("PhotoPrecedente")}
+                onClick={handlePrevPhoto}
                 className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800 p-2 rounded-full"
               >
                 <ChevronLeft className="w-5 h-5 text-black dark:text-white" />
               </button>
               <button
-                onClick={() => console.log("Photo suivante")}
+                onClick={handleNextPhoto}
                 className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800 p-2 rounded-full"
               >
                 <ChevronRight className="w-5 h-5 text-black dark:text-white" />
@@ -223,7 +223,7 @@ const Matchs = ({onSelectMatch}) => {
 
             <p className="text-md text-gray-500 dark:text-gray-400 mt-3">{profile.gender}</p>
             {profile.bio && (
-              <p className="text-sm text-gray-600 dark:text-gray-300 mt-3 italic">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-3 italic break-words whitespace-normal overflow-hidden">
                 “{profile.bio}”
               </p>
             )}
@@ -251,7 +251,7 @@ const Matchs = ({onSelectMatch}) => {
         </div>
 
 
-        <div className="mt-4 mb-6 block md:hidden w-full">
+        <div className="mb-4 block md:hidden w-full">
           <MobileDrawerMenu
             selectedMatch={matchedProfile}
             onSelectMatch={(match) => {
@@ -272,206 +272,6 @@ const Matchs = ({onSelectMatch}) => {
     )}
       </div>
     )
-
-
-// return (
-//   <div className="h-[calc(100vh-72px)] bg-gray-200 dark:bg-gray-800 flex flex-col items-center px-5">
-//     {/* Zone centrale qui contient la card et s'étend pour pousser le menu en bas */}
-//     <div className="flex flex-col w-full max-w-md overflow-y-auto pt-5 pb-4 flex-grow">
-//       <div className="bg-white dark:bg-gray-900 p-6 shadow-lg rounded-2xl w-full text-center">
-//         {/* Photo + chevrons */}
-//         <div className="relative mb-4">
-//           {profile.photos && (
-//             <div className="p-5">
-//               <img
-//                 src={`http://localhost:3000${profile.photos[currentPhotoIndex]}`}
-//                 alt={`${currentPhotoIndex + 1}`}
-//                 className="w-full max-h-60 object-cover rounded-2xl"
-//               />
-
-//               {profile.commonPassions?.length > 0 && (
-//                 <div className="absolute bottom-0 left-0 w-full bg-purple-500 dark:bg-purple-800 text-white text-sm font-semibold px-6 py-1 rounded-b-lg">
-//                   🔥 {profile.commonPassions.length} passions en commun
-//                 </div>
-//               )}
-
-//               <button onClick={handlePrevPhoto} className="absolute -left-5 top-1/2 transform -translate-y-1/2 bg-gray-300 dark:bg-gray-800 hover:bg-gray-400 p-1 rounded-full">
-//                 <ChevronLeft className="text-black dark:text-white" />
-//               </button>
-//               <button onClick={handleNextPhoto} className="absolute -right-5 top-1/2 transform -translate-y-1/2 bg-gray-300 dark:bg-gray-800 hover:bg-gray-400 p-1 rounded-full">
-//                 <ChevronRight className="text-black dark:text-white" />
-//               </button>
-//             </div>
-//           )}
-//         </div>
-
-//         {/* Infos */}
-//         <h2 className="text-3xl font-bold text-gray-900 dark:text-white mt-3">{profile.name}, {profile.age}</h2>
-//         <div className="flex items-center justify-center mt-1">
-//           <span className="text-yellow-400 mr-1">⭐</span>
-//           <span className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Fame: {profile.fame}</span>
-//         </div>
-//         <p className="text-md text-gray-500 dark:text-gray-400">{profile.gender}</p>
-//         <p className="text-gray-500 dark:text-gray-400 mt-2">{profile.bio}</p>
-//         <p className="text-md text-gray-700 dark:text-gray-300 mt-2">
-//           Looking for: <span className="font-semibold">{profile.looking_for}</span>
-//         </p>
-//         <p className="text-md text-gray-700 dark:text-gray-300">
-//           Interested in: <span className="font-semibold">{profile.interested_in}</span>
-//         </p>
-
-//         {/* Passions */}
-//         {passionsArray.length > 0 && (
-//           <div className="mt-3 flex flex-wrap justify-center gap-2">
-//             {passionsArray.map((passion, index) => {
-//               const isCommon = profile.commonPassions?.includes(passion);
-//               const colorClass = isCommon
-//                 ? "bg-purple-500 dark:bg-purple-800"
-//                 : "bg-green-500 dark:bg-green-800";
-//               return (
-//                 <span
-//                   key={index}
-//                   className={`px-4 py-2 text-sm font-semibold text-white ${colorClass} rounded-full`}
-//                 >
-//                   {passion}
-//                 </span>
-//               );
-//             })}
-//           </div>
-//         )}
-
-//         {/* Boutons */}
-//         <div className="items-center justify-center flex space-x-4 mt-4">
-//           <button
-//             onClick={handlePass}
-//             className="p-3 bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-800 rounded-full shadow-lg hover:bg-gray-400"
-//           >
-//             ❌
-//           </button>
-//           <button
-//             onClick={handleLike}
-//             className="p-3 bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-800 rounded-full shadow-lg hover:bg-gray-400"
-//           >
-//             ❤️
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-
-    // {/* Bouton Menu en bas */}
-    // <div className="w-full max-w-md mb-4">
-    //   <MobileDrawerMenu
-    //     selectedMatch={matchedProfile}
-    //     onSelectMatch={(match) => {
-    //       onSelectMatch(match);
-    //     }}
-    //   />
-    // </div>
-
-//     {/* Modal match */}
-    // {showMatchModal && matchedProfile && (
-    //   <MatchModal
-    //     name={matchedProfile.name}
-    //     photo={matchedProfile.photo}
-    //     onClose={() => {
-    //       setShowMatchModal(false);
-    //       setMatchedProfile(null);
-    //       setCurrentIndex((prev) => prev + 1);
-    //     }}
-    //   />
-    // )}
-//   </div>
-// );
-
-
-
-    // return (
-    //     <div className="p-5 h-full bg-gray-200 dark:bg-gray-800 flex flex-col items-center">
-    //         <div className="bg-white dark:bg-gray-900 p-6 shadow-lg rounded-2xl w-full max-w-md text-center">
-    //             <div className="relative mb-4">
-    //                 {profile.photos && (
-    //                     <div classname="p-5">
-    //                         <img
-    //                             src={`http://localhost:3000${profile.photos[currentPhotoIndex]}`}
-    //                             alt={`${currentPhotoIndex + 1}`}
-    //                             className="w-full max-h-60 object-cover rounded-2xl"
-
-    //                         />
-
-    //                         {profile.commonPassions && profile.commonPassions.length > 0 && (
-    //                             <div className="absolute bottom-0 left-0 w-full bg-purple-500 dark:bg-purple-800 text-white text-sm font-semibold px-6 py-1 rounded-b-lg">
-    //                                 🔥 {profile.commonPassions.length} passions en commun
-    //                             </div>
-    //                         )}
-
-    //                         <button
-    //                             onClick={handlePrevPhoto}
-    //                             className="absolute -left-5 top-1/2 transform -translate-y-1/2 bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-600 hover:bg-gray-400 bg-opacity-70 p-1 rounded-full hover:bg-opacity-100"
-    //                         >
-    //                             <ChevronLeft className="text-black dark:text-white" />
-    //                         </button>
-    //                         <button
-    //                             onClick={handleNextPhoto}
-    //                             className="absolute -right-5 top-1/2 transform -translate-y-1/2 bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-600 hover:bg-gray-400 bg-opacity-70 p-1 rounded-full hover:bg-opacity-100"
-    //                         >
-    //                             <ChevronRight className="text-black dark:text-white" />
-    //                         </button>
-    //                     </div>
-    //                 )}
-    //             </div>
-    //             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mt-3">{profile.name}, {profile.age}</h2>
-    //             <div className="flex items-center justify-center mt-1">
-    //                 <span className="text-yellow-400 mr-1">⭐</span>
-    //                 <span className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Fame: {profile.fame}</span>
-    //             </div>
-    //             <p className="text-md text-gray-500 dark:text-gray-400">{profile.gender}</p>
-    //             <p className="text-gray-500 dark:text-gray-400 mt-2">{profile.bio}</p>
-    //             <p className="text-md text-gray-700 dark:text-gray-300 mt-2">
-    //                 Looking for: <span className="font-semibold">{profile.looking_for}</span>
-    //             </p>
-    //             <p className="text-md text-gray-700 dark:text-gray-300">
-    //                 Interested in: <span className="font-semibold">{profile.interested_in}</span>
-    //             </p>
-    //             {passionsArray && passionsArray.length > 0 && (
-    //                 <div className="mt-3 flex flex-wrap justify-center gap-2">
-    //                     {passionsArray.map((passion, index) => {
-    //                         const isCommon = profile.commonPassions?.includes(passion);
-    //                         const colorClass = isCommon ? "bg-purple-500 dark:bg-purple-800" : "bg-green-500 dark:bg-green-800";
-    //                         return (
-    //                             <span key={index} className={`px-4 py-2 text-sm font-semibold text-white ${colorClass} rounded-full`}>
-    //                                 {passion}
-    //                             </span>
-    //                         )
-    //                     })}
-    //                 </div>
-    //             )}
-
-    //             <div className="items-center justify-center flex space-x-4 mt-4">
-    //                 <button
-    //                     onClick={handlePass}
-    //                     className="p-3 bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-800 rounded-full shadow-lg hover:bg-gray-400"
-    //                 >❌
-    //                 </button>
-    //                 <button
-    //                     onClick={handleLike}
-    //                     className="p-3 bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-800 rounded-full shadow-lg hover:bg-gray-400"
-    //                 >❤️
-    //                 </button>
-    //             </div>
-    //         </div>
-    //         {showMatchModal && matchedProfile && (
-    //             <MatchModal
-    //                 name={matchedProfile.name}
-    //                 photo={matchedProfile.photo}
-    //                 onClose={() => {
-    //                     setShowMatchModal(false);
-    //                     setMatchedProfile(null);
-    //                     setCurrentIndex((prev) => prev + 1);
-    //                 }}
-    //             />
-    //         )}
-    //     </div>
-    // )
 }
 
 export default Matchs;

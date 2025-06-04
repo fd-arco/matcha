@@ -46,7 +46,13 @@ const Bandeau = () => {
                 </div>
                 <div className="flex flex-col w-full overflow-hidden">
                     <h2 className="text-lg font-semibold hover:underline cursor-pointer break-words whitespace-normal">{user.name}</h2>
-                    <p className="text-sm text-black dark:text-white break-words whitespace-normal">“{user.bio || ""}”</p>
+                    {user.bio && (
+                        <p className="text-sm text-black dark:text-white break-words whitespace-normal">
+                            {user.bio?.length > 40
+                            ? `${user.bio.slice(0,40)}...`
+                            :user.bio}
+                        </p>
+                    )}
                     <div className="flex items-center gap-1 mt-1">
                         <span className="text-yellow-300 text-sm">⭐</span>
                         <span className="text-sm text-black dark:text-white">Fame: {user.fame}</span>
