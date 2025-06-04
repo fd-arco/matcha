@@ -153,7 +153,7 @@ const ProfileModal = ({userId, onClose}) => {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="text-black dark:text-white bg-white dark:bg-gray-900 rounded-lg p-6 w-[90%] max-w-lg relative shadow-lg">
+           <div className="text-black dark:text-white bg-white dark:bg-gray-900 rounded-lg p-6 w-[90%] max-w-lg max-h-[95vh] overflow-y-auto relative shadow-lg">
                 <button
                     onClick={onClose}
                     className="absolute top-1 right-1 hover:text-gray-800 dark:hover:text-gray-200"
@@ -165,7 +165,7 @@ const ProfileModal = ({userId, onClose}) => {
                     <img
                         src={`http://localhost:3000${photos[currentIndex]}`}
                         alt="Profile"
-                        className="w-full h-100 object-cover rounded-2xl cursor-pointer"
+                        className="w-full h-auto aspect-[3/4] object-cover rounded-2xl cursor-pointer"
                     />
 
                     <button
@@ -203,7 +203,9 @@ const ProfileModal = ({userId, onClose}) => {
                         <span className="text-sm">Fame: {profile.fame}</span>
                     </div>
                     {profile.bio && (
-                        <p className="italic">"{profile.bio}"</p>
+                        <p className="italic break-words whitespace-normal overflow-hidden">
+                            "{profile.bio}"
+                        </p>
                     )}
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">

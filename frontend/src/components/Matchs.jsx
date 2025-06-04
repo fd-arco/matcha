@@ -181,7 +181,7 @@ const Matchs = ({onSelectMatch}) => {
               <img
                 src={`http://localhost:3000${profile.photos[currentPhotoIndex]}`}
                 alt={`${currentPhotoIndex + 1}`}
-                className="w-full max-h-60 rounded-xl object-cover"
+                className="w-full h-auto aspect-[3/4] rounded-xl object-cover shadow"
               />
                 {profile.commonPassions?.length > 0  &&
                   (
