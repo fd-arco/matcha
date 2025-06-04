@@ -31,7 +31,7 @@ const Bandeau = () => {
     return (
         //TODO:AJOUTER ONCLICK SUR LE DIV POUR REDIRIGER VERS LES EDIT PROFILE
         <div className="bg-green-500 dark:bg-green-800 text-black dark:text-white p-4 flex flex-wrap items-center justify-between gap-4"> 
-            <div className="flex gap-4 items-center flex-shrink-0 max-w-[calc(100% - 120px)]">
+            <div className="flex gap-4 items-center flex-1 min-w-0">
                 <div className="relative flex-shrink-0">
                     <img
                         src={`http://localhost:3000${user.photos[0]}`}
@@ -44,9 +44,9 @@ const Bandeau = () => {
                         title="En ligne"
                     ></span>
                 </div>
-                <div className="m-auto">
-                    <h2 className="text-lg font-semibold hover:underline cursor-pointer">{user.name}</h2>
-                    <p className="text-sm text-black dark:text-white">{user.bio || ""}</p>
+                <div className="flex flex-col w-full overflow-hidden">
+                    <h2 className="text-lg font-semibold hover:underline cursor-pointer break-words whitespace-normal">{user.name}</h2>
+                    <p className="text-sm text-black dark:text-white break-words whitespace-normal">“{user.bio || ""}”</p>
                     <div className="flex items-center gap-1 mt-1">
                         <span className="text-yellow-300 text-sm">⭐</span>
                         <span className="text-sm text-black dark:text-white">Fame: {user.fame}</span>
