@@ -20,7 +20,7 @@ export default function CreateProfil({refreshUser}) {
     const passionsList = ["Music", "Sports", "Reading", "Traveling", "Cooking", 
         "Gaming", "Dancing", "Art", "Photography", "Movies"
     ];
-
+    console.log("blablalba");
     const [formErrors, setFormErrors] = useState({});
 
     const showInfoModal = (title, message, onConfirm) => {
