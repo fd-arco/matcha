@@ -1,14 +1,12 @@
 import { Link } from "react-router-dom";
 import Matcha from "../util/matcha1.jpg"
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DarkModeToggle from "../util/dark";
-import Spinner from "../components/spinner"
-import Modal from "../components/Modal.jsx"
 import EmailModal from "../util/modal2.jsx"
 import SentModal  from "../components/Modal.jsx"
 
-export default function Register (){
+export default function Register ({setUserId}){
 
     const [firstname, setFirstName] = useState("");
     const [email, setEmail] = useState("");
@@ -17,7 +15,6 @@ export default function Register (){
     const [message, setMessage] = useState("");
     const [validEmail, setValidEmail] = useState(false);
     const [sent, setSent] = useState(false);
-    const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
     async function handleRegister(event) {
@@ -41,16 +38,17 @@ export default function Register (){
             if (response.ok) {
 
                 const token = data.token;
-                const user = data.user;
 
-                setSent(true);
+                // setSent(true);
 
                 setMessage("Inscription réussie !");
                 localStorage.setItem("userId", data.user.id); //TODO:ponctuel on fera avec les cookies apres 
+                setUserId(data.user.id);
                 console.log("JE redirige bien vers create-profil");
 
-                // sessionStorage.setItem("token", token);
-                setTimeout(() => { navigate("/create-profil") }, 3000);
+                sessionStorage.setItem("token", token);
+                navigate("/create-profil");
+                // setTimeout(() => { navigate("/create-profil") }, 3000);
             }
             else {
                 

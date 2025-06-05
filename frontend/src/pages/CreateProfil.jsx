@@ -4,7 +4,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import ModalLocal from "../util/modalLocal.jsx"
 import { getUserLocation } from "../util/geo.js";
 
-export default function CreateProfil() {
+export default function CreateProfil({refreshUser}) {
     const [selectedPassions, setSelectedPassions] = useState([]);
     const [selectedValue, setSelectedValue] = useState("");
     const [photos, setPhotos] = useState([]);
@@ -137,6 +137,7 @@ export default function CreateProfil() {
             if (response.ok) {
                 alert("Profil cree avec succes"); //TODO:ameliorer la mise en page
                 console.log("reponse du serveur : ", data);
+                refreshUser();
                 navigate("/swipe");
             } else {
                 alert("Erreur serveur:", data.error);
@@ -154,14 +155,14 @@ export default function CreateProfil() {
 
     return (
         <div className="min-h-screen bg-gray-200 text-black dark:bg-gray-800 dark:text-white transition-colors duration-300 flex flex-col">
-            <Navbar />
             <div className="flex-1 flex items-center justify-center px-4">
-                {/* Conteneur principal bien large et équilibré */}
                 <div className="bg-white dark:bg-black border rounded-lg px-8 py-6 mx-auto my-8 max-w-5xl w-full flex flex-wrap md:flex-nowrap justify-between gap-6">
                     
-                    {/* SECTION GAUCHE: FORMULAIRE */}
                     <div className="w-full md:w-[48%] flex flex-col">
                         <h2 className="text-2xl font-medium mb-4">Create your account</h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 italic">
+                            The more complete your profile is (bio, passions, photos), the more <span className="font-semibold text-green-600">fame</span> you gain!
+                        </p>
                         <form onSubmit={handleSubmit} className="flex flex-col flex-grow">
                             <div className="mb-4">
                                 <label htmlFor="name" className="block text-gray-700 font-medium mb-2">Name</label>
@@ -279,20 +280,18 @@ export default function CreateProfil() {
                             </div>
                             {formErrors.passions && (<p className="text-red-500 text-sm mb-2">{formErrors.passions}</p>)}
 
-                            {/* Affichage des passions sélectionnées */}
                             <div className="mb-4 flex flex-wrap gap-2">
                                 {selectedPassions.map((passion, index) => (
                                     <span
                                         key={index}
                                         onClick={() => handleRemovePassion(passion)}
-                                        className="cursor-pointer bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-red-500 transition-colors"
+                                        className="cursor-pointer bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-red-500 transition-colors"
                                     >
                                         {passion} ✖
                                     </span>
                                 ))}
                             </div>
 
-                            {/* Bio */}
                             <div className="mb-4">
                                 <label htmlFor="bio" className="block text-gray-700 font-medium mb-2">Bio</label>
                                 <textarea id="bio" name="bio" placeholder="Put a bio to get more likes"
@@ -326,7 +325,6 @@ export default function CreateProfil() {
                     <div className="w-full md:w-[48%] flex flex-col">
                     <h2 className={`text-2xl font-medium mb-4`}>Upload your photos (max 6)</h2>
                     {formErrors.photos && (<p className="text-red-500 text-sm mt-1 mb-3">{formErrors.photos}</p>)}
-                    {/* Conteneur principal pour bien aligner les éléments */}
                     {photos.length === 0 && (
                     <div className="flex flex-col flex-grow items-center justify-center">
                         <div class="flex-grow flex items-center justify-center">
@@ -343,13 +341,11 @@ export default function CreateProfil() {
                         </div>
                     </div>
                     )}
-                        {/* Affichage des photos uploadées */}
                         {photos.length > 0 && (
                         <div className="grid grid-cols-2 gap-2 flex-grow">
                             {photos.map((photo, index) => (
                                 <div key={index} className="relative">
                                     <img src={photo.preview} alt={`Uploaded ${index}`} className="w-full h-60 object-cover rounded-lg" />
-                                    {/* Bouton de suppression */}
                                     <button 
                                         onClick={() => handleRemovePhoto(index)}
                                         className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center"

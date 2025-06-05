@@ -5,7 +5,7 @@ import { useState, useEffect} from 'react';
 import { useNavigate } from "react-router-dom";
 import EmailLogModal from "../util/modalLogin.jsx"
 
-export default function Login() {
+export default function Login({setUserId}) {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("")
@@ -15,9 +15,7 @@ export default function Login() {
 
     async function handleLoginUser(event) {
       event.preventDefault();
-      
       try {
-        
         const response = await fetch("http://localhost:3000/loginUser", {
           method: "POST",
           headers: {
@@ -29,14 +27,30 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
-
         const token = data.token;
         const user = data.user;
 
         sessionStorage.setItem("token", token);
-
-        setTimeout(() => { navigate("/swipe") }, 1500);
+        localStorage.setItem("userId", user.id); //TODO:PROVISION FAIRE AVEC COOKIES PLUSTARD
         localStorage.setItem("token", token);
+        // setUserId(user.id);
+        // setTimeout(() => { navigate("/swipe") }, 1500);
+        setTimeout(async () => {
+          try {
+            const resProfile = await fetch(`http://localhost:3000/user/${user.id}`);
+            const profileData = await resProfile.json();
+  
+            if (profileData.profile_id) {
+              navigate("/swipe");
+            } else {
+              navigate("/create-profil");
+            }
+              setUserId(user.id);
+          } catch (err) {
+            console.error("erreur lors de la recuperation du profil:", err);
+            navigate("/create-profil");
+          }
+        }, 10);
 
         /*setTimeout(() => { navigate("/profil") }, 1500);*/
 
@@ -156,9 +170,12 @@ export default function Login() {
           </div>
         </div>
         <DarkModeToggle/>
-        <button class="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-full transition-transform transform-gpu hover:-translate-y-1 hover:shadow-lg">
-          <Link to="/">Menun</Link>
-        </button>
+        <Link
+          to="/"
+          className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-full transition-transform transform-gpu hover:-translate-y-1 hover:shadow-lg"
+        >
+          Menu
+        </Link>
         {modal && <EmailLogModal onClose={() => setModal(false)}/>}
       </div>
     );

@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS users (
     lastname VARCHAR(100) NOT NULL DEFAULT '',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     verified BOOLEAN DEFAULT FALSE,
-    verifToken VARCHAR(255)
+    verifToken VARCHAR(255),
+    last_online TIMESTAMP
 );
 
 -- Création de la table profiles
@@ -22,6 +23,10 @@ CREATE TABLE IF NOT EXISTS profiles (
     passions TEXT,
     bio TEXT,
     age INTEGER,
+    fame INTEGER DEFAULT 500,
+    fame_bio BOOLEAN DEFAULT FALSE,
+    passions_count INTEGER DEFAULT 0,
+    photo_count INTEGER DEFAULT 0,
     latitude DOUBLE PRECISION,
     longitude DOUBLE PRECISION,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -40,7 +45,8 @@ CREATE TABLE IF NOT EXISTS messages (
     sender_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     receiver_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     content TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_read BOOLEAN DEFAULT FALSE
 );
 
 -- Création de la table likes
@@ -56,4 +62,29 @@ CREATE TABLE IF NOT EXISTS matches (
     user1_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     user2_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     matched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    sender_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    type VARCHAR(50) NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    message_id INTEGER REFERENCES messages(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE reports (
+    id SERIAL PRIMARY KEY,
+    reporter_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    reported_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    reason TEXT DEFAULT 'No reason',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE blocks (
+    id SERIAL PRIMARY KEY,
+    blocker_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    blocked_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

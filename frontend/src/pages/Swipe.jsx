@@ -3,22 +3,56 @@ import Navbar from "../components/Navbar";
 import Bandeau from "../components/Bandeau";
 import Messages from "../components/Messages";
 import Matchs from "../components/Matchs";
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import Conversation from "../components/Conversation";
-const Swipe = () => {
+import { useSocket } from "../context/SocketContext";
+const Swipe = ({setUserId}) => {
     const [selectedMatch, setSelectedMatch] = useState(null);
+    // const [messagesGlobal, setMessagesGlobal] = useState([]);
+    // const [unreadCountTrigger, setUnreadCountTrigger] = useState(false);
+    // const [hasNotification, setHasNotification] = useState(false);
+    // const [matchesGlobal, setMatchesGlobal] = useState([]);
+    const {setHasNotification} = useSocket();
+    useEffect(() => {
+      const userId = localStorage.getItem("userId");
+      if (userId) {
+        setUserId(userId);
+      }
+    }, []);
+    const fetchNotifications = async () => {
+      try {
+        const res = await fetch(`http://localhost:3000/notifications/${userId}`);
+        const data = await res.json();
+    
+        const totalNotifs = (data[0]?.views || 0)
+          + (data[0]?.likes || 0)
+          + (data[0]?.matchs || 0)
+          + (data[0]?.messages || 0);
+    
+        setHasNotification(totalNotifs > 0);
+      } catch (err) {
+        console.error("Erreur fetch notifications", err);
+      }
+    };
 
     const handleBackToSwipes = () => {
         setSelectedMatch(null);
     }
+    const userId = localStorage.getItem("userId");
+
+    useEffect(() => {
+      if (userId) {
+        fetchNotifications();
+      }
+    }, [userId]);
+
   return (
     <div className="h-screen flex flex-col">
-      <Navbar />
       <div className="flex flex-1">
         {/* Colonne de gauche */}
         <div className="w-1/4 flex flex-col">
-          <Bandeau />
-          <Messages onSelectMatch={setSelectedMatch} />
+          <Bandeau/>
+          <Messages onSelectMatch={setSelectedMatch} selectedMatch={selectedMatch}/>
         </div>
 
         {/* Colonne de droite */}
@@ -26,7 +60,7 @@ const Swipe = () => {
           {selectedMatch ? (
             <Conversation match={selectedMatch} onBack={handleBackToSwipes} />
            ) : (
-           <Matchs />
+           <Matchs/>
             )}
         </div>
       </div>
