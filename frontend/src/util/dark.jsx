@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-export default function DarkModeToggle() {
+export default function DarkModeToggle({compact = false}) {
     
     const [isDarkMode, setIsDarkMode] = useState(() => {
       return localStorage.getItem("darkMode") === "true";
@@ -23,13 +23,13 @@ export default function DarkModeToggle() {
     return (
             <button
                 onClick={toggleDarkMode}
-                className={`p-2 rounded-lg shadow-lg transition duration-300 ease-in-out ${
+                className={`px-2 py-2 rounded-lg shadow-lg transition duration-300 ease-in-out ${
                 isDarkMode
                 ? "bg-white text-black border border-gray-400 hover:bg-gray-100"
                 : "bg-gray-800 text-white hover:bg-gray-700"
                 }`}
             >
-                {isDarkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
+                {compact ? (isDarkMode) ? "☀️" : "🌙" : isDarkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
             </button>
 
     );

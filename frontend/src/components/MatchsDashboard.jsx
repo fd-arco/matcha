@@ -34,21 +34,21 @@ const MatchsDashboard = ({notifications, setMatchNotifications, userId}) => {
     }
 
     return (
-        <div className="p-4 max-h-[800px] overflow-y-auto">
-            <h2 className="text-xl font-semibold mb-2">Matchs</h2>
+        <div className="text-black dark:text-white p-4 max-h-[800px] overflow-y-auto">
+            <h2 className="text-xl font-semibold mb-4">💘 Matchs</h2>
             {notifications.length === 0 ? (
-                <p className="text-gray-600">Aucune notification</p>
+                <p>Aucune notification</p>
             ) : (
                 <ul>
                     {notifications.map((notif) => (
                         <li
                             key={notif.notification_id}
-                            className={`p-3 mb-2 rounded-lg shadow-md ${notif.is_read ? "bg-white" : "bg-green-100"      
+                            className={`p-3 mb-2 rounded-lg shadow-md ${notif.is_read ? "dark:bg-gray-800 bg-gray-200" : "dark:bg-green-900 bg-green-200"      
                             }`}
                         >
                             <div className="flex justify-between items-center">
                                 <div>
-                                    <p className="font-semibold text-gray-900">
+                                    <p>
                                         {notif.sender_name} matched with you!
                                     </p>
                                     <p className="text-sm text-gray-500 mt-1">
@@ -56,23 +56,26 @@ const MatchsDashboard = ({notifications, setMatchNotifications, userId}) => {
                                     </p>
                                 </div>
 
-                                <div className="flex items-center gap-4">
-                                    <button
-                                        className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
-                                        onClick={() => handleUnmatch(notif)}
-                                    >
-                                        Unmatch
-                                    </button>
+                                <div className="flex items-center gap-4 flex-shrink-0">
+                                <button
+                                    className="px-3 py-1 bg-red-500 rounded-md hover:bg-red-400 dark:bg-red-800 dark:hover:bg-red-900 transition"
+                                    onClick={() => handleUnmatch(notif)}
+                                >
+                                    Unmatch
+                                </button>
 
-                                    {notif.sender_photo && (
-                                        <img
+                                {notif.sender_photo && (
+                                    <div className="w-12 h-12 shrink-0">
+                                    <img
                                         src={`http://localhost:3000${notif.sender_photo}`}
                                         alt={notif.sender_name}
-                                        className="w-12 h-12 rounded-full object-cover border ml-4 cursor-pointer"
+                                        className="w-full h-full rounded-full object-cover border cursor-pointer"
                                         onClick={() => handleImageClick(notif)}
-                                        />
-                                    )}
+                                    />
+                                    </div>
+                                )}
                                 </div>
+
                             </div>
                         </li>
                     ))}

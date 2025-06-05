@@ -44,6 +44,8 @@ export const SocketProvider = ({children}) => {
                 setMatchesGlobal(prev => [...prev, message.match]);
             }
             if (message.type === "userStatusChanged") {
+                console.log("🟢 Mise à jour du status :", message.userId, message.online);
+                console.log("📦 onlineStatuses AVANT :", onlineStatuses);
                 setOnlineStatuses(prev => ({
                     ...prev,
                     [message.userId]: {
@@ -51,6 +53,8 @@ export const SocketProvider = ({children}) => {
                         lastOnline:message.lastOnline || null
                     }
                 }));
+                console.log("📦 onlineStatuses APRES :", onlineStatuses);
+
             }
             if (message.type === "refreshMatchUI") {
                 const {blockerId, blockedId} = message;

@@ -95,7 +95,10 @@ const ProfileModal = ({userId, onClose}) => {
         setCurrentIndex((prev) => (prev === photos.length -1 ? 0 : prev + 1));
     }
 
-    const userStatus = onlineStatuses[userId];
+    const userStatus = onlineStatuses[Number(userId)];
+
+    console.log("userStatus for modal userId", userId, "=", userStatus);
+
 
     const handleReport = async () => {
         try {
@@ -150,10 +153,10 @@ const ProfileModal = ({userId, onClose}) => {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-[90%] max-w-lg relative shadow-lg">
+           <div className="text-black dark:text-white bg-white dark:bg-gray-900 rounded-lg p-6 w-[90%] max-w-lg max-h-[95vh] overflow-y-auto relative shadow-lg">
                 <button
                     onClick={onClose}
-                    className="absolute top-1 right-1 text-gray-500 hover:text-gray-800"
+                    className="absolute top-1 right-1 hover:text-gray-800 dark:hover:text-gray-200"
                 >
                     <X size={24} />
                 </button>
@@ -162,26 +165,26 @@ const ProfileModal = ({userId, onClose}) => {
                     <img
                         src={`http://localhost:3000${photos[currentIndex]}`}
                         alt="Profile"
-                        className="w-full h-100 object-cover rounded-2xl cursor-pointer"
+                        className="w-full h-auto aspect-[3/2] object-cover rounded-2xl cursor-pointer"
                     />
 
                     <button
                         onClick={handlePrev}
-                        className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 p-1 rounded-full hover:bg-opacity-100"
+                        className="absolute -left-5 top-1/2 transform -translate-y-1/2 bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-600 hover:bg-gray-400 bg-opacity-70 p-1 rounded-full hover:bg-opacity-100"
                     >
                         <ChevronLeft />
                     </button>
                     <button
                         onClick={handleNext}
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 p-1 rounded-full hover:bg-opacity-100"
+                        className="absolute -right-5 top-1/2 transform -translate-y-1/2 bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-600 hover:bg-gray-400 bg-opacity-70 p-1 rounded-full hover:bg-opacity-100"
                     >
                         <ChevronRight />
                     </button>
                 </div>
 
-                <div className="space-y-3 text-gray-800">
+                <div className="space-y-3">
                     <div>
-                        <h2 className="text-2xl font-bold">{profile.name}, {profile.age}
+                        <h2 className="text-2xl font-bold truncate max-w-full">{profile.name}, {profile.age}
                         <span
                             className={`w-4 h-4 ml-2 inline-block align-middle rounded-full ${
                                 userStatus?.online ? "bg-green-500" : "bg-red-500"
@@ -197,10 +200,12 @@ const ProfileModal = ({userId, onClose}) => {
                     </div>
                     <div className="flex items-center gap-1 mt-1">
                         <span className="text-yellow-300 text-sm">⭐</span>
-                        <span className="text-sm text-black">Fame: {profile.fame}</span>
+                        <span className="text-sm">Fame: {profile.fame}</span>
                     </div>
                     {profile.bio && (
-                        <p className="text-gray-600 italic">"{profile.bio}"</p>
+                        <p className="italic break-words whitespace-normal overflow-hidden">
+                            "{profile.bio}"
+                        </p>
                     )}
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
@@ -223,7 +228,7 @@ const ProfileModal = ({userId, onClose}) => {
                                 .replace(/[{}"]/g, "")
                                 .split(",")
                                 .map((passion, idx) => (
-                                    <span key={idx} className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                                    <span key={idx} className="bg-green-500 dark:bg-green-800 px-3 py-1 rounded-full text-sm">
                                         {passion.trim()}
                                     </span>
                                 ))}
@@ -234,14 +239,14 @@ const ProfileModal = ({userId, onClose}) => {
                     <div className={`mt-6 flex justify-center gap-10`}>
                         <button
                             onClick={() => setIsReportModalOpen(true)}
-                            className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded"
+                            className="bg-yellow-500 dark:bg-yellow-800 hover:bg-yellow-400 dark:hover:bg-yellow-900 font-semibold py-2 px-4 rounded"
                         >
                             Report
                         </button>
                         {hasMatch && (
                             <button
                                 onClick={() => setIsBlockModalOpen(true)}
-                                className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded"
+                                className="bg-red-500 hover:bg-red-400 dark:bg-red-800 dark:hover:bg-red-900 font-semibold py-2 px-4 rounded"
                             >
                                 Block
                             </button>

@@ -3,7 +3,6 @@ import { ArrowLeft } from "lucide-react";
 import {useSocket} from "../context/SocketContext"
 import { formatDistanceToNow } from "date-fns";
 import { enUS } from "date-fns/locale";
-import { UNSAFE_decodeViaTurboStream } from "react-router-dom";
 import ConfirmActionModal from "./ConfirmActionModal";
 
 const Conversation = ({match, onBack}) => {
@@ -12,7 +11,6 @@ const Conversation = ({match, onBack}) => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const userId = localStorage.getItem("userId");
-    const [isBlocked, setIsBlocked] = useState(false);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [reportReason, setReportReason] = useState("");
     const [isReportSuccessModalOpen, setIsReportSuccessModalOpen] = useState(false);
@@ -147,7 +145,7 @@ const Conversation = ({match, onBack}) => {
     const userIdInt = parseInt(localStorage.getItem("userId", 10)); 
 
     return (
-        <div className="bg-gray-100 dark:bg-gray-700 flex flex-col items-center justify-center h-full p-4 shadow-lg">
+        <div className="bg-gray-200 dark:bg-gray-800 flex flex-col items-center justify-center h-full p-4 shadow-lg">
             <div className="flex items-center gap-3 mb-4">
                 <div className="relative">
                     <img
@@ -173,11 +171,11 @@ const Conversation = ({match, onBack}) => {
             </div>
             <button
                 onClick={onBack}
-                className="self-start mb-4 px-4 mt-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center space-x-2">
+                className="text-black dark:text-white self-start mb-4 px-4 mt-4 py-2 bg-green-500 dark:bg-green-800 hover:bg-green-400 dark:hover:bg-green-900 rounded-lg transition flex items-center space-x-2">
                 <ArrowLeft size={20} />
                 <span>Back To Swipes</span>
             </button>
-            <div className="flex-1 overflow-y-auto w-full mt-4 p-2 border rounded-lg bg-white dark:bg-gray-800" onClick={handleClick} style={{ maxHeight: "70vh" }}>
+            <div className="flex-1 overflow-y-auto w-full mt-4 p-2 border rounded-lg bg-white dark:bg-gray-900" onClick={handleClick} style={{ maxHeight: "70vh" }}>
                 {messages.map((msg, index) => (
                     <div key={index} className={`flex items-end my-2 ${msg.sender_id === userIdInt ? "justify-end" : "justify-start"}`}>
                         {msg.sender_id !== userIdInt && (
@@ -188,9 +186,10 @@ const Conversation = ({match, onBack}) => {
                                     className="w-8 h-8 rounded-full mr-2"
                                 />
                                 <div className="flex flex-col">
-                                    <p className="p-3 rounded-lg max-w-xs break-words bg-gray-300 text-gray-900 self-start">
-                                        {msg.content}
+                                    <p className="p-3 rounded-lg break-words whitespace-pre-wrap bg-gray-300 text-gray-900 self-start">
+                                    {msg.content}
                                     </p>
+
                                     <span className="text-xs text-gray-400 ml-1">
                                         {formatDistanceToNow(new Date(msg.created_at), {addSuffix: true, locale:enUS  })}
                                     </span>
@@ -200,9 +199,10 @@ const Conversation = ({match, onBack}) => {
                         {msg.sender_id === userIdInt && (
                             <>
                                 <div className="flex flex-col items-end">
-                                    <p className="p-3 rounded-lg max-w-xs break-words bg-green-500 text-white self-end">
-                                        {msg.content}
+                                    <p className="p-3 rounded-lg break-words whitespace-pre-wrap bg-green-500 dark:bg-green-800 text-black dark:text-white self-end">
+                                    {msg.content}
                                     </p>
+
                                     <span className="text-xs text-gray-400 mr-1">
                                         {formatDistanceToNow(new Date(msg.created_at), {addSuffix: true, locale: enUS})}
                                     </span>
@@ -228,20 +228,20 @@ const Conversation = ({match, onBack}) => {
                         if (e.key === "Enter") sendMessage();
                     }}
                 />
-                <button onClick={sendMessage} className="ml-2 px-4 py-2 py-2 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600">
+                <button onClick={sendMessage} className="ml-2 px-4 py-2 py-2 bg-green-500 dark:bg-green-800 hover:bg-green-400 dark:hover:bg-green-900 text-black dark:text-white font-semibold rounded-lg shadow-md">
                     Send
                 </button>
             </div>
             <div className="flex justify-between gap-4 mt-6">
                 <button
                     onClick={() => setIsReportModalOpen(true)}
-                    className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg shadow-md"
+                    className="flex-1 bg-yellow-500 hover:bg-yellow-400 dark:bg-yellow-700 dark:hover:bg-yellow-800 text-black dark:text-white px-4 py-2 rounded-lg shadow-md"
                 >
                     Report
                 </button>
                 <button
                     onClick={() => setIsBlockModalOpen(true)}
-                    className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow-md"
+                    className="flex-1 bg-red-500 hover:bg-red-400 dark:bg-red-700 dark:hover:bg-red-800 text-black dark:text-white px-4 py-2 rounded-lg shadow-md"
                 >
                     Block
                 </button>

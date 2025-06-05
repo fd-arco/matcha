@@ -81,23 +81,23 @@ export default function Login({setUserId}) {
 
 
     return (
-      <div className="h-screen w-screen flex justify-center items-center dark:bg-gray-900">
+      <div className="h-screen w-screen flex justify-center items-center bg-gray-200 dark:bg-gray-600 dark:text-white">
         <div className="grid gap-8">
           <div
             id="back-div"
             className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-[26px] m-4"
           >
             <div
-              className="border-[20px] border-transparent rounded-[20px] dark:bg-gray-900 bg-white shadow-lg xl:p-10 2xl:p-10 lg:p-10 md:p-10 sm:p-2 m-2"
+              className="text-dark dark:text-white border-[20px] border-transparent rounded-[20px] bg-white dark:bg-gray-900 bg-white shadow-lg xl:p-10 2xl:p-10 lg:p-10 md:p-10 sm:p-2 m-2"
             >
-              <h1 className="pt-8 pb-6 font-bold dark:text-gray-400 text-5xl text-center cursor-default">
+              <h1 className="pt-8 pb-6 font-bold text-dark dark:text-white text-5xl text-center cursor-default">
                 Login
               </h1>
               <form onSubmit={handleLoginUser} className="space-y-4">
                 <div>
                   <label
                     htmlFor="email"
-                    className="mb-2 dark:text-gray-400 text-lg"
+                    className="mb-2 text-dark dark:text-white text-lg"
                   >
                     Email
                   </label>
@@ -105,7 +105,7 @@ export default function Login({setUserId}) {
                     id="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="border p-3 dark:bg-indigo-700 dark:text-gray-300 dark:border-gray-700 shadow-md placeholder:text-base focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full"
+                    className="border p-3 dark:bg-indigo-700 dark:text-gray-300 dark:border-gray-700 shadow-md placeholder-bg-gray-700 dark:placeholder-bg-gray-400 placeholder:text-base focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full"
                     type="email"
                     placeholder="Email"
                     required
@@ -114,7 +114,7 @@ export default function Login({setUserId}) {
                 <div>
                   <label
                     htmlFor="password"
-                    className="mb-2 dark:text-gray-400 text-lg"
+                    className="mb-2 text-dark dark:text-white text-lg"
                   >
                     Password
                   </label>
@@ -122,14 +122,14 @@ export default function Login({setUserId}) {
                     id="password"
                     onChange={(e) => setPassword(e.target.value)}
                     value={password}
-                    className="border p-3 shadow-md dark:bg-indigo-700 dark:text-gray-300 dark:border-gray-700 placeholder:text-base focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full"
+                    className="border p-3 shadow-md dark:bg-indigo-700 dark:text-gray-300 dark:border-gray-700 placeholder-bg-gray-700 dark:placeholder-bg-gray-40 placeholder:text-base focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full"
                     type="password"
                     placeholder="Password"
                     required
                   />
                 </div>
                 <button
-                  className="bg-gradient-to-r dark:text-gray-300 from-blue-500 to-purple-500 shadow-lg mt-6 p-2 text-white rounded-lg w-full hover:scale-105 hover:from-purple-500 hover:to-blue-500 transition duration-300 ease-in-out"
+                  className="bg-gradient-to-r text-dark dark:text-white from-blue-500 to-purple-500 shadow-lg mt-6 p-2 rounded-lg w-full hover:scale-105 hover:from-purple-500 hover:to-blue-500 transition duration-300 ease-in-out"
                   type="submit"
                 >
                   LOG IN
@@ -169,13 +169,6 @@ export default function Login({setUserId}) {
             </div>
           </div>
         </div>
-        <DarkModeToggle/>
-        <Link
-          to="/"
-          className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold rounded-full transition-transform transform-gpu hover:-translate-y-1 hover:shadow-lg"
-        >
-          Menu
-        </Link>
         {modal && <EmailLogModal onClose={() => setModal(false)}/>}
       </div>
     );

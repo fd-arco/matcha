@@ -177,18 +177,18 @@ const Dashboard = ({setHasNotification}) => {
     }
 
     return (
-        <div className="h-screen flex flex-col">
-            <div className="p-6 bg-gray-100 h-screen">
+        <div className="min-h-[calc(100vh-72px)] flex flex-col">
+            <div className="p-6 flex-1 text-black dark:text-white bg-gray-200 dark:bg-gray-800">
                 <button
                     onClick={() => navigate("/swipe")}
-                    className="mb-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center space-x-2">
+                    className="mb-4 px-4 py-2 bg-green-500 dark:bg-green-800 hover:bg-green-400 dark:hover:bg-green-900 dark:text-white text-black rounded-lg transition flex items-center space-x-2">
                     <ArrowLeft size={20} />
                     <span>Back To Swipes</span>
                 </button>
 
-                <div className="grid grid-cols-4 gap-4 bg-white p-4 rounded-lg shadow-md">
+                <div className="grid grid-cols-4 gap-4 bg-white dark:bg-gray-900 p-4 rounded-lg shadow-md">
                     <div
-                        className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="views"? "bg-green-500 text-white" : "hover:bg-gray-200"}`}
+                        className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="views"? "dark:bg-green-800 bg-green-500 text-black dark:text-white" : "dark:hover:bg-gray-800 hover:bg-gray-200"}`}
                         onClick={() => {
                             setActiveTab("views");
                             markAsRead("views");
@@ -204,7 +204,7 @@ const Dashboard = ({setHasNotification}) => {
                         )}
                     </div>
                     <div
-                        className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="likes" ? "bg-green-500 text-white" : "hover:bg-gray-200"}`}
+                        className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="likes"? "dark:bg-green-800 bg-green-500 text-black dark:text-white" : "dark:hover:bg-gray-800 hover:bg-gray-200"}`}
                         onClick={() => {
                             setActiveTab("likes");
                             markAsRead("likes");
@@ -219,7 +219,7 @@ const Dashboard = ({setHasNotification}) => {
                         )}
                     </div>
                     <div
-                        className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="matchs" ? "bg-green-500 text-white" : "hover:bg-gray-200"}`}
+                        className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="matchs"? "dark:bg-green-800 bg-green-500 text-black dark:text-white" : "dark:hover:bg-gray-800 hover:bg-gray-200"}`}
                         onClick={() => {
                             setActiveTab("matchs");
                             markAsRead("matchs");
@@ -234,7 +234,7 @@ const Dashboard = ({setHasNotification}) => {
                         )}
                     </div>
                     <div 
-                        className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="messages" ? "bg-green-500 text-white" : "hover:bg-gray-200"}`}
+                        className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="messages"? "dark:bg-green-800 bg-green-500 text-black dark:text-white" : "dark:hover:bg-gray-800 hover:bg-gray-200"}`}
                         onClick={() => {
                             setActiveTab("messages");
                             markAsRead("messages");
@@ -250,7 +250,7 @@ const Dashboard = ({setHasNotification}) => {
                     </div>
                 </div>
 
-                <div className="mt-6 p-4 bg-white rounded-lg shadow-md">
+                <div className="dark:bg-gray-900 bg-white mt-6 p-4 bg-white rounded-lg shadow-md">
                     {activeTab === "views" && <ViewsDashboard notifications={viewNotifications} userId={userId}/>}
                     {activeTab === "likes" && <LikesDashboard notifications={likeNotifications} setLikeNotifications={setLikeNotifications} userId={userId}/>}
                     {activeTab === "matchs" && <MatchsDashboard notifications={matchNotifications} setMatchNotifications={setMatchNotifications} userId={userId}/>}

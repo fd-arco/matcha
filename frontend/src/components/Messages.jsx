@@ -49,17 +49,6 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
         }
     }, [matches, setOnlineStatuses]);
 
-    // useEffect(() => {
-    //     if (!matchesGlobal.length) return;
-
-    //     setMatches(prev => {
-    //         const newMatch = matchesGlobal[matchesGlobal.length -1];
-    //         const alreadyExists = prev.some(m => m.user_id === newMatch.user_id);
-    //         if (alreadyExists) return prev;
-    //         return [newMatch, ...prev];
-    //     });
-    // }, [matchesGlobal]);
-
     useEffect(() => {
         setMatches(matchesGlobal);
     }, [matchesGlobal]);
@@ -138,10 +127,11 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
 
 
     return (
-        <div className="bg-gray-200 dark:bg-gray-800 p-4 shadow-md h-full w-full">
+        <div className="flex-1 overflow-y-auto bg-gray-100 dark:bg-gray-700 p-4 w-full">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Messages</h2>
-
+            <div className="pr-2">
             {matches.length === 0 ? (
+
                 <div className="flex flex-col text-center">
                     <p className="text-gray-600 dark:text-gray-400 text-3xl flex justify-center mt-5 items-center">Start swiping to get matches!</p>
                     <p className="text-gray-600 dark:text-gray-400 text-md flex justify-center mt-5 items-center">Your matches will appear here once you start swiping. Click on a match to start a conversation and exchange messages with your new connection.</p>
@@ -156,7 +146,7 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
                         <li
                             key={match.user_id}
                             onClick={() => handleSelectMatch(match)}
-                            className="p-2 flex items-center space-x-3 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-700 rounded-lg relative"
+                            className="p-2 flex items-center space-x-3 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600 rounded-lg relative"
                         >
                         <div className="relative">
                             <img
@@ -182,16 +172,16 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
                             ></span>
                         </div>
 
-                            <div className="flex flex-col">
-                                <div className="flex items-center gap-x-2">
-                                    <span className="text-gray-900 dark:text-white font-medium">{match.name}</span>
+                            <div className="flex flex-col overflow-hidden">
+                                <div className="flex items-center gap-x-2 overflow-hidden">
+                                    <span className="text-gray-900 dark:text-white font-medium truncate max-w-full">{match.name}</span>
                                 {match.unread_count > 0 && (
-                                    <span className="bg-red-500 text-white text-xs font-bold rounded-full px-2">
+                                    <span className="bg-red-500 text-white text-xs font-bold rounded-full px-2 shrink-0">
                                         {match.unread_count}
                                     </span>
                                 )}
                                 </div>
-                                <span className="text-gray-600 dark:text-gray-400 text-sm truncate w-40">{match.last_message}</span>
+                                <span className="text-gray-600 dark:text-gray-400 text-sm truncate max-w-full overflow-hidden">{match.last_message}</span>
                                 {match.last_message_created_at && (
                                     <span className="text-xs text-gray-500">
                                         sent {formatDistanceToNow(new Date(match.last_message_created_at), {addSuffix: false, locale:fr})} ago
@@ -202,7 +192,9 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
                         )
                     })}
                 </ul>
+
             )}
+        </div>
         {showProfilModal && (
             <ProfileModal userId={showProfilModal} onClose={() => setShowProfilModal(null)} />
         )}

@@ -5,7 +5,9 @@ export default function RootLayout({userId, setUserId, refreshFlag, setHasProfil
   return (
     <>
       <Navbar userId={userId} setUserId={setUserId} refreshFlag={refreshFlag} setHasProfile={setHasProfile} />
-      <Outlet />
+      <div className="pt-[72px] min-h-screen">
+        <Outlet />
+      </div>
     </>
   )
 }

@@ -56,7 +56,7 @@ const SearchModule = () => {
     }, [ageGap]);
 
     return (
-        <div className="flex p-6 gap-6 items-start">
+        <div className="bg-white dark:bg-gray-900 flex p-6 gap-6 items-start">
             <div className="flex flex-col justify-center gap-3 p-4 w-3/5">
                 <h2 className="text-2xl font-bold font-sans">Adjust your research</h2>
                 <div className="flex flex-col gap-1  ">
@@ -72,9 +72,9 @@ const SearchModule = () => {
                                 max={100}
                                 value={ageGap[0]}
                                 onChange={(e) => setAgeGap([Number(e.target.value), ageGap[1]])}
-                                className="w-full accent-green-500"
+                                className="w-full accent-green-500 dark:accent-green-800"
                             />
-                            <span className="w-16 text-3xl font-extrabold font-mono text-green-700 self-center">{ageGap[0]}</span>
+                            <span className="w-16 text-3xl font-extrabold font-mono text-green-500 dark:text-green-800 self-center">{ageGap[0]}</span>
                         </div>
                         {error && (
                             <span className="text-red-600 text-sm -mt-2">{error}</span>
@@ -90,9 +90,9 @@ const SearchModule = () => {
                                 max={100}
                                 value={ageGap[1]}
                                 onChange={(e) => setAgeGap([ageGap[0], Number(e.target.value)])}
-                                className="w-full accent-green-500"
+                                className="w-full accent-green-500 dark:accent-green-800"
                             />
-                            <span className="w-16 text-3xl font-extrabold font-mono text-green-700 self-center">{ageGap[1]}</span>
+                            <span className="w-16 text-3xl font-extrabold font-mono text-green-500 dark:text-green-800 self-center">{ageGap[1]}</span>
                         </div>
                     </div>
 
@@ -105,9 +105,9 @@ const SearchModule = () => {
                                 max={1000}
                                 value={fameRating}
                                 onChange={(e) => setFameRating(Number(e.target.value))}
-                                className="w-full accent-green-500"
+                                className="w-full accent-green-500 dark:accent-green-800"
                             />
-                            <span className="w-16 text-3xl font-extrabold font-mono text-green-700 self-center">{fameRating}</span>
+                            <span className="w-16 text-3xl font-extrabold font-mono text-green-500 dark:text-green-800 self-center">{fameRating}</span>
                         </div>
                     </div>
 
@@ -120,9 +120,9 @@ const SearchModule = () => {
                                 max={500}
                                 value={location}
                                 onChange={(e) => setLocation(Number(e.target.value))}
-                                className="w-full accent-green-500"
+                                className="w-full accent-green-500 dark:accent-green-800"
                             />
-                            <span className="w-16 text-3xl font-extrabold font-mono text-green-700 self-center">{location}</span>
+                            <span className="w-16 text-3xl font-extrabold font-mono text-green-500 dark:text-green-800 self-center">{location}</span>
                         </div>
                     </div>
                     <div className="flex flex-col flex-grow border-b border-gray-300 pb-4 mb-4">
@@ -134,22 +134,22 @@ const SearchModule = () => {
                                 max={5}
                                 value={tagsInCommon}
                                 onChange={(e) => setTagsInCommon(Number(e.target.value))}
-                                className="w-full accent-green-500"
+                                className="w-full accent-green-500 dark:accent-green-800"
                             />
-                            <span className="w-16 text-3xl font-extrabold font-mono text-green-700 self-center">{tagsInCommon}</span>
+                            <span className="w-16 text-3xl font-extrabold font-mono text-green-500 dark:text-green-800 self-center">{tagsInCommon}</span>
                         </div>
                     </div>
                 </div>
 
                 <button
                     onClick={handleSubmit}
-                    className="mt-6 bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg shadow"
+                    className="mt-6 bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 px-6 py-2 rounded-lg shadow"
                 >
                     Save filters
                 </button>
             </div>
-            <div className="w-2/5 m-auto flex flex-col justify-center items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-6 shadow-lg">
-                <span className="text-7xl font-extrabold text-green-600">{matchingProfilesCount}</span>
+            <div className="w-2/5 m-auto flex flex-col justify-center items-center bg-gray-200 dark:bg-gray-800 rounded-lg p-6 shadow-lg">
+                <span className="text-7xl font-extrabold text-green-500 dark:text-green-800">{matchingProfilesCount}</span>
                 <span className="text-md font-medium text-gray-600 dark:text-gray-300 mt-2">Number of profiles</span>
             </div>
             {showUpdateModal && (

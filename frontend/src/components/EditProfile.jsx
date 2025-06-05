@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import UpdateModal from "../components/UpdateModal";
 import { useNavigate } from "react-router-dom";
+import ConfirmActionModal from "./ConfirmActionModal";
 
 export default function EditProfile() {
     const [formData, setFormData] = useState({
@@ -19,13 +20,16 @@ export default function EditProfile() {
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
     const userId = localStorage.getItem("userId");
-
+    const [infoModal, setInfoModal] = useState({
+        isOpen:false,
+        title:"",
+        message:"",
+    });
     const passionsList = [
         "Music", "Sports", "Reading", "Traveling", "Cooking", 
         "Gaming", "Dancing", "Art", "Photography", "Movies"
     ];
 
-    // Récupérer les informations de profil existantes
     useEffect(() => {
         const fetchProfileData = async () => {
             try {
@@ -77,12 +81,32 @@ export default function EditProfile() {
         setSelectedPassions(selectedPassions.filter((p) => p !== passion));
     };
 
+    const showInfoModal = (title, message, onConfirm) => {
+        setInfoModal({
+            isOpen:true,
+            title,
+            message,
+            onConfirm,
+        })
+    };
+
     const handleUploadPhoto = async (event) => {
+        const file = event.target.files[0];
         if (existingPhotos.length + newPhotos.length >= 6) {
-            alert("You can only upload up to 6 photos.");
+            showInfoModal("Photo limit reached", "You can upload a maximum of 6 photos.")
             return;
         }
-        const file = event.target.files[0];
+        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+            showInfoModal("Invalid file type", "Only JPG, PNG, or WEBP formats are allowed.")
+            return;
+        }
+
+        const maxSize = 2 * 1024 * 1024;
+        if (file.size > maxSize) {
+            showInfoModal("File too large", "Each photo must be under 2MB.");
+            return ;
+        }
+
         console.log("file = ", file);
         if (!file) return;
 
@@ -125,6 +149,12 @@ export default function EditProfile() {
 
         if (!name) {
             errors.name = "Name is required.";
+        }
+        if (name.length > 15) {
+            errors.name = "Name cannot exceed 15 characters."
+        }
+        if (bio.length > 300) {
+            errors.bio = "Bio cannot exceed 300 characters."
         }
         if (!gender) {
             errors.gender = "Gender is required.";
@@ -184,15 +214,15 @@ export default function EditProfile() {
     return (
         <div className="text-black dark:text-white transition-colors duration-300 flex flex-col">
             <div className="flex-1 flex items-center justify-center px-4">
-                <div className="bg-white dark:bg-black border rounded-lg px-8 py-6 mx-auto my-8 max-w-5xl w-full flex flex-wrap md:flex-nowrap justify-between gap-6">
+                <div className="bg-white dark:bg-gray-900 rounded-lg px-8 py-6 mx-auto my-8 max-w-5xl w-full flex flex-wrap md:flex-nowrap justify-between gap-6">
                     <div className="w-full md:w-[48%] flex flex-col">
                         <h2 className="text-2xl font-medium mb-4">Modify your information</h2>
                         <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 italic">
-                            The more complete your profile is (bio, passions, photos), the more <span className="font-semibold text-green-600">fame</span> you gain!
+                            The more complete your profile is (bio, passions, photos), the more <span className="font-semibold dark:text-green-800 text-green-500">fame</span> you gain!
                         </p>
                         <form onSubmit={handleSubmit} className="flex flex-col flex-grow">
                             <div className="mb-4">
-                                <label htmlFor="name" className="block text-gray-700 font-medium mb-2">Name</label>
+                                <label htmlFor="name" className="block font-medium mb-2">Name</label>
                                 <input 
                                     type="text" 
                                     id="name" 
@@ -204,7 +234,7 @@ export default function EditProfile() {
                                 {formErrors.name && (<p className="text-red-500 text-sm m-0 p-0">{formErrors.name}</p>)}
                             </div>
                             <div className="mb-4">
-                                <label htmlFor="dob" className="block text-gray-700 font-medium mb-2">Date of birth</label>
+                                <label htmlFor="dob" className="block font-medium mb-2">Date of birth</label>
                                 <input 
                                     type="date" 
                                     id="dob" 
@@ -216,7 +246,7 @@ export default function EditProfile() {
                                 {formErrors.dob && (<p className="text-red-500 text-sm m-0 p-0">{formErrors.dob}</p>)}
                             </div>
                             <div className="mb-4">
-                                <label htmlFor="gender" className="block text-gray-700 font-medium mb-2">Gender</label>
+                                <label htmlFor="gender" className="block font-medium mb-2">Gender</label>
                                 <select 
                                     id="gender" 
                                     name="gender" 
@@ -232,55 +262,55 @@ export default function EditProfile() {
                                 {formErrors.gender && (<p className="text-red-500 text-sm m-0 p-0">{formErrors.gender}</p>)}
                             </div>
                             <div className="mb-4">
-                                <label className="block text-gray-700 font-medium mb-2">Interested in...</label>
+                                <label className="block font-medium mb-2">Interested in...</label>
                                 <div className="flex flex-wrap -mx-2">
                                     <div className="px-2 w-1/3">
-                                        <label htmlFor="men" className="block text-gray-700 font-medium mb-2">
+                                        <label htmlFor="men" className="block font-medium mb-2 text-sm">
                                             <input 
                                                 type="radio" 
                                                 id="men" 
                                                 name="interestedIn" 
                                                 value="men" 
-                                                className="mr-2 dark:accent-gray-700" 
+                                                className="mr-2 accent-green-500 dark:accent-green-800" 
                                                 checked={formData.interestedIn === "men"} 
                                                 onChange={(e) => setFormData({ ...formData, interestedIn: e.target.value })}
                                             />Men
                                         </label>
                                     </div>
                                     <div className="px-2 w-1/3">
-                                        <label htmlFor="women" className="block text-gray-700 font-medium mb-2">
+                                        <label htmlFor="women" className="block font-medium mb-2 text-sm">
                                             <input 
                                                 type="radio" 
                                                 id="women" 
                                                 name="interestedIn" 
                                                 value="women" 
-                                                className="mr-2 dark:accent-gray-700" 
+                                                className="mr-2 accent-green-500 dark:accent-green-800" 
                                                 checked={formData.interestedIn === "women"} 
                                                 onChange={(e) => setFormData({ ...formData, interestedIn: e.target.value })}
                                             />Women
                                         </label>
                                     </div>
                                     <div className="px-2 w-1/3">
-                                        <label htmlFor="beyond-binary" className="block text-gray-700 font-medium mb-2">
+                                        <label htmlFor="beyond-binary" className="block font-medium mb-2 text-sm">
                                             <input 
                                                 type="radio" 
                                                 id="beyond-binary" 
                                                 name="interestedIn" 
                                                 value="beyondBinary" 
-                                                className="mr-2 dark:accent-gray-700" 
+                                                className="mr-2 accent-green-500 dark:accent-green-800" 
                                                 checked={formData.interestedIn === "beyondBinary"} 
                                                 onChange={(e) => setFormData({ ...formData, interestedIn: e.target.value })}
                                             />Beyond the binary
                                         </label>
                                     </div>
                                     <div className="px-2 w-1/3">
-                                        <label htmlFor="everyone" className="block text-gray-700 font-medium mb-2">
+                                        <label htmlFor="everyone" className="block font-medium mb-2 text-sm">
                                             <input 
                                                 type="radio" 
                                                 id="everyone" 
                                                 name="interestedIn" 
                                                 value="everyone" 
-                                                className="mr-2 dark:accent-gray-700" 
+                                                className="mr-2 accent-green-500 dark:accent-green-800" 
                                                 checked={formData.interestedIn === "everyone"} 
                                                 onChange={(e) => setFormData({ ...formData, interestedIn: e.target.value })}
                                             />Everyone
@@ -290,55 +320,55 @@ export default function EditProfile() {
                                 {formErrors.interestedIn && (<p className="text-red-500 text-sm m-0 p-0">{formErrors.interestedIn}</p>)}
                             </div>
                             <div className="mb-4">
-                                <label className="block text-gray-700 font-medium mb-2">What are you looking for?</label>
+                                <label className="block font-medium mb-2">What are you looking for?</label>
                                 <div className="flex flex-wrap -mx-2">
                                     <div className="px-2 w-1/3">
-                                        <label htmlFor="serious-relationship" className="block text-gray-700 font-medium mb-2">
+                                        <label htmlFor="serious-relationship" className="block font-medium mb-2 text-sm">
                                             <input 
                                                 type="radio" 
                                                 id="serious-relationship" 
                                                 name="lookingFor" 
                                                 value="serious" 
-                                                className="mr-2 dark:accent-gray-700" 
+                                                className="mr-2 accent-green-500 dark:accent-green-800" 
                                                 checked={formData.lookingFor === "serious"} 
                                                 onChange={(e) => setFormData({ ...formData, lookingFor: e.target.value })}
                                             />Serious relationship
                                         </label>
                                     </div>
                                     <div className="px-2 w-1/3">
-                                        <label htmlFor="nothing-serious" className="block text-gray-700 font-medium mb-2">
+                                        <label htmlFor="nothing-serious" className="block font-medium mb-2 text-sm">
                                             <input 
                                                 type="radio" 
                                                 id="nothing-serious" 
                                                 name="lookingFor" 
                                                 value="nothingSerious" 
-                                                className="mr-2 dark:accent-gray-700" 
+                                                className="mr-2 accent-green-500 dark:accent-green-800" 
                                                 checked={formData.lookingFor === "nothingSerious"} 
                                                 onChange={(e) => setFormData({ ...formData, lookingFor: e.target.value })}
                                             />Nothing serious
                                         </label>
                                     </div>
                                     <div className="px-2 w-1/3">
-                                        <label htmlFor="making-friends" className="block text-gray-700 font-medium mb-2">
+                                        <label htmlFor="making-friends" className="block font-medium mb-2 text-sm">
                                             <input 
                                                 type="radio" 
                                                 id="making-friends" 
                                                 name="lookingFor" 
                                                 value="makingFriends" 
-                                                className="mr-2 dark:accent-gray-700" 
+                                                className="mr-2 accent-green-500 dark:accent-green-800" 
                                                 checked={formData.lookingFor === "makingFriends"} 
                                                 onChange={(e) => setFormData({ ...formData, lookingFor: e.target.value })}
                                             />Making friends
                                         </label>
                                     </div>
                                     <div className="px-2 w-1/3">
-                                        <label htmlFor="not-sure" className="block text-gray-700 font-medium mb-2">
+                                        <label htmlFor="not-sure" className="block font-medium mb-2 text-sm">
                                             <input 
                                                 type="radio" 
                                                 id="not-sure" 
                                                 name="lookingFor" 
                                                 value="notSure" 
-                                                className="mr-2 dark:accent-gray-700" 
+                                                className="mr-2 accent-green-500 dark:accent-green-800" 
                                                 checked={formData.lookingFor === "notSure"} 
                                                 onChange={(e) => setFormData({ ...formData, lookingFor: e.target.value })}
                                             />I'm not sure yet
@@ -348,7 +378,7 @@ export default function EditProfile() {
                                 {formErrors.lookingFor && (<p className="text-red-500 text-sm m-0 p-0">{formErrors.lookingFor}</p>)}
                             </div>
                             <div className="mb-4">
-                                <label className={`block text-gray-700 font-medium mb-2`}>Select your passions (max 5)</label>
+                                <label className={`block font-medium mb-2`}>Select your passions (max 5)</label>
                                 <select 
                                     value={selectedValue} 
                                     onChange={handleAddPassion}
@@ -367,7 +397,7 @@ export default function EditProfile() {
                                         <span
                                             key={index}
                                             onClick={() => handleRemovePassion(passion)}
-                                            className="cursor-pointer bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-red-500 transition-colors"
+                                            className="cursor-pointer bg-green-500 dark:bg-green-800 px-3 py-1 rounded-lg hover:bg-red-500 dark:hover:bg-red-800 transition-colors"
                                         >
                                             {passion} ✖
                                         </span>
@@ -375,7 +405,7 @@ export default function EditProfile() {
                                 </div>
                             </div>
                             <div className="mb-4">
-                                <label htmlFor="bio" className="block text-gray-700 font-medium mb-2">Bio</label>
+                                <label htmlFor="bio" className="block font-medium mb-2">Bio</label>
                                 <textarea 
                                     id="bio" 
                                     name="bio" 
@@ -385,9 +415,11 @@ export default function EditProfile() {
                                     className="dark:bg-gray-700 placeholder-gray-700 dark:placeholder-gray-400 border border-gray-400 p-2 w-full rounded-lg focus:outline-none focus:border-blue-400" 
                                     rows="2"
                                 />
+                                {formErrors.bio && (<p className="text-red-500 text-sm m-0 p-0">{formErrors.bio}</p>)}
+
                             </div>
                             <div>
-                                <button type="submit" className="bg-green-600 hover:bg-green-500 dark:bg-green-800 dark:hover:bg-green-700 text-white px-4 py-2 rounded-lg w-full">
+                                <button type="submit" className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 px-4 py-2 rounded-lg w-full">
                                     Update Profile
                                 </button>
                             </div>
@@ -428,7 +460,7 @@ export default function EditProfile() {
                                         <img src={fullUrl} alt={`Uploaded ${index}`} className="w-full h-60 object-cover rounded-lg" />
                                         <button 
                                             onClick={() => handleRemovePhoto(index, isFromExisting ? 'existing' : 'new')}
-                                            className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center"
+                                            className="absolute top-0 right-0 bg-red-500 text-xs rounded-full w-6 h-6 flex items-center justify-center"
                                         >
                                             ✖
                                         </button>
@@ -446,7 +478,7 @@ export default function EditProfile() {
                                     className="hidden" 
                                     id="photoUpload"
                                 />
-                                <label htmlFor="photoUpload" className="bg-green-600 hover:bg-green-500 dark:bg-green-800 dark:hover:bg-green-700 cursor-pointer text-white px-4 py-2 rounded-lg transition-colors block text-center">
+                                <label htmlFor="photoUpload" className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 cursor-pointer px-4 py-2 rounded-lg transition-colors block text-center">
                                     Upload a photo
                                 </label>
                             </div>
@@ -457,6 +489,22 @@ export default function EditProfile() {
             {showModal && (
                 <UpdateModal onClose={() => setShowModal(false)} />
             )}
+            <ConfirmActionModal
+                isOpen={infoModal.isOpen}
+                onClose={()=> {
+                    setInfoModal({...infoModal, isOpen:false})
+                }}
+                onConfirm={()=> {
+                    setInfoModal({...infoModal, isOpen:false})
+                    infoModal.onConfirm?.();
+                }}
+                onReasonChange={()=>{}}
+                title={infoModal.title}
+                message={infoModal.message}
+                confirmLabel="OK"
+                cancelLabel=""
+                showTextarea={false}
+            />
         </div>
     );
 }

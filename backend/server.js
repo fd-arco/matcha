@@ -145,7 +145,7 @@ app.post("/register", async (req, res) => {
         );
 
         const user = result.rows[0];
-        const token = jwt.sign({ userId: user.id }, SECRET_KEY, { expiresIn: "7d" });
+        const token = jwt.sign({ userId: user.id, jti: crypto.randomUUID() }, SECRET_KEY, { expiresIn: "7d" });
 
         res.cookie("token", token, {
             httpOnly: true,
