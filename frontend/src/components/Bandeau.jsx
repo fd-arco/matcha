@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import {LayoutDashboard, Settings} from "lucide-react";
 import ProfileModal from "./ProfileModal";
 import { useSocket } from "../context/SocketContext";
+import { useUser } from "../context/UserContext";
 
 const Bandeau = () => {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
     const {hasNotification, setUserPhoto} = useSocket();
-    const userId = localStorage.getItem("userId");
+    const {userId} = useUser();
+    // const userId = localStorage.getItem("userId");
     const [showProfilModal, setShowProfilModal] = useState(false);
     useEffect(() => {
         const fetchUser = async () => {
@@ -75,7 +77,7 @@ const Bandeau = () => {
                 </button>
             </div>
             {showProfilModal && (
-                <ProfileModal userId={userId} onClose={() => setShowProfilModal(false)} />
+                <ProfileModal viewedId={userId} onClose={() => setShowProfilModal(false)} />
             )}
         </div>
     )

@@ -4,13 +4,15 @@ import {useSocket} from "../context/SocketContext"
 import { formatDistanceToNow } from "date-fns";
 import { enUS } from "date-fns/locale";
 import ConfirmActionModal from "./ConfirmActionModal";
+import { useUser } from "../context/UserContext";
 
 const Conversation = ({match, onBack}) => {
     const {messagesGlobal, socket, onlineStatuses, userPhoto, blockedUserId} = useSocket();
     const [showBlockedModal, setShowBlockedModal] = useState(false);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
-    const userId = localStorage.getItem("userId");
+    // const userId = localStorage.getItem("userId");
+    const {userId} = useUser();
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [reportReason, setReportReason] = useState("");
     const [isReportSuccessModalOpen, setIsReportSuccessModalOpen] = useState(false);
@@ -43,16 +45,10 @@ const Conversation = ({match, onBack}) => {
         const lastMessage = messagesGlobal[messagesGlobal.length - 1];
         const userIdInt = parseInt(userId, 10);
         const matchUserIdInt = parseInt(match.user_id, 10);
-        console.log("🔍 LAST MESSAGE :", lastMessage);
-        console.log("📌 match.user_id =", match.user_id, "| type:", typeof match.user_id);
-        console.log("👤 userIdInt =", userIdInt, "| type:", typeof userIdInt);
-        console.log("✉️ lastMessage.sender_id =", lastMessage.sender_id, "| type:", typeof lastMessage.sender_id);
-        console.log("✉️ lastMessage.receiver_id =", lastMessage.receiver_id, "| type:", typeof lastMessage.receiver_id);
         if (
             (lastMessage.sender_id === matchUserIdInt && lastMessage.receiver_id === userIdInt) ||
             (lastMessage.sender_id === userIdInt && lastMessage.receiver_id === matchUserIdInt)
         ) {
-            console.log("DANS USEEFFECT CONVERSATION");
             setMessages(prevMessages => [...prevMessages, lastMessage]);
     }  
     
@@ -73,6 +69,8 @@ const Conversation = ({match, onBack}) => {
             content:newMessage.trim(),
         };
 
+            console.log("[Conversation.jsx] 📤 Envoi au serveur WS message :", messageData);
+
         socket.send(JSON.stringify(messageData));
         setNewMessage("");
         
@@ -91,7 +89,6 @@ const Conversation = ({match, onBack}) => {
                 })
             });
             if (socket) {
-                console.log("LE BON MATCH.USER_ID =", match.user_id);
                 socket.send(JSON.stringify({
                     type:"read_messages",
                     userId: userId,
@@ -142,7 +139,7 @@ const Conversation = ({match, onBack}) => {
         }
     };
 
-    const userIdInt = parseInt(localStorage.getItem("userId", 10)); 
+    const userIdInt = parseInt(userId); 
 
     return (
         <div className="bg-gray-200 dark:bg-gray-800 flex flex-col items-center justify-center h-full p-4 shadow-lg">

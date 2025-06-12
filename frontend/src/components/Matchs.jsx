@@ -4,12 +4,15 @@ import {ChevronLeft, ChevronRight, X, Heart} from "lucide-react"
 import {useFilters} from "../context/FilterContext"
 import {useSocket} from "../context/SocketContext"
 import MobileDrawerMenu from "./MobileDrawerMenu";
+import { useUser } from "../context/UserContext";
+
 const Matchs = ({onSelectMatch}) => {
     const {filters} = useFilters();
     const [profiles, setProfiles] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
-    const userId = localStorage.getItem("userId");
+    // const userId = localStorage.getItem("userId");
+    const {userId} = useUser();
     const [showMatchModal, setShowMatchModal] = useState(false);
     const [matchedProfile, setMatchedProfile] = useState(null);
     const {socket} = useSocket();
@@ -29,7 +32,6 @@ const Matchs = ({onSelectMatch}) => {
                 }
                 const res = await fetch(url);
                 const data = await res.json();
-                console.log("DATA === ",data);
                 setProfiles(data);
                 setCurrentPhotoIndex(0);
             } catch (error) {
@@ -86,17 +88,16 @@ const Matchs = ({onSelectMatch}) => {
 
                 if (data.match) {
                     setMatchedProfile(likedProfile);
-                    console.log("LIKED PROFILE = ", likedProfile);
                     setShowMatchModal(true);
-                    console.log("YOOO");
                     if (socket && socket.readyState === WebSocket.OPEN) {
                         socket.send(JSON.stringify({
                             type:"match",
                             senderId:userId,
                             receiverId:likedProfile.user_id,
                         }))
+                    } else {
+                      console.warn("[Matchs.jsx] Socket non prêt");
                     }
-                    console.log("Liked:", likedProfile.name);
                 } else {
                     nextProfile();
                 }
@@ -153,7 +154,6 @@ const Matchs = ({onSelectMatch}) => {
 
 
     const profile = profiles[currentIndex];
-    console.log("📷 Image path:", `http://localhost:3000${profile.photos[currentPhotoIndex]}`);
 
     let passionsArray = [];
     try {

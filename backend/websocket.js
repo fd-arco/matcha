@@ -1,5 +1,5 @@
 const WebSocket = require('ws');
-const { Pool } = require('pg');
+const { Pool, ClientBase } = require('pg');
 
 const pool = new Pool({
     host: 'db', 
@@ -20,16 +20,18 @@ const initWebSocket = (server) => {
                 const data = JSON.parse(message);
 
                 if (data.type === "register") {
-                    console.log(`[WS] Tentative d'enregistrement pour user ${data.userId}`);
-                    clients.set(data.userId, ws);
-                    console.log(`[WS] Socket enregistré pour user ${data.userId}`);
+                    
+                    console.log("🟢 [WS] Reçu type: register");
+                    console.log("👤 [WS] Tentative d'enregistrement pour userId =", data.userId, "type =", typeof data.userId);
+                    const userId = data.userId.toString();
+                    clients.set(userId, ws);
+                    console.log("✅ [WS] Socket enregistré - clients.keys() =", [...clients.keys()]);
                     await pool.query(
                         `UPDATE users SET last_online = NOW() WHERE id =$1`,
                         [data.userId]
                     );
-                    console.log(`[WS] last_online mis à jour pour ${data.userId}`);
                     clients.forEach((clientWs, clientId) => {
-                            console.log(`[WS] Notifie ${clientId} que ${data.userId} est en ligne`);    
+                        console.log(`📡 [WS] Broadcast "online" à clientId=${clientId} à propos de userId=${data.userId}`);
                             clientWs.send(JSON.stringify({
                                 type:"userStatusChanged",
                                 userId:data.userId,
@@ -39,14 +41,12 @@ const initWebSocket = (server) => {
 
                     const currentlyOnline = Array.from(clients.keys())
                         .filter(id => id !== data.userId.toString());
-                    console.log(`[WS] Utilisateurs déjà en ligne:`, currentlyOnline);
                     currentlyOnline.forEach(id => {
                         ws.send(JSON.stringify({
                             type:"userStatusChanged",
                             userId:id,
                             online:true
                         }))
-                        console.log(`[WS] Envoie à ${data.userId} que ${id} est en ligne`);
                     })
 
                 }
@@ -56,9 +56,7 @@ const initWebSocket = (server) => {
                         `UPDATE messages SET is_read = TRUE WHERE sender_id=$1 AND receiver_id=$2 AND is_read=FALSE`,
                         [userId, matchId]
                     );
-                    console.log("JENVOIE PAS POUR RESET UNREAD_COUNT");
                     if (clients.has(userId.toString())) {
-                        console.log("matchId = ", matchId);
                         clients.get(userId.toString()).send(JSON.stringify({
                             type: "read_messages",
                             matchId: matchId,
@@ -66,19 +64,19 @@ const initWebSocket = (server) => {
                     }
                 }
                 if (data.type === "message") {
-                    console.log("JE DOIS RENVOYER LE MESSAGE RECU AUX UTILISATEURS CONNECTES")
-                    const { senderId, receiverId, content} = data;
-                    
+                    const senderId = data.senderId.toString();
+                    const receiverId = data.receiverId.toString();
+                    const content = data.content
+                    console.log("🟡 [websocket.js] serveur Message reçu :", { senderId, receiverId, content });
                     const matchCheck = await pool.query(`
                         SELECT * FROM matches
                         WHERE (user1_id = $1 AND user2_id = $2)
                         OR (user1_id = $2 AND user2_id = $1)
-                        `, [senderId, receiverId]);
+                        `, [data.senderId, data.receiverId]);
                     
                     if (matchCheck.rows.length === 0) {
-                        console.log(`[WS] ❌ Pas de match entre ${senderId} et ${receiverId}`);
-                        if (clients.has(senderId.toString())) {
-                            clients.get(senderId.toString()).send(JSON.stringify({
+                        if (clients.has(senderId)) {
+                            clients.get(senderId).send(JSON.stringify({
                                 type:"messageBlocked",
                                 reason:"No active match. You may have been blocked.",
                                 receiverId,
@@ -89,14 +87,15 @@ const initWebSocket = (server) => {
 
                     const result = await pool.query(
                         `INSERT INTO messages (sender_id, receiver_id, content, is_read) VALUES ($1, $2, $3, FALSE) RETURNING *`,
-                        [senderId, receiverId, content]
+                        [data.senderId, data.receiverId, data.content]
                     );
 
                     const savedMessage = result.rows[0];
                     
+                     console.log("✅ [websocket.js] Message sauvegardé :", savedMessage);
                     const notifResult = await pool.query(
                         `INSERT INTO notifications (user_id, sender_id, type, message_id) VALUES ($1, $2, 'message', $3) RETURNING *`,
-                        [receiverId, senderId, savedMessage.id]
+                        [data.receiverId, data.senderId, savedMessage.id]
                     )
 
                     const insertedNotification = notifResult.rows[0];
@@ -106,7 +105,7 @@ const initWebSocket = (server) => {
                          FROM users u
                          LEFT JOIN profiles prof ON prof.user_Id = u.id
                          WHERE u.id=$1`,
-                        [senderId]
+                        [data.senderId]
                     );
                     const senderName = userResult.rows[0]?.firstname || "Someone";
                     const profileId = userResult.rows[0]?.profile_id;
@@ -123,14 +122,18 @@ const initWebSocket = (server) => {
                         );
                         senderPhoto = photoResult.rows[0]?.photo_url || null;
                     }
-                    if (clients.has(receiverId.toString())) {
-                        console.log(`ENvoie du message a ${receiverId.toString()}`);
-                        console.log(`ENVOIE de la notification a ${receiverId.toString()}`);
-                        clients.get(receiverId.toString()).send(JSON.stringify({
+
+                    console.log("🧾 [websocket.js] Clients enregistrés (clients.keys()):", [...clients.keys()]);
+                    console.log("👀 [websocket.js] receiverId:", receiverId.toString());
+                    const receiverClient = clients.get(receiverId);
+                    const senderClient = clients.get(senderId);
+                    if (receiverClient) {
+                        console.log("📤 [websocket.js] Envoi message à receiverId :", receiverId);
+                        receiverClient.send(JSON.stringify({
                             type: "newMessage",
                             message: savedMessage
                         }));
-                        clients.get(receiverId.toString()).send(JSON.stringify({
+                        receiverClient.send(JSON.stringify({
                             type:"newNotification",
                             category:"messages",
                             notification: {
@@ -146,9 +149,9 @@ const initWebSocket = (server) => {
                         }))
                     }
                     
-                    console.log("BONJOUR");
-                    if (clients.has(senderId.toString())) {
-                        console.log(`ENvoie du message a ${senderId.toString()}`);
+console.log("📡 [websocket.js] Sender client =", senderClient);
+                    if (senderClient) {
+                        console.log("📤 [websocket.js] Envoi message à senderId :", senderId);
                         clients.get(senderId.toString()).send(JSON.stringify({
                             type: "newMessage",
                             message: savedMessage
@@ -157,7 +160,6 @@ const initWebSocket = (server) => {
                 }
                 if (data.type === "match") {
                     const {senderId, receiverId} = data;
-
                     const result = await pool.query(
                         `INSERT INTO notifications(user_id, sender_id, type)
                             VALUES ($1, $2, 'match'), ($2, $1, 'match') RETURNING *`,
@@ -208,7 +210,10 @@ const initWebSocket = (server) => {
                         receiverPhoto = photoRes.rows[0]?.photo_url || null;
                     }
 
+                    const receiverKey = receiverId.toString();
+
                     if (clients.has(receiverId.toString())) {
+
                         clients.get(receiverId.toString()).send(JSON.stringify({
                             type:"newNotification",
                             category:"matchs",
@@ -235,6 +240,7 @@ const initWebSocket = (server) => {
                     }
 
                     if (clients.has(senderId.toString())) {
+
                         clients.get(senderId.toString()).send(JSON.stringify({
                             type:"newNotification",
                             category:"matchs",
@@ -314,7 +320,6 @@ const initWebSocket = (server) => {
                     const lastDate = lastNotif.rows[0]?.created_at;
                     const diffMinutes = lastDate?Math.abs(now - new Date(lastDate)) / (1000 * 60) : Infinity;
                     if (diffMinutes < 30) {
-                        console.log("Antiflood active");
                         return;
                     }
 
@@ -375,7 +380,6 @@ const initWebSocket = (server) => {
                         }));
                     }
                     if (clients.has(senderId.toString())) {
-                        console.log("yoyoyoyoy");
                         clients.get(senderId.toString()).send(JSON.stringify({
                             type:"newNotification",
                             category:"views",
@@ -395,20 +399,14 @@ const initWebSocket = (server) => {
                 if (data.type === "userBlocked") {
                     const {blockerId, blockedId} = data;
                     if (clients.has(blockerId.toString())) {
-                        console.log(`[WS BLOCK] Envoi de refreshUI à BLOCKER: ${blockerId}`);
                         clients.get(blockerId.toString()).send(JSON.stringify({
                             type:"refreshUI",
                         }));
-                    } else {
-                        console.log(`[WS BLOCK] BLOCKER ${blockerId} non connecté`);
                     }
                     if (clients.has(blockedId.toString())) {
-                        console.log(`[WS BLOCK] Envoi de refreshUI à BLOCKED: ${blockedId}`);
                         clients.get(blockedId.toString()).send(JSON.stringify({
                             type:"refreshUI",
                         }));
-                    } else {
-                        console.log(`[WS BLOCK] BLOCKED ${blockedId} non connecté`);
                     }
                 }
                 if (data.type === "matchBlocked") {
@@ -419,16 +417,10 @@ const initWebSocket = (server) => {
                         blockedId
                     };
                     if (clients.has(blockerId.toString())) {
-                        console.log(`[WS BLOCK] Envoi de refreshUI à BLOCKER: ${blockerId}`);
                         clients.get(blockerId.toString()).send(JSON.stringify(sent));
-                    } else {
-                        console.log(`[WS BLOCK] BLOCKER ${blockerId} non connecté`);
                     }
                     if (clients.has(blockedId.toString())) {
-                        console.log(`[WS BLOCK] Envoi de refreshUI à BLOCKED: ${blockedId}`);
                         clients.get(blockedId.toString()).send(JSON.stringify(sent));
-                    } else {
-                        console.log(`[WS BLOCK] BLOCKED ${blockedId} non connecté`);
                     }
                 }
             } catch (error) {
@@ -439,7 +431,6 @@ const initWebSocket = (server) => {
         ws.on('close', async () => {
             const disconnectedUser = [...clients.entries()].find(([userId, clientWs]) => clientWs === ws);
             if (disconnectedUser) {
-                console.log(`User ${disconnectedUser[0]} disconnected`);
                 clients.delete(disconnectedUser[0]);
 
                 await pool.query(

@@ -2,6 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import {useFilters} from "../context/FilterContext"
 import UpdateModal from "./UpdateModal";
+import { useUser } from "../context/UserContext";
 
 const SearchModule = () => {
     const [ageGap, setAgeGap] = useState([18, 100]);
@@ -13,7 +14,8 @@ const SearchModule = () => {
     const {setFilters} = useFilters();
     const [showUpdateModal, setShowUpdateModal] = useState(false);
 
-    const userId = Number(localStorage.getItem("userId"));
+    // const userId = Number(localStorage.getItem("userId"));
+    const {userId} = useUser();
 
     useEffect(() => {
         if (ageGap[0] > ageGap[1]) return;
@@ -43,9 +45,6 @@ const SearchModule = () => {
         }
         setShowUpdateModal(true);
         setFilters(newFilters);
-        console.log("Filtres selectionnes:", {
-            ageGap, fameRating, location, tagsInCommon
-        });
         //TODO: BACKEND REQUEST
     }
 

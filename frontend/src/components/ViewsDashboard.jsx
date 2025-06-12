@@ -87,7 +87,7 @@ const ViewsDashboard = ({ notifications, userId }) => {
             </section>
             {selectedProfile && (
                 <ProfileModal
-                    userId={selectedProfile.userId}
+                    viewedId={selectedProfile.userId}
                     onClose={() => setSelectedProfile(null)}
                 />
             )}

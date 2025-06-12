@@ -7,17 +7,19 @@ import {useState, useRef, useEffect} from "react";
 import Conversation from "../components/Conversation";
 import { useSocket } from "../context/SocketContext";
 import MobileDrawerMenu from "../components/MobileDrawerMenu";
-const Swipe = ({setUserId}) => {
+import { useUser } from "../context/UserContext";
+
+const Swipe = () => {
     const [selectedMatch, setSelectedMatch] = useState(null);
     const {setHasNotification} = useSocket();
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    const {userId} = useUser();
 
-    useEffect(() => {
-      const userId = localStorage.getItem("userId");
-      if (userId) {
-        setUserId(userId);
-      }
-    }, []);
+    // useEffect(() => {
+    //   if (userId) {
+    //     setUserId(userId);
+    //   }
+    // }, []);
 
     useEffect(() => {
       const handleResize = () => {
@@ -49,7 +51,6 @@ const Swipe = ({setUserId}) => {
     const handleBackToSwipes = () => {
         setSelectedMatch(null);
     }
-    const userId = localStorage.getItem("userId");
 
     useEffect(() => {
       if (userId) {

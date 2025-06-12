@@ -7,9 +7,10 @@ import MatchsDashboard from "../components/MatchsDashboard";
 import MessagesDashboard from "../components/MessagesDashboard";
 import Navbar from "../components/Navbar";
 import { useSocket } from "../context/SocketContext";
+import { useUser } from "../context/UserContext";
 
-const Dashboard = ({setHasNotification}) => {
-    const {socket} = useSocket();
+const Dashboard = () => {
+    const {socket, setHasNotification} = useSocket();
     const navigate = useNavigate();
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [activeTab, setActiveTab] = useState("views");
@@ -29,15 +30,14 @@ const Dashboard = ({setHasNotification}) => {
         matchs:0,
         messages:0,
     })
-    const userId = localStorage.getItem("userId");
+    // const userId = localStorage.getItem("userId");
+    const {userId} = useUser();
 
     useEffect(() => {
         const fetchNotifications = async() => {
             try {
                 const response = await fetch(`http://localhost:3000/notifications/${userId}`);
-                console.log("RESPONSE = ", response);
                 const data = await response.json();
-                console.log("DATA = ", data);
                 setNotifications({
                     views:data[0].views || 0,
                     likes:data[0].likes || 0,
@@ -57,7 +57,6 @@ const Dashboard = ({setHasNotification}) => {
             try {
                 const res = await fetch(`http://localhost:3000/notifications/${userId}/likes`);
                 const data = await res.json();
-                console.log("LIKES FETCHED:", data);
                 setLikeNotifications({
                     received:data.received,
                     sent:data.sent,
@@ -104,7 +103,6 @@ const Dashboard = ({setHasNotification}) => {
             const message = JSON.parse(event.data);
 
             if (message.type === "newNotification") {
-                console.log("RECEption de la notificaiton depuis websocket");
                 setNotifications(prev => ({
                     ...prev, [message.category]: Number(prev[message.category]) + 1
                 }));
@@ -123,7 +121,6 @@ const Dashboard = ({setHasNotification}) => {
                 if (message.category === "views" && message.notification) {
                     const isMyView = message.notification.receiver_id === Number(userId);
                     // const isSender = message.notification.sender_id === Number(userId);
-                    console.log("icii");
                     setViewNotifications(prev => ({
                         received: isMyView
                             ? [message.notification, ...(prev.received || [])]
@@ -135,8 +132,8 @@ const Dashboard = ({setHasNotification}) => {
                 }
             }
             if (message.type === "refreshUI") {
-                const currentUser = localStorage.getItem("userId");
-                console.log(`[WS FRONT] 👤 Utilisateur ${currentUser} a reçu le message WS : refreshUI`);
+                const currentUser = userId;
+                // const currentUser = localStorage.getItem("userId");
                 setRefreshTrigger(prev => prev + 1);
             }
         }

@@ -20,8 +20,6 @@ export default function Profil() {
                 } 
                 else 
                 {
-                    console.log("ca sort ici")
-                    console.log('tokern   ', token)
                     sessionStorage.getItem("token");
                     navigate("/register");
                 }

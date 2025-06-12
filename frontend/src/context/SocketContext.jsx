@@ -1,4 +1,5 @@
 import React, {createContext, useContext, useEffect, useState} from "react";
+import { useUser } from "./UserContext";
 
 const SocketContext = createContext(null);
 
@@ -10,25 +11,26 @@ export const SocketProvider = ({children}) => {
     const [hasNotification, setHasNotification] = useState(false);
     const [onlineStatuses, setOnlineStatuses] = useState({});
     const [userPhoto, setUserPhoto] = useState(null);
-    const userId = localStorage.getItem("userId");
+    const {userId, loading} = useUser();
+    // const userId = localStorage.getItem("userId");
     const [blockedUserId, setBlockedUserId] = useState(null);
 
     useEffect(() => {
+        if (loading) return;
         if (!userId) return;
 
         const newSocket = new WebSocket("ws://localhost:3000");
         setSocket(newSocket);
 
         newSocket.onopen = () => {
-            console.log("Websocket connecte depuis context");
             newSocket.send(JSON.stringify({type:"register", userId}));
         };
 
         newSocket.onmessage = (event) => {
             const message = JSON.parse(event.data);
-            console.log("[WS context] Message recu:", message);
 
             if (message.type === "newMessage") {
+                console.log("[SocketContext] 💬 Nouveau message reçu:", message.message);
                 setMessagesGlobal(prev => [...prev, message.message]);
             }
 
@@ -44,8 +46,6 @@ export const SocketProvider = ({children}) => {
                 setMatchesGlobal(prev => [...prev, message.match]);
             }
             if (message.type === "userStatusChanged") {
-                console.log("🟢 Mise à jour du status :", message.userId, message.online);
-                console.log("📦 onlineStatuses AVANT :", onlineStatuses);
                 setOnlineStatuses(prev => ({
                     ...prev,
                     [message.userId]: {
@@ -53,13 +53,11 @@ export const SocketProvider = ({children}) => {
                         lastOnline:message.lastOnline || null
                     }
                 }));
-                console.log("📦 onlineStatuses APRES :", onlineStatuses);
 
             }
             if (message.type === "refreshMatchUI") {
                 const {blockerId, blockedId} = message;
-                const currentUser = localStorage.getItem("userId");
-                console.log(`[WS FRONT] 👤 Utilisateur ${currentUser} a reçu le message WS : refreshMatchUI`);
+                const currentUser = userId;
                 if (userId === blockerId.toString() || userId === blockedId.toString()) {
                     setMatchesGlobal(prev =>
                         prev.filter(m =>
@@ -69,7 +67,6 @@ export const SocketProvider = ({children}) => {
                 }
             }
             if (message.type === "messageBlocked") {
-                console.log("Blocage detecte:", message);
                 setBlockedUserId(message.receiverId);
             }
         }
@@ -81,7 +78,7 @@ export const SocketProvider = ({children}) => {
         return () => {
             newSocket.close();
         }
-    }, [userId]);
+    }, [userId, loading]);
 
     return (
         <SocketContext.Provider value={{

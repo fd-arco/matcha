@@ -4,15 +4,16 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect} from 'react';
 import { useNavigate } from "react-router-dom";
 import EmailLogModal from "../util/modalLogin.jsx"
+import { useUser } from '../context/UserContext.jsx';
 
-export default function Login({setUserId}) {
+export default function Login() {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("")
     const navigate = useNavigate();
     const [message, setMessage] = useState("");
     const [modal, setModal] = useState(false)
-
+    const {setUserId, setHasProfile} = useUser();
     async function handleLoginUser(event) {
       event.preventDefault();
       try {
@@ -21,36 +22,59 @@ export default function Login({setUserId}) {
           headers: {
             "Content-Type": "application/json",
           },
+          credentials:"include",
           body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
 
-      if (response.ok) {
-        const token = data.token;
-        const user = data.user;
+      if (!response.ok) {
+        setModal(true);
+        setMessage(data.error || "erreur de connexion");
+        return;
+      }
 
-        sessionStorage.setItem("token", token);
-        localStorage.setItem("userId", user.id); //TODO:PROVISION FAIRE AVEC COOKIES PLUSTARD
-        localStorage.setItem("token", token);
+      const meReponse = await fetch("http://localhost:3000/my-me", {
+        credentials:"include",
+      });
+
+      if (meReponse.ok) {
+        const meData = await meReponse.json();
+        setUserId(meData.id);
+        setHasProfile(meData.hasProfile);
+        navigate(meData.hasProfile ? "/swipe": "/create-profil");
+      } else {
+        console.error("erreur recuperation my-me login");
+        setMessage("connexion reussie mais erreur lorts de la recuperation du profil");
+      }
+    } catch (error) {
+      console.error("erreur lors de la connexion");
+      setMessage("erreur serveur");
+    }
+        // const token = data.token;
+        // const user = data.user;
+
+        // sessionStorage.setItem("token", token);
+        // localStorage.setItem("userId", user.id); //TODO:PROVISION FAIRE AVEC COOKIES PLUSTARD
+        // localStorage.setItem("token", token);
         // setUserId(user.id);
         // setTimeout(() => { navigate("/swipe") }, 1500);
-        setTimeout(async () => {
-          try {
-            const resProfile = await fetch(`http://localhost:3000/user/${user.id}`);
-            const profileData = await resProfile.json();
+        // setTimeout(async () => {
+        //   try {
+        //     const resProfile = await fetch(`http://localhost:3000/user/${user.id}`);
+        //     const profileData = await resProfile.json();
   
-            if (profileData.profile_id) {
-              navigate("/swipe");
-            } else {
-              navigate("/create-profil");
-            }
-              setUserId(user.id);
-          } catch (err) {
-            console.error("erreur lors de la recuperation du profil:", err);
-            navigate("/create-profil");
-          }
-        }, 10);
+        //     if (profileData.profile_id) {
+        //       navigate("/swipe");
+        //     } else {
+        //       navigate("/create-profil");
+        //     }
+        //       setUserId(user.id);
+        //   } catch (err) {
+        //     console.error("erreur lors de la recuperation du profil:", err);
+        //     navigate("/create-profil");
+        //   }
+        // }, 10);
 
         /*setTimeout(() => { navigate("/profil") }, 1500);*/
 
@@ -66,18 +90,18 @@ export default function Login({setUserId}) {
       //   }, 1500);
       // }
 
-      else {
-        setModal(true);
-        console.log("caca boudin")
-        setMessage(data.error);
-      }
-    } 
-  catch (error) 
-  {
-      console.error("Erreur lors de la connexion:", error);
-      setMessage("Erreur serveur");
-  }
-}
+//       else {
+//         setModal(true);
+//         console.log("caca boudin")
+//         setMessage(data.error);
+//       }
+//     } 
+//   catch (error) 
+//   {
+//       console.error("Erreur lors de la connexion:", error);
+//       setMessage("Erreur serveur");
+//   }
+// }
 
 
     return (

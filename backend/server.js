@@ -60,6 +60,54 @@ server.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
 
+
+const auth = (req, res, next) => {
+    const token = req.cookies.token;
+
+    if (!token) {
+        return res.status(401).json({error:"Acces non autorise, aucun token fourni"});
+    }
+
+    try {
+        const decoded = jwt.verify(token, SECRET_KEY);
+        req.user = {id:decoded.userId};
+        next();
+    } catch (error) {
+        return res.status(401).json({error : "token invalide ou expire"});
+    }
+}
+
+app.get("/my-me", auth, async(req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT users.id,
+                EXISTS (
+                    SELECT 1 FROM profiles WHERE profiles.user_id = users.id
+                ) AS hasProfile
+            FROM users
+            WHERE users.id = $1`,
+            [req.user.id]
+        );
+
+        if (result.rows.length === 0) return res.status(404).json({error: 'User not found'});
+
+        const {id, hasprofile} = result.rows[0];
+        res.json({id, hasProfile:hasprofile});
+    } catch (err) {
+        console.error('erreur dans my-me:', err);
+        res.status(500).json({error:'Server error'});
+    }
+})
+
+app.post("/signout", (req,res) => {
+    res.clearCookie("token", {
+        httpOnly:true,
+        sameSite:"Lax",
+        secure:false,
+    });
+    res.status(200).json({message:"disconnected"});
+})
+
 function calculateAge(dob) {
     const birthDate = new Date(dob);
     const today = new Date();
@@ -217,6 +265,8 @@ app.get('/verify-email', async (req, res) => {
 });
 
 
+
+
 app.get("/me", async (req, res) => {
 
     const token = req.headers.authorization?.split(" ")[1];
@@ -264,11 +314,20 @@ app.post("/loginUser", async (req, res) => {
 
         const token = jwt.sign({ userId: user.id }, SECRET_KEY, { expiresIn: "7d" });
 
-        res.json({
-            message: `Bienvenue ${user.firstname} !`,
-            user: { id: user.id, firstname: user.firstname, lastname: user.lastname, email: user.email },
-            token,
+        // res.json({
+        //     message: `Bienvenue ${user.firstname} !`,
+        //     user: { id: user.id, firstname: user.firstname, lastname: user.lastname, email: user.email },
+        //     token,
+        // });
+
+        res.cookie("token", token, {
+            httpOnly:true,
+            secure:false,
+            sameSite:"Lax",
+            maxAge:7 * 24 * 60 * 60 * 1000
         });
+
+        res.json({message: `Bienvenue ${user.firstname} !`});
     } 
     catch (error) {
         console.error("Erreur lors de la connexion:", error);
@@ -847,7 +906,6 @@ app.post("/like", async(req,res) => {
                 `INSERT INTO matches (user1_id, user2_id) VALUES ($1, $2)`,
                 [likerId, likedId]
             );
-            console.log("Match cree");
             return res.json({match:true, message:"C'est un match!"});
         }
         res.json({match:false, message:"Like enregistre"});
@@ -1163,7 +1221,6 @@ app.put("/edit-profile/:userId", upload.array("photos", 6), async(req, res) => {
         );
         
         
-        console.log("🧩 profileId trouvé:", profileId);
     
         
         if (photosToKeep.length > 0) {
@@ -1203,10 +1260,6 @@ app.put("/edit-profile/:userId", upload.array("photos", 6), async(req, res) => {
 app.get("/profiles-count", async(req, res) => {
     const {userId, ageMin, ageMax, fameMin, tagsMin} = req.query;
 
-    console.log("🔍 Requête /profiles-count reçue avec :");
-    console.log("🔸 userId:", userId);
-    console.log("🔸 ageMin:", ageMin, "ageMax:", ageMax);
-    console.log("🔸 fameMin:", fameMin, "tagsMin:", tagsMin);
 
     try {
             const userResult = await pool.query(
@@ -1225,8 +1278,6 @@ app.get("/profiles-count", async(req, res) => {
                 interested_in: interested_in?.toLowerCase()
             };
 
-            console.log("👤 Utilisateur connecté → gender:", gender, "| interested_in:", interested_in);
-            console.log("📦 Passions brutes:", passions);
 
             const userPassions = JSON.parse(
                 passions
@@ -1235,22 +1286,7 @@ app.get("/profiles-count", async(req, res) => {
                     .replace(/([^",\[\]\s]+)(?=,|\])/g, '"$1"')
             );
 
-            console.log("GENDER = ", gender, "INTERESTED IN = ", interested_in);
-            const debugResult = await pool.query(`
-                SELECT user_id, gender, interested_in, passions
-                FROM profiles
-                WHERE user_id != $1
-            `, [userId]);
             
-            console.log("🧾 TOUS LES PROFILS (hors moi-même) :");
-            debugResult.rows.forEach((row, i) => {
-                console.log(`— Profil #${i + 1} —`);
-                console.log(`   • user_id: ${row.user_id}`);
-                console.log(`   • gender: ${row.gender}`);
-                console.log(`   • interested_in: ${row.interested_in}`);
-                console.log(`   • passions: ${row.passions}`);
-            });
-
             const result = await pool.query(`
                 SELECT
                     user_id, gender, interested_in, passions
@@ -1264,12 +1300,6 @@ app.get("/profiles-count", async(req, res) => {
                 AND p.passions IS NOT NULL
                 `, [userId, ageMin, ageMax, fameMin]);
                 
-            console.log("🧪 Résultats après filtres SQL:", result.rows.length);
-            result.rows.forEach((p, i) => {
-                console.log(`— Profil #${i + 1} —`);
-                console.log("   • user_id:", p.user_id);
-                console.log("   • passions (raw):", p.passions);
-            });
             
             const genderToInterestedMap = {
                 male:'men',
@@ -1294,12 +1324,7 @@ app.get("/profiles-count", async(req, res) => {
                 const userOkForProfile =
                     userInterestedIn === "everyone" || profileGender === interestedInToGenderMap[userInterestedIn];
                 
-                    
-                console.log(`🧩 Check orientation for profile ${profile.user_id}`);
-                console.log(`   ↪ profileGender: ${profileGender}, profileInterestedIn: ${profileInterestedIn}`);
-                console.log(`   ↪ userGender: ${user.gender}, userInterestedIn: ${user.interested_in}`);
-                console.log(`   ✅ profileOkForUser: ${profileOkForUser}`);
-                console.log(`   ✅ userOkForProfile: ${userOkForProfile}`);
+
 
                 return profileOkForUser && userOkForProfile;
             }
@@ -1316,7 +1341,6 @@ app.get("/profiles-count", async(req, res) => {
                             .replace(/([^",\[\]\s]+)(?=,|\])/g, '"$1"')
                     );
                     const common = profilePassions.filter(p => userPassions.includes(p));
-                    console.log(`🧮 ${profile.user_id} → ${common.length} passions communes`);
                     return common.length >= Number(tagsMin);
                 } catch(e) {
                     console.error("Erreur parsing passions dans profile-count:", e.message);
@@ -1324,7 +1348,6 @@ app.get("/profiles-count", async(req, res) => {
                 }
             });
 
-        console.log("✅ Total après tout filtrage:", filtered.length);
         res.json({count:parseInt(filtered.length, 10)});
     } catch (error) {
         console.error("Erreur lors du comptage des profils:", error);

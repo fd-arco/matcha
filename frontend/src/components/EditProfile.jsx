@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import UpdateModal from "../components/UpdateModal";
 import { useNavigate } from "react-router-dom";
 import ConfirmActionModal from "./ConfirmActionModal";
+import { useUser } from "../context/UserContext";
 
 export default function EditProfile() {
     const [formData, setFormData] = useState({
@@ -19,7 +20,8 @@ export default function EditProfile() {
     const [formErrors, setFormErrors] = useState({});
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
-    const userId = localStorage.getItem("userId");
+    // const userId = localStorage.getItem("userId");
+    const {userId} = useUser();
     const [infoModal, setInfoModal] = useState({
         isOpen:false,
         title:"",
@@ -35,7 +37,6 @@ export default function EditProfile() {
             try {
                 const response = await fetch(`http://localhost:3000/get-profile/${userId}`);
                 const data = await response.json();
-                console.log("data = ",data);
                 if (response.ok) {
                     setFormData({
                         name: data.name || "",
@@ -107,7 +108,6 @@ export default function EditProfile() {
             return ;
         }
 
-        console.log("file = ", file);
         if (!file) return;
 
         const photoUrl = URL.createObjectURL(file);
@@ -454,7 +454,6 @@ export default function EditProfile() {
                                     : photo.preview
                                     const isAbsolute = photoUrl.startsWith("blob:") || photoUrl.startsWith("http://") || photoUrl.startsWith("https://");
                                     const fullUrl = isAbsolute ? photoUrl : `http://localhost:3000${photoUrl}`;
-                                    console.log(`Image URL ${index}:`, fullUrl);
                                     return (
                                         <div key={index} className="relative">
                                         <img src={fullUrl} alt={`Uploaded ${index}`} className="w-full h-60 object-cover rounded-lg" />

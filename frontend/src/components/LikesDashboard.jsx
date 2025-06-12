@@ -119,6 +119,7 @@ const LikesDashboard = ({ notifications, setLikeNotifications, userId}) => {
             {selectedProfile && (
                 <ProfileModal
                     userId={selectedProfile.userId}
+                    viewerId={userId}
                     onClose={() => setSelectedProfile(null)}
                 />
             )}
