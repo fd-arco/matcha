@@ -16,6 +16,8 @@ import { SocketProvider } from './context/SocketContext.jsx';
 import { useState } from 'react';
 import RootLayout from './components/RootLayout.jsx';
 import MyAccount from './pages/MyAccount.jsx';
+import EmailConf from './components/EmailConf.jsx'
+import ResetPasswordFront from "./components/ResetPasswordFront.jsx"
 const getRoutes = (userId, setUserId, refreshFlag, refreshUser, hasProfile, setHasProfile) => createBrowserRouter([
   {
     path:'/',
@@ -30,7 +32,9 @@ const getRoutes = (userId, setUserId, refreshFlag, refreshUser, hasProfile, setH
       {path: '/profile', element: <Profile />},
       {path: '/dashboard', element: <Dashboard />},
       {path: '/settingsPage', element: <SettingsPage/>},
-      {path: '/my-account', element:<MyAccount />}
+      {path: '/my-account', element:<MyAccount />},
+      {path : '/emailconf', element:<EmailConf />},
+      {path : '/PasswordConfirm', element:<ResetPasswordFront/>}
     ]
   }
 ]);

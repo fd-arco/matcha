@@ -161,7 +161,7 @@ app.post("/register", async (req, res) => {
             to: email,
             subject: 'Vérification de votre compte',
             text: `Merci pour votre inscription! Cliquez sur ce lien pour vérifier votre email: ${verifLink}`,
-            html: `<h2>Welcome to  MATCHA SALE CAFARD</h2><br></br><p>Merci pour votre inscription! Cliquez sur ce lien pour vérifier votre email: <a href="${verifLink}">Vérifier mon email</a></p>`
+            html: `<h2>Welcome to  MATCHA ${firstname} ${lastname}</h2><br></br><p>Merci pour votre inscription! Cliquez sur ce lien pour vérifier votre email: <a href="${verifLink}">Vérifier mon email</a></p>`
         };
 
         const transporter = nodemailer.createTransport({
@@ -208,7 +208,8 @@ app.get('/verify-email', async (req, res) => {
 
         await pool.query('UPDATE users SET verified = $1, veriftoken = NULL WHERE id = $2', [true, user.id]);
 
-        res.status(200).json({ message: 'Votre compte a été vérifié avec succès!' });
+        // res.status(200).json({ message: 'Votre compte a été vérifié avec succès!' });
+        res.redirect(`http://localhost:3001/emailconf`);
 
     } catch (error) {
         console.error('Erreur lors de la vérification:', error);
@@ -309,8 +310,8 @@ app.get('/user/:userId', async (req, res) => {
     
     try {
         const userQuery = `
-        SELECT u.id AS user_id, u.email, u.firstname, u.lastname,
-        p.id AS profile_id, p.name, p.dob, p.gender, p.interested_in, p.looking_for, p.passions, p.bio, p.fame
+        SELECT u.id AS user_id, u.email, u.firstname, u.lastname, u.verified,
+        p.id AS profile_id, p.name, p.dob, p.gender, p.interested_in, p.looking_for, p.passions, p.bio, p.fame, p.latitude, p.longitude
         FROM users u
         LEFT JOIN profiles p ON u.id = p.user_id
         WHERE u.id = $1`;
@@ -708,6 +709,7 @@ app.get('/profiles/:userId', async (req, res) => {
                 p.looking_for,
                 p.passions,
                 p.fame,
+                p.latitude,
                 json_agg(pp.photo_url ORDER BY pp.id) AS photos
             FROM profiles p
             JOIN profile_photos pp ON pp.profile_id = p.id
@@ -1051,6 +1053,7 @@ app.get("/modalprofile/:userId", async(req, res) => {
         const userProfile = await pool.query(`
             SELECT
                 u.firstname,
+                u.verified,
                 prof.age,
                 prof.gender,
                 prof.interested_in,
@@ -1116,33 +1119,34 @@ app.get("/get-profile/:userId", async(req, res) => {
 })
 
 app.put("/edit-profile/:userId", upload.array("photos", 6), async(req, res) => {
-    try {
-        const {userId} = req.params;
-        const {name, dob, gender, interestedIn, lookingFor, bio, passions, existingPhotos} = req.body;
-        
-        const age = calculateAge(dob);
-        const passionArray = passions ? JSON.parse(passions): [];
-        const newPassionCount = passionArray.length;
-        const photosToKeep = existingPhotos ? JSON.parse(existingPhotos) : [];
-        const newPhotos = req.files.map(file => `/uploads/${file.filename}`);
-        const totalPhotos = photosToKeep.length + newPhotos.length;
-
-        const profileRes = await pool.query(
-            `SELECT id, fame, fame_bio, passions_count, photo_count FROM profiles WHERE user_id = $1`, 
-            [userId]
-        );
-        const profileId = profileRes.rows[0]?.id;
-        const profile = profileRes.rows[0];
-        if (!profile) return res.status(404).json({error: "Profile not found"});
-
-        let fameChange = 0;
-
-
-        const hadBio = profile.fame_bio;
-        const hasBioNow = bio && bio.trim().length > 0;
-        if (hadBio && !hasBioNow) fameChange -= 20;
-        else if (!hadBio && hasBioNow) fameChange += 20;
-
+        try {
+            console.log("latiiitiititititititititititititititit uedit p roflile")
+            const {userId} = req.params;
+            const {name, dob, gender, interestedIn, lookingFor, bio, passions, existingPhotos, latitude, longitude} = req.body;
+            
+            const age = calculateAge(dob);
+            const passionArray = passions ? JSON.parse(passions): [];
+            const newPassionCount = passionArray.length;
+            const photosToKeep = existingPhotos ? JSON.parse(existingPhotos) : [];
+            const newPhotos = req.files.map(file => `/uploads/${file.filename}`);
+            const totalPhotos = photosToKeep.length + newPhotos.length;
+            
+            
+            const profileRes = await pool.query(
+                `SELECT id, fame, fame_bio, passions_count, photo_count FROM profiles WHERE user_id = $1`, 
+                [userId]
+            );
+            const profileId = profileRes.rows[0]?.id;
+            const profile = profileRes.rows[0];
+            if (!profile) return res.status(404).json({error: "Profile not found"});
+            
+            let fameChange = 0;
+            
+            const hadBio = profile.fame_bio;
+            const hasBioNow = bio && bio.trim().length > 0;
+            if (hadBio && !hasBioNow) fameChange -= 20;
+            else if (!hadBio && hasBioNow) fameChange += 20;
+            
         
         const oldPassionCount = profile.passions_count || 0;
         const cappedOldPassions = Math.min(oldPassionCount, 5);
@@ -1158,8 +1162,9 @@ app.put("/edit-profile/:userId", upload.array("photos", 6), async(req, res) => {
         const newFameBio = hasBioNow === true;
 
         await pool.query(
-            `UPDATE profiles SET name = $1, dob = $2, age=$3, gender=$4, interested_in=$5, looking_for=$6, passions=$7, bio=$8, fame=$9, fame_bio=$10, passions_count=$11, photo_count=$12 WHERE user_id = $13`,
-            [name, dob, age, gender, interestedIn, lookingFor, passionArray, bio, newFame, newFameBio, newPassionCount, totalPhotos, userId]
+            `UPDATE profiles SET name = $1, dob = $2, age=$3, gender=$4, interested_in=$5, looking_for=$6, passions=$7, bio=$8, fame=$9, fame_bio=$10,
+             passions_count=$11, photo_count=$12, latitude=$13, longitude=$14 WHERE user_id = $15`,
+            [name, dob, age, gender, interestedIn, lookingFor, passionArray, bio, newFame, newFameBio, newPassionCount, totalPhotos,  latitude, longitude , userId]
         );
         
         
@@ -1463,17 +1468,116 @@ app.get("/config", async(req, res) => {
 )
 
 app.post("/longitude", async(req, res) => {
-
+    console.log("ca rentre dans longitude")
     const { latitude, longitude } = req.body
     if(!latitude || !longitude){
        return res.status(400).json("pas les directiosn ma couillasse")
     }
     try{
-
         const result = await pool.query('INSERT INTO profiles(latitude, longitude) VALUES ($1::DOUBLE PRECISION, $2::DOUBLE PRECISION) RETURNING *', [latitude, longitude]);
     }
     catch(error)
     {
         res.status(400).json(error, "erreur lors de lenregistrement de la localisastion")
+    }
+});
+
+app.post("/reset-password", async(req, res) => {
+
+    const { email } = req.body
+
+    if(!email)
+        res.status(400).json(error, "erreur dans la recup du mail")
+    try{
+        const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+
+        if (result.rows.length === 0) {
+            return res.status(401).json({ error: "Email incorrect" });
+        }
+        const user = result.rows[0];
+
+        const verifTokenPassword = generateVerificationToken();
+        await pool.query("UPDATE users SET token_password = $1 WHERE id = $2", [verifTokenPassword, user.id]);
+
+        const verifLinkPassword = `http://localhost:3000/verify-password?token=${verifTokenPassword}`;
+
+        const mailOptions = {
+            from: process.env.GMAIL_USER,
+            to: email,
+            subject: 'Vérification de votre compte',
+            text: `Bonjour, voici le lien pour changer votre mot de passe: ${verifLinkPassword}`,
+            html: `<h2>Welcome back to MATCHA</h2><br></br><p> voici le lien pour changer votre mot de passe: <a href="${verifLinkPassword}">Changer mon mot de passe</a></p>`
+        };
+
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.GMAIL_USER,
+                pass: process.env.GMAIL_PASS
+            }
+        });
+
+        await transporter.sendMail(mailOptions);
+
+        return res.status(200).json({ message: "Email de réinitialisation envoyé !" });
+    }
+    catch(error){
+        if (error.code === '23505') 
+            {
+                console.error("erreur email cousin");
+                return res.status(400).json({ error: "L'adresse email est déjà utilisée." });
+            }
+        res.status(400).json(error, "Erreur email")
+    }
+});
+
+app.get('/verify-password', async (req, res) => {
+
+    const { token } = req.query;
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE token_password = $1', [token]);
+
+        if (result.rows.length === 0) {
+            return res.status(400).json({ error: 'Token invalide ou expiré.' });
+        }
+        const user = result.rows[0];
+        res.redirect(`http://localhost:3001/PasswordConfirm?token=${token}`);
+    } catch (error) {
+        console.error('Erreur lors de la vérification:', error);
+        res.status(500).json({ error: 'Erreur lors de la vérification de l\'email.' });
+    }
+});
+
+// const bcrypt = require("bcrypt");
+// const saltRounds = 10;
+
+app.post("/change-password", async (req, res) => {
+
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) 
+    {
+        return res.status(400).json({ error: "Token ou mot de passe manquant." });
+    }
+    try {
+
+        const result = await pool.query("SELECT * FROM users WHERE token_password = $1", [token]);
+
+        if (result.rows.length === 0) 
+        {
+        return res.status(400).json({ error: "Token invalide ou expiré." });
+        }
+
+        const user = result.rows[0];
+
+        // const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+        await pool.query("UPDATE users SET password = $1, token_password = NULL WHERE id = $2",[newPassword, user.id]);
+
+        res.status(200).json({ message: "Mot de passe modifié avec succès." });
+
+    } catch (error) {
+        console.error("Erreur lors du changement de mot de passe:", error);
+        res.status(500).json({ error: "Erreur serveur." });
     }
 });

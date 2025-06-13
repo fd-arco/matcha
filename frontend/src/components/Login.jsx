@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect} from 'react';
 import { useNavigate } from "react-router-dom";
 import EmailLogModal from "../util/modalLogin.jsx"
+import ResetModal from "./ResetPassword.jsx"
 
 export default function Login({setUserId}) {
 
@@ -11,7 +12,8 @@ export default function Login({setUserId}) {
     const [password, setPassword] = useState("")
     const navigate = useNavigate();
     const [message, setMessage] = useState("");
-    const [modal, setModal] = useState(false)
+    const [modal, setModal] = useState(false);
+    const [reset, setResetPassword] = useState(false);
 
     async function handleLoginUser(event) {
       event.preventDefault();
@@ -85,7 +87,7 @@ export default function Login({setUserId}) {
         <div className="grid gap-8">
           <div
             id="back-div"
-            className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-[26px] m-4"
+            className="bg-gradient-to-r from-green-700 to-green-500 rounded-[26px] m-4"
           >
             <div
               className="text-dark dark:text-white border-[20px] border-transparent rounded-[20px] bg-white dark:bg-gray-900 bg-white shadow-lg xl:p-10 2xl:p-10 lg:p-10 md:p-10 sm:p-2 m-2"
@@ -129,7 +131,7 @@ export default function Login({setUserId}) {
                   />
                 </div>
                 <button
-                  className="bg-gradient-to-r text-dark dark:text-white from-blue-500 to-purple-500 shadow-lg mt-6 p-2 rounded-lg w-full hover:scale-105 hover:from-purple-500 hover:to-blue-500 transition duration-300 ease-in-out"
+                  className="bg-gradient-to-l text-dark dark:text-white from-green-500 to-green-700 shadow-lg mt-6 p-2 rounded-lg w-full hover:scale-105 hover:from-green-500 hover:to-green-500 transition duration-300 ease-in-out"
                   type="submit"
                 >
                   LOG IN
@@ -139,9 +141,10 @@ export default function Login({setUserId}) {
                 <h3 className="dark:text-gray-300">
                   Forgot your password? 
                   <a
-                    className="group text-blue-400 transition-all duration-100 ease-in-out"
+                    className="group text-green-500 transition-all duration-100 ease-in-out"
                   >
-                    <button className="bg-left-bottom bg-gradient-to-r from-blue-400 to-blue-400 bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out">
+                    <button className="bg-left-bottom bg-gradient-to-l from-green-400 to-green-700 bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out"
+                          onClick={() => setResetPassword(true)}>
                           click here
                     </button>
                   </a>
@@ -170,6 +173,7 @@ export default function Login({setUserId}) {
           </div>
         </div>
         {modal && <EmailLogModal onClose={() => setModal(false)}/>}
+        {reset && <ResetModal onClose={() => setResetPassword(false)} />}
       </div>
     );
   }

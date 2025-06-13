@@ -12,6 +12,7 @@ const Matchs = ({onSelectMatch}) => {
     const userId = localStorage.getItem("userId");
     const [showMatchModal, setShowMatchModal] = useState(false);
     const [matchedProfile, setMatchedProfile] = useState(null);
+    const [userLocation, setUserLocation] = useState(null);
     const {socket} = useSocket();
 
     useEffect(() => {
@@ -38,6 +39,24 @@ const Matchs = ({onSelectMatch}) => {
         };
         fetchProfiles();
     }, [filters, userId]);
+
+    useEffect(() => {
+      const fetchCurrentUser = async () => {
+        try {
+          const res = await fetch(`http://localhost:3000/user/${userId}`);
+          const data = await res.json();
+          if(res.ok)
+          {
+            setUserLocation({ lat: data.latitude, lng: data.longitude });
+            console.log('ca rentre bien dans fetch user', data.latitude)
+          }
+        } catch (err) {
+          console.log('cacaacacacacaacacacacacaacacacacaacacacaac')
+          console.error("Erreur position user connecté:", err);
+        }
+      };
+      fetchCurrentUser();
+    }, [userId]);
 
     useEffect(() => {
         const sendView = async () => {
@@ -111,6 +130,23 @@ const Matchs = ({onSelectMatch}) => {
         setCurrentPhotoIndex(0);
     }
 
+    function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+
+      const R = 6371;
+      const dLat = deg2rad(lat2 - lat1);
+      const dLon = deg2rad(lon2 - lon1);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return Math.round(R * c);
+    }
+    
+    function deg2rad(deg) {
+      return deg * (Math.PI / 180);
+    }
+
         
     const handlePass = () => {
         nextProfile();
@@ -154,6 +190,16 @@ const Matchs = ({onSelectMatch}) => {
 
     const profile = profiles[currentIndex];
     console.log("📷 Image path:", `http://localhost:3000${profile.photos[currentPhotoIndex]}`);
+
+    let distance = null;
+    if (userLocation && profile.latitude && profile.longitude) {
+      distance = getDistanceFromLatLonInKm(
+        userLocation.lat,
+        userLocation.lng,
+        profile.latitude,
+        profile.longitude
+      );
+    }
 
     let passionsArray = [];
     try {
@@ -227,6 +273,12 @@ const Matchs = ({onSelectMatch}) => {
                 “{profile.bio}”
               </p>
             )}
+            { userLocation &&  <p className="text-md text-gray-700 dark:text-gray-300 mt-3">
+              kilometre de toi :  <span className="font-semibold">{distance}</span>
+            </p>}
+            {userLocation && <p className="text-md text-gray-700 dark:text-gray-300 mt-3">
+              kilometre de user :  <span className="font-semibold">{userLocation.lat}</span>
+            </p>}
             <p className="text-md text-gray-700 dark:text-gray-300 mt-3">
               Looking for: <span className="font-semibold">{profile.looking_for}</span>
             </p>

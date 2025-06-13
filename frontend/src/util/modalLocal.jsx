@@ -51,7 +51,7 @@ const ModalLocal = ({ onClose }) => {
   //           console.log("latitide        ", latitude);
   //           console.log("longitude       ", longitude);
   //           resolve({ latitude, longitude });
-  //           // sendLocation(latitude, longitude);
+  //           sendLocation(latitude, longitude);
   //       },
   //       (error) => {
   //         console.log("   error   " )
@@ -61,7 +61,6 @@ const ModalLocal = ({ onClose }) => {
   //   } else {
   //     setError('La géolocalisation n\'est pas supportée par ce navigateur');
   //   }
-
   // };
 
   // const getUserLocation = () => {
@@ -88,7 +87,6 @@ const ModalLocal = ({ onClose }) => {
   //   });
   // };
 
-
   const handleGetLocation = () => {
     getUserLocation()
       .then((location) => {
@@ -101,6 +99,53 @@ const ModalLocal = ({ onClose }) => {
       });
   };
 
+// const ModalLocal = ({ onClose }) => {
+//   const [location, setLocation] = useState(null);
+//   const [error, setError] = useState(null);
+//   const [apiKey, setApiKey] = useState("");
+
+//   useEffect(() => {
+//     fetch("http://localhost:3000/config")
+//       .then((response) => response.json())
+//       .then((data) => {
+//         setApiKey(data.kk);
+//       })
+//       .catch((error) => {
+//         console.error('Erreur lors de la récupération de la clé API', error);
+//       });
+//   }, []);
+
+//   async function sendLocation(latitude, longitude) {
+//     try {
+//       console.log("ca rentredans send location")
+//       if (latitude && longitude) {
+//         const response = await fetch("http://localhost:3000/longitude", {
+//           method: "POST",
+//           headers: { "Content-Type": "application/json" },
+//           body: JSON.stringify({ latitude, longitude }),
+//         });
+
+//         const responseText = await response.text();
+//         console.log("Réponse serveur:", responseText);
+//       }
+//     } catch (error) {
+//       console.log("Erreur d'envoi de localisation:", error);
+//       setError("Échec de l'envoi de la localisation.");
+//     }
+//   }
+
+//   const handleGetLocation = () => {
+//     getUserLocation()
+//       .then((location) => {
+//         setLocation({ lat: location.latitude, lng: location.longitude });
+//         sendLocation(location.latitude, location.longitude);
+//       })
+//       .catch((error) => {
+//         setError(error);
+//         console.log("Erreur géolocalisation:", error);
+//       });
+//   };
+
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-60 overflow-y-auto h-full w-full z-10" id="cookie-modal" role="dialog"
          aria-modal="true">
@@ -110,6 +155,13 @@ const ModalLocal = ({ onClose }) => {
             Matcha wants to use your location?
           </h2>
           {!location && <div className="mt-6 flex flex-col gap-3 items-center">
+            <button
+                onClick={onClose}
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl font-bold"
+                aria-label="Fermer"
+                >
+                ✖️​
+                </button>
             <form >
               <button
                 id="accept-btn"

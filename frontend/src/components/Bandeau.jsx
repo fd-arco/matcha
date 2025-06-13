@@ -39,10 +39,18 @@ const Bandeau = () => {
                         className="w-16 h-16 min-w-16 min-h-16 rounded-full border-2 border-white shadow-md hover:opacity-80 transition cursor-pointer"
                         onClick={() => setShowProfilModal(true)}
                     />
-                    <span
+                    {/* <span
                         className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-green-500 border-2 border-white"
                         title="En ligne"
-                    ></span>
+                    ></span> */}
+                    <div className="absolute bottom-0 right-0 flex items-center space-x-1">
+                        <span
+                            className="w-4 h-4 rounded-full bg-green-500 border-2 border-white"
+                            title="En ligne"
+                        ></span>
+                        {user.verified && (<span className="text-green-500 text-xs" title="Compte vérifié">☢️​</span>)}
+                    </div>
+ 
                 </div>
                 <div className="flex flex-col w-full overflow-hidden">
                     <h2 className="text-lg font-semibold hover:underline cursor-pointer break-words whitespace-normal">{user.name}</h2>

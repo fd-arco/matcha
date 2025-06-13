@@ -146,7 +146,7 @@ export default function CreateProfil({refreshUser}) {
             return ;
         }
 
-        // const location = await getUserLocation();
+        const location = await getUserLocation();
 
         const finalFormData = new FormData();
         finalFormData.append("user_id", userId); //TODO:RECUPERER USER_ID DEPUIS LA CREATION DU COMPTE
@@ -157,8 +157,8 @@ export default function CreateProfil({refreshUser}) {
         finalFormData.append("lookingFor", lookingFor);
         finalFormData.append("bio", bio);
         finalFormData.append("passions", JSON.stringify(selectedPassions));
-        // finalFormData.append("latitude", location.latitude);
-        // finalFormData.append("longitude", location.longitude);
+        finalFormData.append("latitude", location.latitude);
+        finalFormData.append("longitude", location.longitude);
         
         photos.forEach((photo) => {
             finalFormData.append("photos", photo.file);
@@ -340,7 +340,7 @@ export default function CreateProfil({refreshUser}) {
                             </div>
 
                             <div>
-                            {/* <div className="mb-4">
+                            <div className="mb-4">
                                 <label className="block font-medium mb-2">Autorisez vous Matcha a utiliser votre localisation?</label>
                             </div>
                             <div className="flex space-x-8">
@@ -353,12 +353,11 @@ export default function CreateProfil({refreshUser}) {
                                     </button>
                                 </div>
                             </div>
-                            <br></br> */}
+                            <br></br>
                             <button type="submit" className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 text-white px-4 py-2 rounded-lg w-full">
                                 Submit
                             </button>
                             </div>
-
                         </form>
                     </div>
                     {modalLocal && <ModalLocal onClose={() => setModalLocal(false)}/>}                   

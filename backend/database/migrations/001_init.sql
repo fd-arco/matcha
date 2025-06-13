@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     verified BOOLEAN DEFAULT FALSE,
     verifToken VARCHAR(255),
-    last_online TIMESTAMP
+    last_online TIMESTAMP,
+    token_password VARCHAR(255)
 );
 
 -- Création de la table profiles
@@ -64,7 +65,7 @@ CREATE TABLE IF NOT EXISTS matches (
     matched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     sender_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -74,7 +75,7 @@ CREATE TABLE notifications (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE reports (
+CREATE TABLE IF NOT EXISTS reports (
     id SERIAL PRIMARY KEY,
     reporter_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     reported_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -82,7 +83,7 @@ CREATE TABLE reports (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE blocks (
+CREATE TABLE IF NOT EXISTS blocks (
     id SERIAL PRIMARY KEY,
     blocker_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     blocked_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
