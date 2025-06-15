@@ -83,7 +83,7 @@ const MatchsDashboard = ({notifications, setMatchNotifications, userId}) => {
             )}
             {selectedProfile && (
                 <ProfileModal
-                    userId={selectedProfile.userId}
+                    viewedId={selectedProfile.userId}
                     onClose={() => setSelectedProfile(null)}
                 />
             )}

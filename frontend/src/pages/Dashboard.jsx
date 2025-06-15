@@ -10,7 +10,7 @@ import { useSocket } from "../context/SocketContext";
 import { useUser } from "../context/UserContext";
 
 const Dashboard = () => {
-    const {socket, setHasNotification} = useSocket();
+    const {socket, setHasNotification, notifications, setNotifications} = useSocket();
     const navigate = useNavigate();
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [activeTab, setActiveTab] = useState("views");
@@ -24,12 +24,13 @@ const Dashboard = () => {
         received: [],
         sent: [],
     });
-    const [notifications, setNotifications] = useState({
-        views:0,
-        likes:0,
-        matchs:0,
-        messages:0,
-    })
+    
+    // const [notifications, setNotifications] = useState({
+    //     views:0,
+    //     likes:0,
+    //     matchs:0,
+    //     messages:0,
+    // })
     // const userId = localStorage.getItem("userId");
     const {userId} = useUser();
 
@@ -97,52 +98,52 @@ const Dashboard = () => {
         fetchViewNotifications();
     }, [userId, refreshTrigger])
 
-    useEffect(() => {
-        if (!socket) return;
-        const handleMessage = (event) => {
-            const message = JSON.parse(event.data);
+    // useEffect(() => {
+    //     if (!socket) return;
+    //     const handleMessage = (event) => {
+    //         const message = JSON.parse(event.data);
 
-            if (message.type === "newNotification") {
-                setNotifications(prev => ({
-                    ...prev, [message.category]: Number(prev[message.category]) + 1
-                }));
-                if (message.category === "messages" && message.notification) {
-                    setMessageNotifications(prev => [message.notification, ...prev])
-                }
-                if (message.category === "matchs" && message.notification) {
-                    setMatchNotifications(prev => [message.notification, ...prev]);
-                }
-                if (message.category === "likes" && message.notification) {
-                    setLikeNotifications(prev => ({
-                        ...prev,
-                        received: [message.notification, ...(prev.received || [])]
-                    }));
-                }
-                if (message.category === "views" && message.notification) {
-                    const isMyView = message.notification.receiver_id === Number(userId);
-                    // const isSender = message.notification.sender_id === Number(userId);
-                    setViewNotifications(prev => ({
-                        received: isMyView
-                            ? [message.notification, ...(prev.received || [])]
-                            : prev.received,
-                        sent: !isMyView
-                            ? [message.notification, ...(prev.sent || [])]
-                            : prev.sent
-                    }));
-                }
-            }
-            if (message.type === "refreshUI") {
-                const currentUser = userId;
-                // const currentUser = localStorage.getItem("userId");
-                setRefreshTrigger(prev => prev + 1);
-            }
-        }
-        socket.addEventListener("message", handleMessage);
+    //         if (message.type === "newNotification") {
+    //             setNotifications(prev => ({
+    //                 ...prev, [message.category]: Number(prev[message.category]) + 1
+    //             }));
+    //             if (message.category === "messages" && message.notification) {
+    //                 setMessageNotifications(prev => [message.notification, ...prev])
+    //             }
+    //             if (message.category === "matchs" && message.notification) {
+    //                 setMatchNotifications(prev => [message.notification, ...prev]);
+    //             }
+    //             if (message.category === "likes" && message.notification) {
+    //                 setLikeNotifications(prev => ({
+    //                     ...prev,
+    //                     received: [message.notification, ...(prev.received || [])]
+    //                 }));
+    //             }
+    //             if (message.category === "views" && message.notification) {
+    //                 const isMyView = message.notification.receiver_id === Number(userId);
+    //                 // const isSender = message.notification.sender_id === Number(userId);
+    //                 setViewNotifications(prev => ({
+    //                     received: isMyView
+    //                         ? [message.notification, ...(prev.received || [])]
+    //                         : prev.received,
+    //                     sent: !isMyView
+    //                         ? [message.notification, ...(prev.sent || [])]
+    //                         : prev.sent
+    //                 }));
+    //             }
+    //         }
+    //         if (message.type === "refreshUI") {
+    //             const currentUser = userId;
+    //             // const currentUser = localStorage.getItem("userId");
+    //             setRefreshTrigger(prev => prev + 1);
+    //         }
+    //     }
+    //     socket.addEventListener("message", handleMessage);
 
-        return () => {
-            socket.removeEventListener("message", handleMessage);
-        }
-    }, [socket, userId]);
+    //     return () => {
+    //         socket.removeEventListener("message", handleMessage);
+    //     }
+    // }, [socket, userId]);
 
     const markAsRead = async (category) => {
         setNotifications((prev) => ({ ...prev, [category]:0}));

@@ -75,17 +75,21 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
             return ;
 
         const lastMessage = messagesGlobal[messagesGlobal.length -1];
-
+        console.log("📩 [Messages.jsx] Nouveau message détecté:", lastMessage);
         setMatches(prevMatches => {
             const updated = prevMatches.map(m => {
                 if (Number(m.user_id) === Number(lastMessage.sender_id) || Number(m.user_id) === Number(lastMessage.receiver_id)) {
+                    const isRecipient = Number(lastMessage.receiver_id) === Number(userId);
+                    console.log("👀 [Messages.jsx] Match concerné:", m.user_id, "isRecipient:", isRecipient);
+
                     let updateMatch = {...m};
                     updateMatch.last_message = lastMessage.content;
                     updateMatch.last_message_created_at = lastMessage.created_at;
-                    const isRecipient = lastMessage.receiver_id.toString() === userId;
                     updateMatch.unread_count = parseInt(updateMatch.unread_count, 10) || 0;
+                    // const isRecipient = lastMessage.receiver_id.toString() === userId;
                     if (isRecipient) {
                         updateMatch.unread_count += 1;
+                        console.log("🔴 [Messages.jsx] Incrément unread_count pour :", m.user_id, "nouvelle valeur:", updateMatch.unread_count);
                     }
                     return updateMatch;
                 }
@@ -122,7 +126,7 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
 
 
     return (
-        <div className="flex-1 overflow-y-auto bg-gray-100 dark:bg-gray-700 p-4 w-full">
+        <div className="overflow-y-auto bg-gray-100 dark:bg-gray-700 p-4 w-full">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Messages</h2>
             <div className="pr-2">
             {matches.length === 0 ? (

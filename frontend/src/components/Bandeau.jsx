@@ -8,8 +8,9 @@ import { useUser } from "../context/UserContext";
 const Bandeau = () => {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
-    const {hasNotification, setUserPhoto} = useSocket();
+    const {hasNotification, setUserPhoto, notifications} = useSocket();
     const {userId} = useUser();
+
     // const userId = localStorage.getItem("userId");
     const [showProfilModal, setShowProfilModal] = useState(false);
     useEffect(() => {
@@ -30,6 +31,9 @@ const Bandeau = () => {
         return <div className="bg-gray-200 p-4 text-center">Chargement...</div>;
     }
 
+    const totalUnread =
+        notifications.views + notifications.likes + notifications.matchs + notifications.messages;
+    
     return (
         //TODO:AJOUTER ONCLICK SUR LE DIV POUR REDIRIGER VERS LES EDIT PROFILE
         <div className="bg-green-500 dark:bg-green-800 text-black dark:text-white p-4 flex flex-wrap items-center justify-between gap-4"> 
@@ -66,8 +70,10 @@ const Bandeau = () => {
                     onClick={() => navigate("/dashboard")}
                     className="p-2 rounded-full dark:hover:bg-gray-800 hover:bg-gray-100 transition relative">
                     <LayoutDashboard size={25} className="text-black dark:text-white" />
-                    {hasNotification && (
-                        <span className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-3 h-3 text-xs flex items-center justify-center" />
+                    {totalUnread > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-3 h-3 text-xs flex items-center justify-center">
+                            {totalUnread}
+                        </span>
                     )}
                </button>
                <button

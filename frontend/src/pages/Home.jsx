@@ -4,8 +4,11 @@ import DarkModeToggle from "../util/dark";
 import Navbar from "../components/Navbar";
 import { Link } from 'react-router-dom'
 import { useEffect } from "react";
+import { useUser } from "../context/UserContext"
 
-export default function Homepage({userId, hasProfile}) {
+export default function Homepage() {
+    const {userId, hasProfile} = useUser();
+
     return (
     <div className="min-h-[calc(100vh-72px)] bg-gray-200 text-black dark:bg-gray-800 dark:text-white transition-colors duration-300 flex flex-col">
         <div className="flex flex-col justify-center items-center text-center flex-grow px-6 sm:px-20 py-12">

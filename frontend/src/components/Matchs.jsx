@@ -45,6 +45,11 @@ const Matchs = ({onSelectMatch}) => {
         const sendView = async () => {
             if (profiles.length === 0 || currentIndex >= profiles.length) return ;
             const viewedProfile = profiles[currentIndex];
+                console.log("📤 [Matchs.jsx] Envoi view vers serveur ws depuis matchs.jsx :", {
+                viewerId: userId,
+                viewedId: viewedProfile.user_id
+              });
+
             try {
                 await fetch("http://localhost:3000/view", {
                     method:"POST",
@@ -53,12 +58,13 @@ const Matchs = ({onSelectMatch}) => {
                 });
 
                 if (socket) {
-                    socket.send(JSON.stringify({
-                        type:"viewNotification",
-                        senderId: userId,
-                        receiverId: viewedProfile.user_id,
-                    }));
+                  socket.send(JSON.stringify({
+                    type:"viewNotification",
+                    senderId: userId,
+                    receiverId: viewedProfile.user_id,
+                  }));
                 }
+                console.log("📡 [Matchs.jsx] viewNotification envoyée via serveur WebSocket");
             } catch (err) {
                 console.error("Erreur lors de l envoie de la notif view: ", err);
             }

@@ -14,6 +14,34 @@ export const SocketProvider = ({children}) => {
     const {userId, loading} = useUser();
     // const userId = localStorage.getItem("userId");
     const [blockedUserId, setBlockedUserId] = useState(null);
+    const [notifications, setNotifications] = useState({
+        views:0,
+        likes:0,
+        matchs:0,
+        messages:0,
+    }) 
+    const [messageNotifications, setMessageNotifications] = useState([]);
+    const [matchNotifications, setMatchNotifications] = useState([]);
+    const [likeNotifications, setLikeNotifications] = useState({ received: [], sent: [] });
+    const [viewNotifications, setViewNotifications] = useState({ received: [], sent: [] });
+
+    useEffect(() => {
+        if (!userId) return;
+
+        const fetchUnreadNotifications = async () => {
+            try {
+                const res = await fetch(`http://localhost:3000/notifications/unread?userId=${userId}`);
+                const data = await res.json();
+                console.log("unread notifications recup:", data);
+                setNotifications(data);
+            } catch (err) {
+                console.error("errrreur fetch unread notifications:", err);
+            }
+        };
+
+        fetchUnreadNotifications();
+    }, [userId]);
+
 
     useEffect(() => {
         if (loading) return;
@@ -36,10 +64,44 @@ export const SocketProvider = ({children}) => {
 
             if (message.type === "read_messages") {
                 setUnreadCountTrigger(prev => !prev);
+                    setNotifications(prev => ({
+                        ...prev,
+                        messages: Math.max(0, prev.messages - 1)
+                    }));
             }
 
             if (message.type === "newNotification") {
+                console.log("🔔 [SocketContext] Nouvelle notification reçue :", message);
                 setHasNotification(true);
+                if (message.type === "newNotification") {
+                setNotifications(prev => ({
+                    ...prev, [message.category]: Number(prev[message.category]) + 1
+                }));
+                if (message.category === "messages" && message.notification) {
+                    setMessageNotifications(prev => [message.notification, ...prev])
+                }
+                if (message.category === "matchs" && message.notification) {
+                    setMatchNotifications(prev => [message.notification, ...prev]);
+                }
+                if (message.category === "likes" && message.notification) {
+                    setLikeNotifications(prev => ({
+                        ...prev,
+                        received: [message.notification, ...(prev.received || [])]
+                    }));
+                }
+                if (message.category === "views" && message.notification) {
+                    const isMyView = message.notification.receiver_id === Number(userId);
+                    // const isSender = message.notification.sender_id === Number(userId);
+                    setViewNotifications(prev => ({
+                        received: isMyView
+                            ? [message.notification, ...(prev.received || [])]
+                            : prev.received,
+                        sent: !isMyView
+                            ? [message.notification, ...(prev.sent || [])]
+                            : prev.sent
+                    }));
+                }
+            }
             }
 
             if (message.type === "newMatch") {
@@ -97,6 +159,12 @@ export const SocketProvider = ({children}) => {
             setUserPhoto,
             blockedUserId,
             setBlockedUserId,
+            notifications,
+            setNotifications,
+            messageNotifications,
+            matchNotifications,
+            likeNotifications,
+            viewNotifications,
         }}>
             {children}
         </SocketContext.Provider>

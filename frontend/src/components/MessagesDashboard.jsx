@@ -55,8 +55,8 @@ const MessagesDashboard = ({notifications}) => {
             )}
             {selectedProfile && (
                 <ProfileModal
-                    userId={selectedProfile.userId}
-                    viewerId={userId}
+                    viewedId={selectedProfile.userId}
+                    // viewerId={userId}
                     onClose={() => setSelectedProfile(null)}
                 />
             )} 

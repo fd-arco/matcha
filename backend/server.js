@@ -504,6 +504,38 @@ app.put('/messages/read', async(req, res) => {
     }
 })
 
+
+app.get('/notifications/unread', async (req, res) => {
+    const userId = Number(req.query.userId);
+    if (!userId) return res.status(400).json({ error: "userId manquant" });
+
+    try {
+        const query = `
+            SELECT type, COUNT(*) as count
+            FROM notifications
+            WHERE user_id = $1 AND is_read = false
+            GROUP BY type
+        `;
+        const { rows } = await pool.query(query, [userId]);
+
+        const result = {
+            messages: 0,
+            likes: 0,
+            views: 0,
+            matchs: 0
+        };
+        rows.forEach(row => {
+            result[row.type] = Number(row.count);
+        });
+
+        res.json(result);
+    } catch (err) {
+        console.error("Erreur /notifications/unread:", err);
+        res.status(500).json({ error: "Erreur serveur" });
+    }
+});
+
+
 app.get('/notifications/:userId', async(req, res) => {
     try {
         const { userId } = req.params;
@@ -919,24 +951,32 @@ app.post("/like", async(req,res) => {
 app.post("/view", async (req, res) => {
     const {viewerId, viewedId} = req.body;
 
-    try {
-        const recent = await pool.query(`
-            SELECT 1 FROM notifications
-            WHERE type = 'view'
-            AND sender_id=$1
-            AND user_id=$2
-            AND created_at >= NOW() - interval '30 minutes'
-            LIMIT 1
-            `, [viewerId, viewedId]);
+    // try {
+    //     const recent = await pool.query(`
+    //         SELECT 1 FROM notifications
+    //         WHERE type = 'view'
+    //         AND sender_id=$1
+    //         AND user_id=$2
+    //         AND created_at >= NOW() - interval '30 minutes'
+    //         LIMIT 1
+    //         `, [viewerId, viewedId]);
 
-        if (recent.rowCount === 0) {
-            await pool.query(
-                `INSERT INTO notifications (user_id, sender_id, type)
-                 VALUES ($1, $2, 'view')`,
-                 [viewedId, viewerId]
-            );
-        }
-        res.status(200).json({success:true, message:"View enregistree"});
+    //     if (recent.rowCount === 0) {
+    //         await pool.query(
+    //             `INSERT INTO notifications (user_id, sender_id, type)
+    //              VALUES ($1, $2, 'view')`,
+    //              [viewedId, viewerId]
+    //         );
+    //     }
+    //     res.status(200).json({success:true, message:"View enregistree"});
+    // } 
+    
+    try {
+        await pool.query(`
+            INSERT INTO views (viewer_id, viewed_id)
+            VALUES ($1, $2)
+        `, [viewerId, viewedId]);
+        res.status(200).json({success:true, message:"View enregistre"});
     } catch (error) {
         console.error("Erreur lors de l enregistrement de la view:", error);
         res.status(500).json({error: "erreur serveur"});
