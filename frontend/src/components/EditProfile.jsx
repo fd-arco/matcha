@@ -205,8 +205,8 @@ export default function EditProfile() {
         finalFormData.append("bio", bio);
         finalFormData.append("passions", JSON.stringify(selectedPassions));
         finalFormData.append("existingPhotos", JSON.stringify(existingPhotos));
-        finalFormData.append("latitude", manualLocation.lat);
-        finalFormData.append("longitude", manualLocation.lng);
+        {manualLocation.lat && finalFormData.append("latitude", manualLocation.lat)};
+        {manualLocation.lng && finalFormData.append("longitude", manualLocation.lng)};
 
         console.log("latitude  est bien fetch,    ;",manualLocation.lat)
         console.log("longitude  est bien fetch,    ;",manualLocation.lng)

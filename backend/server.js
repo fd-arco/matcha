@@ -332,7 +332,7 @@ app.get('/user/:userId', async (req, res) => {
         res.json(user);
     } catch (error) {
         console.error("error getting userData:", error);
-        res.status(500).json({error: "servor error"});
+        res.status(500).json({error: "servor erroruserif location"});
     }
 });
 
@@ -710,6 +710,7 @@ app.get('/profiles/:userId', async (req, res) => {
                 p.passions,
                 p.fame,
                 p.latitude,
+                p.longitude,
                 json_agg(pp.photo_url ORDER BY pp.id) AS photos
             FROM profiles p
             JOIN profile_photos pp ON pp.profile_id = p.id

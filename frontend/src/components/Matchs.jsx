@@ -48,7 +48,7 @@ const Matchs = ({onSelectMatch}) => {
           if(res.ok)
           {
             setUserLocation({ lat: data.latitude, lng: data.longitude });
-            console.log('ca rentre bien dans fetch user', data.latitude)
+            console.log('ca rentre bien dans fetch user', data)
           }
         } catch (err) {
           console.log('cacaacacacacaacacacacacaacacacacaacacacaac')
@@ -190,9 +190,10 @@ const Matchs = ({onSelectMatch}) => {
 
     const profile = profiles[currentIndex];
     console.log("📷 Image path:", `http://localhost:3000${profile.photos[currentPhotoIndex]}`);
-
+    
     let distance = null;
-    if (userLocation && profile.latitude && profile.longitude) {
+    // console.log("laaaaaaaaaaaaaaaaaaaaa :     ", userLocation.lat)
+    if (userLocation && userLocation.lat && profile.latitude && profile.longitude) {
       distance = getDistanceFromLatLonInKm(
         userLocation.lat,
         userLocation.lng,
@@ -274,11 +275,8 @@ const Matchs = ({onSelectMatch}) => {
               </p>
             )}
             { userLocation &&  <p className="text-md text-gray-700 dark:text-gray-300 mt-3">
-              kilometre de toi :  <span className="font-semibold">{distance}</span>
-            </p>}
-            {userLocation && <p className="text-md text-gray-700 dark:text-gray-300 mt-3">
-              kilometre de user :  <span className="font-semibold">{userLocation.lat}</span>
-            </p>}
+              <span className="font-semibold">{distance}</span> km from you
+            </p>}   
             <p className="text-md text-gray-700 dark:text-gray-300 mt-3">
               Looking for: <span className="font-semibold">{profile.looking_for}</span>
             </p>
