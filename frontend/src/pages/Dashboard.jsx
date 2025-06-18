@@ -85,8 +85,23 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchViewNotifications = async() => {
             try {
+                console.log("📬 [Dashboard.jsx] fetch viewNotifications lancé pour userId", userId);
+
                 const res = await fetch(`http://localhost:3000/notifications/${userId}/views`);
                 const data = await res.json();
+                console.log("📥 [Dashboard.jsx] Notifications reçues:", {
+                    received: data.received.map(n => ({
+                    id: n.id,
+                    sender: n.sender_name,
+                    photo:n.sender_photo,
+                    is_read: n.is_read
+                    })),
+                    sent: data.sent.map(n => ({
+                        id: n.id,
+                        receiver: n.receiver_name,
+                        photo:n.receiver_photo
+                    }))
+                });
                 setViewNotifications({
                     received:data.received,
                     sent:data.sent,
@@ -97,6 +112,8 @@ const Dashboard = () => {
         }
         fetchViewNotifications();
     }, [userId, refreshTrigger])
+
+
 
     // useEffect(() => {
     //     if (!socket) return;
@@ -172,6 +189,10 @@ const Dashboard = () => {
         } catch (error) {
             console.error("erreur lors de la misee a jour des notifications", error);
         }
+    }
+
+    if (!notifications) {
+        return <div className="p-8 text-center">Loading...</div>
     }
 
     return (

@@ -51,11 +51,11 @@ const Matchs = ({onSelectMatch}) => {
               });
 
             try {
-                await fetch("http://localhost:3000/view", {
-                    method:"POST",
-                    headers:{"Content-type": "application/json"},
-                    body: JSON.stringify({viewerId: userId, viewedId: viewedProfile.user_id})
-                });
+                // await fetch("http://localhost:3000/view", {
+                //     method:"POST",
+                //     headers:{"Content-type": "application/json"},
+                //     body: JSON.stringify({viewerId: userId, viewedId: viewedProfile.user_id})
+                // });
 
                 if (socket) {
                   socket.send(JSON.stringify({

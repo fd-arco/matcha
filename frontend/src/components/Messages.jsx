@@ -75,12 +75,10 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
             return ;
 
         const lastMessage = messagesGlobal[messagesGlobal.length -1];
-        console.log("📩 [Messages.jsx] Nouveau message détecté:", lastMessage);
         setMatches(prevMatches => {
             const updated = prevMatches.map(m => {
                 if (Number(m.user_id) === Number(lastMessage.sender_id) || Number(m.user_id) === Number(lastMessage.receiver_id)) {
                     const isRecipient = Number(lastMessage.receiver_id) === Number(userId);
-                    console.log("👀 [Messages.jsx] Match concerné:", m.user_id, "isRecipient:", isRecipient);
 
                     let updateMatch = {...m};
                     updateMatch.last_message = lastMessage.content;
@@ -89,7 +87,6 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
                     // const isRecipient = lastMessage.receiver_id.toString() === userId;
                     if (isRecipient) {
                         updateMatch.unread_count += 1;
-                        console.log("🔴 [Messages.jsx] Incrément unread_count pour :", m.user_id, "nouvelle valeur:", updateMatch.unread_count);
                     }
                     return updateMatch;
                 }

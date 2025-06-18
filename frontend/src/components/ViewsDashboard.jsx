@@ -28,7 +28,7 @@ const ViewsDashboard = ({ notifications, userId }) => {
                 ) : (
                     <ul>
                         {received.map((notif) => (
-                            <li key={`received-${notif.notification_id}`} className={`p-3 mb-2 rounded-lg shadow-md ${notif.is_read ? "dark:bg-gray-800 bg-gray-200" : "dark:bg-green-900 bg-green-200"}`}>
+                            <li key={`received-${notif.id}`} className={`p-3 mb-2 rounded-lg shadow-md ${notif.is_read ? "dark:bg-gray-800 bg-gray-200" : "dark:bg-green-900 bg-green-200"}`}>
                                 <div className="flex justify-between items-center">
                                     <div>
                                         <p>
@@ -61,7 +61,7 @@ const ViewsDashboard = ({ notifications, userId }) => {
                 ) : (
                     <ul>
                         {sent.map((notif) => (
-                            <li key={`sent-${notif.notification_id}`} className="p-3 mb-2 rounded-lg shadow-md dark:bg-gray-800 bg-gray-200">
+                            <li key={`sent-${notif.id}`} className="p-3 mb-2 rounded-lg shadow-md dark:bg-gray-800 bg-gray-200">
                                 <div className="flex justify-between items-center">
                                     <div>
                                         <p>
@@ -71,7 +71,7 @@ const ViewsDashboard = ({ notifications, userId }) => {
                                             {new Date(notif.created_at).toLocaleString()}
                                         </p>
                                     </div>
-                                    {notif.sender_photo && (
+                                    {notif.receiver_photo && (
                                         <img
                                             src={`http://localhost:3000${notif.receiver_photo}`}
                                             alt={notif.receiver_name}

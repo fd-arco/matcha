@@ -21,17 +21,13 @@ const initWebSocket = (server) => {
 
                 if (data.type === "register") {
                     
-                    console.log("🟢 [WS] Reçu type: register");
-                    console.log("👤 [WS] Tentative d'enregistrement pour userId =", data.userId, "type =", typeof data.userId);
                     const userId = data.userId.toString();
                     clients.set(userId, ws);
-                    console.log("✅ [WS] Socket enregistré - clients.keys() =", [...clients.keys()]);
                     await pool.query(
                         `UPDATE users SET last_online = NOW() WHERE id =$1`,
                         [data.userId]
                     );
                     clients.forEach((clientWs, clientId) => {
-                        console.log(`📡 [WS] Broadcast "online" à clientId=${clientId} à propos de userId=${data.userId}`);
                             clientWs.send(JSON.stringify({
                                 type:"userStatusChanged",
                                 userId:data.userId,
@@ -67,7 +63,6 @@ const initWebSocket = (server) => {
                     const senderId = data.senderId.toString();
                     const receiverId = data.receiverId.toString();
                     const content = data.content
-                    console.log("🟡 [websocket.js] serveur Message reçu :", { senderId, receiverId, content });
                     const matchCheck = await pool.query(`
                         SELECT * FROM matches
                         WHERE (user1_id = $1 AND user2_id = $2)
@@ -92,9 +87,8 @@ const initWebSocket = (server) => {
 
                     const savedMessage = result.rows[0];
                     
-                     console.log("✅ [websocket.js] Message sauvegardé :", savedMessage);
                     const notifResult = await pool.query(
-                        `INSERT INTO notifications (user_id, sender_id, type, message_id) VALUES ($1, $2, 'message', $3) RETURNING *`,
+                        `INSERT INTO notifications (user_id, sender_id, type, message_id) VALUES ($1, $2, 'messages', $3) RETURNING *`,
                         [data.receiverId, data.senderId, savedMessage.id]
                     )
 
@@ -123,12 +117,9 @@ const initWebSocket = (server) => {
                         senderPhoto = photoResult.rows[0]?.photo_url || null;
                     }
 
-                    console.log("🧾 [websocket.js] Clients enregistrés (clients.keys()):", [...clients.keys()]);
-                    console.log("👀 [websocket.js] receiverId:", receiverId.toString());
                     const receiverClient = clients.get(receiverId);
                     const senderClient = clients.get(senderId);
                     if (receiverClient) {
-                        console.log("📤 [websocket.js] Envoi message à receiverId :", receiverId);
                         receiverClient.send(JSON.stringify({
                             type: "newMessage",
                             message: savedMessage
@@ -149,9 +140,7 @@ const initWebSocket = (server) => {
                         }))
                     }
                     
-console.log("📡 [websocket.js] Sender client =", senderClient);
                     if (senderClient) {
-                        console.log("📤 [websocket.js] Envoi message à senderId :", senderId);
                         clients.get(senderId.toString()).send(JSON.stringify({
                             type: "newMessage",
                             message: savedMessage
@@ -162,7 +151,7 @@ console.log("📡 [websocket.js] Sender client =", senderClient);
                     const {senderId, receiverId} = data;
                     const result = await pool.query(
                         `INSERT INTO notifications(user_id, sender_id, type)
-                            VALUES ($1, $2, 'match'), ($2, $1, 'match') RETURNING *`,
+                            VALUES ($1, $2, 'matchs'), ($2, $1, 'matchs') RETURNING *`,
                             [receiverId, senderId]
                     );
 
@@ -308,35 +297,68 @@ console.log("📡 [websocket.js] Sender client =", senderClient);
                 if (data.type === "viewNotification") {
                     const {senderId, receiverId} = data;
                     console.log("📩 [WS Server] viewNotification reçue", { senderId, receiverId });
-                    const lastNotif = await pool.query(`
-                        SELECT created_at
-                        FROM notifications
-                        WHERE sender_id = $1 AND user_id =$2 AND type='view'
-                        ORDER BY created_at DESC
-                        LIMIT 1
-                        `, [senderId, receiverId]);
+                    const [lastSent, lastReceived] = await Promise.all([
+                        pool.query(`
+                            SELECT created_at
+                            FROM views_sent
+                            WHERE viewer_id = $1 AND viewed_id = $2
+                            ORDER BY created_at DESC
+                            LIMIT 1
+                        `, [senderId, receiverId]),
+                        pool.query(`
+                            SELECT created_at
+                            FROM views_received
+                            WHERE sender_id = $1 AND user_id = $2
+                            ORDER BY created_at DESC
+                            LIMIT 1
+                        `, [senderId, receiverId])
+                    ]);
+
+                    // const lastNotif = await pool.query(`
+                    //     SELECT created_at
+                    //     FROM notifications
+                    //     WHERE sender_id = $1 AND user_id =$2 AND type='views'
+                    //     ORDER BY created_at DESC
+                    //     LIMIT 1
+                    //     `, [senderId, receiverId]);
 
                     const now = new Date();
-                    const lastDate = lastNotif.rows[0]?.created_at;
-                    const diffMinutes = lastDate?Math.abs(now - new Date(lastDate)) / (1000 * 60) : Infinity;
+                    const lastSentDate = lastSent.rows[0]?.created_at;
+                    const lastReceivedDate = lastReceived.rows[0]?.created_at;
 
-                    console.log("🕒 [WS Server] now :", now.toISOString());
-                    console.log("📅 [WS Server] lastDate :", lastDate?.toISOString?.() || lastDate);
-                    console.log("⏱️ [WS Server] diffMinutes :", diffMinutes);
-                    console.log("📦 [WS Server] Résultat de lastNotif.rows :", lastNotif.rows);
+                    const diffSent = lastSentDate ? Math.abs(now - new Date(lastSentDate)) / (1000 * 60) : Infinity;
+                    const diffReceived = lastReceivedDate ? Math.abs(now - new Date(lastReceivedDate)) / (1000 * 60) : Infinity;
+                    // const lastDate = lastNotif.rows[0]?.created_at;
+                    // const diffMinutes = lastDate?Math.abs(now - new Date(lastDate)) / (1000 * 60) : Infinity;
 
-                    if (diffMinutes < 30) {
+                    // console.log("🕒 [WS Server] now :", now.toISOString());
+                    // console.log("📅 [WS Server] lastDate :", lastDate?.toISOString?.() || lastDate);
+                    // console.log("⏱️ [WS Server] diffMinutes :", diffMinutes);
+                    // console.log("📦 [WS Server] Résultat de lastNotif.rows :", lastNotif.rows);
+
+                    if (diffSent < 30 || diffReceived < 30) {
                         console.log("🛑 [WS Server] Anti-flood activé, pas de nouvelle notif view");
                         return;
                     }
 
-                    console.log("✅ [WS Server] Envoi des notifs view aux deux utilisateurs");
+                    // console.log("✅ [WS Server] Envoi des notifs view aux deux utilisateurs");
+                    console.log("📬 Insertion notif pour Bob (non lue)", { user_id: receiverId, sender_id: senderId });
 
                     await pool.query(`
-                        INSERT INTO notifications (user_id, sender_id, type, is_read)
-                        VALUES ($1, $2, 'view', false)
-                    `, [receiverId, senderId]);
-                    
+                        INSERT INTO views_sent (viewer_id, viewed_id)
+                        VALUES ($1, $2)`,
+                        [senderId, receiverId]
+                    );
+
+                    const notifReceiver = await pool.query(`
+                        INSERT INTO views_received (user_id, sender_id, is_read)
+                        VALUES ($1, $2, FALSE)
+                        RETURNING *`,
+                        [receiverId, senderId]
+                    );
+
+                    console.log("📬 Insertion notif pour Alice (déjà lue)", { user_id: senderId, sender_id: receiverId });
+
                     const senderInfo = await pool.query(`
                         SELECT u.firstname, prof.id AS profile_id
                         FROM users u
@@ -383,39 +405,38 @@ console.log("📡 [websocket.js] Sender client =", senderClient);
                             type: "newNotification",
                             category: "views",
                             notification: {
-                                sender_id: senderId,
+                                ...notifReceiver.rows[0],
                                 sender_name: senderName,
                                 sender_photo: senderPhoto,
                                 receiver_id:receiverId,
                                 receiver_name:receiverName,
                                 receiver_photo:receiverPhoto,
-                                is_read: false,
                                 created_at: new Date().toISOString(), // TODO:afficher l heure de la notification de like
                             }
                         }));
                     } else {
                         console.warn(`⚠️ [WS Server] receiverId ${receiverId} non connecté`);
                     }
-                    if (clients.has(senderId.toString())) {
-                        console.log(`📨 [WS Server] Envoi notif "sent" à senderId ${senderId}`);
-                        clients.get(senderId.toString()).send(JSON.stringify({
-                            type:"newNotification",
-                            category:"views",
-                            notification: {
-                                sender_id:receiverId,
-                                sender_name:receiverName,
-                                sender_photo:receiverPhoto,
-                                receiver_id:receiverId,
-                                receiver_name:receiverName,
-                                receiver_photo:receiverPhoto,
-                                is_read:false,
-                                created_at:new Date().toISOString()
-                            }
-                        }))
-                    } else {
-                        console.warn(`⚠️ [WS Server] receiverId ${senderId} non connecté`);
+                    // if (clients.has(senderId.toString())) {
+                    //     console.log(`📨 [WS Server] Envoi notif "sent" à senderId ${senderId}`);
+                    //     clients.get(senderId.toString()).send(JSON.stringify({
+                    //         type:"newNotification",
+                    //         category:"views",
+                    //         notification: {
+                    //             sender_id:receiverId,
+                    //             sender_name:receiverName,
+                    //             sender_photo:receiverPhoto,
+                    //             receiver_id:receiverId,
+                    //             receiver_name:receiverName,
+                    //             receiver_photo:receiverPhoto,
+                    //             is_read:false,
+                    //             created_at:new Date().toISOString()
+                    //         }
+                    //     }))
+                    // } else {
+                    //     console.warn(`⚠️ [WS Server] receiverId ${senderId} non connecté`);
 
-                    }
+                    // }
                 }
                 if (data.type === "userBlocked") {
                     const {blockerId, blockedId} = data;

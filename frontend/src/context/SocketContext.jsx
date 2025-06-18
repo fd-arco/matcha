@@ -14,12 +14,14 @@ export const SocketProvider = ({children}) => {
     const {userId, loading} = useUser();
     // const userId = localStorage.getItem("userId");
     const [blockedUserId, setBlockedUserId] = useState(null);
-    const [notifications, setNotifications] = useState({
-        views:0,
-        likes:0,
-        matchs:0,
-        messages:0,
-    }) 
+    // const [notifications, setNotifications] = useState({
+    //     views:0,
+    //     likes:0,
+    //     matchs:0,
+    //     messages:0,
+    // }) 
+
+    const [notifications, setNotifications] = useState(null);
     const [messageNotifications, setMessageNotifications] = useState([]);
     const [matchNotifications, setMatchNotifications] = useState([]);
     const [likeNotifications, setLikeNotifications] = useState({ received: [], sent: [] });
@@ -32,7 +34,7 @@ export const SocketProvider = ({children}) => {
             try {
                 const res = await fetch(`http://localhost:3000/notifications/unread?userId=${userId}`);
                 const data = await res.json();
-                console.log("unread notifications recup:", data);
+
                 setNotifications(data);
             } catch (err) {
                 console.error("errrreur fetch unread notifications:", err);
@@ -41,6 +43,8 @@ export const SocketProvider = ({children}) => {
 
         fetchUnreadNotifications();
     }, [userId]);
+
+    
 
 
     useEffect(() => {
@@ -58,7 +62,6 @@ export const SocketProvider = ({children}) => {
             const message = JSON.parse(event.data);
 
             if (message.type === "newMessage") {
-                console.log("[SocketContext] 💬 Nouveau message reçu:", message.message);
                 setMessagesGlobal(prev => [...prev, message.message]);
             }
 
@@ -71,7 +74,6 @@ export const SocketProvider = ({children}) => {
             }
 
             if (message.type === "newNotification") {
-                console.log("🔔 [SocketContext] Nouvelle notification reçue :", message);
                 setHasNotification(true);
                 if (message.type === "newNotification") {
                 setNotifications(prev => ({

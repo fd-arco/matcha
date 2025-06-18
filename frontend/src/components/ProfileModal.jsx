@@ -60,14 +60,14 @@ const ProfileModal = ({viewedId, onClose}) => {
 
         const sendView = async () => {
             try {
-                await fetch("http://localhost:3000/view", {
-                    method:"POST",
-                    headers:{"Content-Type": "application/json"},
-                    body:JSON.stringify({
-                        viewerId:viewerId,
-                        viewedId:viewedId
-                    })
-                });
+                // await fetch("http://localhost:3000/view", {
+                //     method:"POST",
+                //     headers:{"Content-Type": "application/json"},
+                //     body:JSON.stringify({
+                //         viewerId:viewerId,
+                //         viewedId:viewedId
+                //     })
+                // });
                 socket.send(
                     JSON.stringify({
                         type: "viewNotification",  

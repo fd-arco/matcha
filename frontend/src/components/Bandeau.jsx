@@ -13,6 +13,9 @@ const Bandeau = () => {
 
     // const userId = localStorage.getItem("userId");
     const [showProfilModal, setShowProfilModal] = useState(false);
+
+
+
     useEffect(() => {
         const fetchUser = async () => {
             try {
@@ -26,14 +29,17 @@ const Bandeau = () => {
         };
         fetchUser();
     }, [userId]);
-
-    if (!user) {
-        return <div className="bg-gray-200 p-4 text-center">Chargement...</div>;
+    
+    if (!notifications || !user) {
+        return <div className="bg-gray-200 p-4 text-center">Loading...</div>
     }
 
     const totalUnread =
-        notifications.views + notifications.likes + notifications.matchs + notifications.messages;
-    
+        Number(notifications.views) + Number(notifications.likes) + Number(notifications.matchs) + Number(notifications.messages);
+
+console.log("[Bandeau] 📦 totalUnread:", totalUnread);
+
+
     return (
         //TODO:AJOUTER ONCLICK SUR LE DIV POUR REDIRIGER VERS LES EDIT PROFILE
         <div className="bg-green-500 dark:bg-green-800 text-black dark:text-white p-4 flex flex-wrap items-center justify-between gap-4"> 

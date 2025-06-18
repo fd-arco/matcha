@@ -69,7 +69,6 @@ const Conversation = ({match, onBack}) => {
             content:newMessage.trim(),
         };
 
-            console.log("[Conversation.jsx] 📤 Envoi au serveur WS message :", messageData);
 
         socket.send(JSON.stringify(messageData));
         setNewMessage("");
