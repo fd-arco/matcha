@@ -92,16 +92,21 @@ export const SocketProvider = ({children}) => {
                     }));
                 }
                 if (message.category === "views" && message.notification) {
-                    const isMyView = message.notification.receiver_id === Number(userId);
+                    console.log("👁️ [SocketContext] Notification de vue reçue via WebSocket :", message.notification);
+                    // const isMyView = message.notification.receiver_id === Number(userId);
                     // const isSender = message.notification.sender_id === Number(userId);
                     setViewNotifications(prev => ({
-                        received: isMyView
-                            ? [message.notification, ...(prev.received || [])]
-                            : prev.received,
-                        sent: !isMyView
-                            ? [message.notification, ...(prev.sent || [])]
-                            : prev.sent
+                        ...prev,
+                        received: [message.notification, ...(prev.received || [])]
                     }));
+                    // setViewNotifications(prev => ({
+                    //     received: isMyView
+                    //         ? [message.notification, ...(prev.received || [])]
+                    //         : prev.received,
+                    //     sent: !isMyView
+                    //         ? [message.notification, ...(prev.sent || [])]
+                    //         : prev.sent
+                    // }));
                 }
             }
             }
@@ -164,9 +169,13 @@ export const SocketProvider = ({children}) => {
             notifications,
             setNotifications,
             messageNotifications,
+            setMessageNotifications,
             matchNotifications,
+            setMatchNotifications,
             likeNotifications,
+            setLikeNotifications,
             viewNotifications,
+            setViewNotifications
         }}>
             {children}
         </SocketContext.Provider>

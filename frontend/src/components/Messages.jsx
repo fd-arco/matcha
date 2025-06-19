@@ -8,7 +8,7 @@ import { useUser } from "../context/UserContext";
 
 const Messages = ({onSelectMatch, selectedMatch}) => {
     const [matches, setMatches] = useState([]);
-    const {matchesGlobal, messagesGlobal, unreadCountTrigger, onlineStatuses, setOnlineStatuses} = useSocket();
+    const {matchesGlobal, messagesGlobal, unreadCountTrigger, onlineStatuses, setOnlineStatuses, socket} = useSocket();
     // const userId = localStorage.getItem("userId");
     const {userId} = useUser();
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -114,6 +114,13 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
                     matchId: match.user_id
                 })
             });
+            if (socket) {
+                socket.send(JSON.stringify({
+                    type:"read_messages",
+                    userId:userId,
+                    matchId:match.user_id
+                }));
+            }
             setMatches(prevMatches => prevMatches.map(m => m.user_id === match.user_id ? { ...m, unread_count: 0} : m))
             onSelectMatch(match);
         } catch (error) {

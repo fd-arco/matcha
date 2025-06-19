@@ -10,28 +10,29 @@ import { useSocket } from "../context/SocketContext";
 import { useUser } from "../context/UserContext";
 
 const Dashboard = () => {
-    const {socket, setHasNotification, notifications, setNotifications} = useSocket();
+    const {
+        socket, setHasNotification,
+        notifications, setNotifications,
+        messageNotifications, setMessageNotifications,
+        likeNotifications, setLikeNotifications,
+        matchNotifications, setMatchNotifications,
+        viewNotifications, setViewNotifications,
+    } = useSocket();
     const navigate = useNavigate();
     const [refreshTrigger, setRefreshTrigger] = useState(0);
-    const [activeTab, setActiveTab] = useState("views");
-    const [messageNotifications, setMessageNotifications] = useState([]);
-    const [matchNotifications, setMatchNotifications] = useState([]);
-    const [likeNotifications, setLikeNotifications] = useState({
-        received:[],
-        sent:[],
-    });
-    const [viewNotifications, setViewNotifications] = useState({
-        received: [],
-        sent: [],
-    });
-    
-    // const [notifications, setNotifications] = useState({
-    //     views:0,
-    //     likes:0,
-    //     matchs:0,
-    //     messages:0,
-    // })
-    // const userId = localStorage.getItem("userId");
+    const [activeTab, setActiveTab] = useState(null);
+    const [lastClickedTab, setLastClickedTab] = useState(null);
+    // const [messageNotifications, setMessageNotifications] = useState([]);
+    // const [matchNotifications, setMatchNotifications] = useState([]);
+    // const [likeNotifications, setLikeNotifications] = useState({
+    //     received:[],
+    //     sent:[],
+    // });
+    // const [viewNotifications, setViewNotifications] = useState({
+    //     received: [],
+    //     sent: [],
+    // });
+
     const {userId} = useUser();
 
     useEffect(() => {
@@ -45,12 +46,24 @@ const Dashboard = () => {
                     matchs:data[0].matchs || 0,
                     messages:data[0].messages || 0,
                 });
-                setMessageNotifications(data.filter(n => n.notification_id !== null));
             } catch (error) {
                 console.error("Erreur lors du chargement des notifications", error);
             }
         }
         fetchNotifications();
+    }, [userId, refreshTrigger]);
+
+    useEffect(() => {
+        const fetchMessageNotification = async () => {
+            try {
+                const res = await fetch(`http://localhost:3000/notifications/${userId}/messages`);
+                const data = await res.json();
+                setMessageNotifications(data);
+            } catch (error) {
+                console.error("erreur fetch message notificaiton", error);
+            }
+        }
+        fetchMessageNotification();
     }, [userId, refreshTrigger]);
 
     useEffect(() => {
@@ -113,54 +126,8 @@ const Dashboard = () => {
         fetchViewNotifications();
     }, [userId, refreshTrigger])
 
+    const unreadViewsCount = viewNotifications.received?.filter(v => !v.is_read).length || 0;
 
-
-    // useEffect(() => {
-    //     if (!socket) return;
-    //     const handleMessage = (event) => {
-    //         const message = JSON.parse(event.data);
-
-    //         if (message.type === "newNotification") {
-    //             setNotifications(prev => ({
-    //                 ...prev, [message.category]: Number(prev[message.category]) + 1
-    //             }));
-    //             if (message.category === "messages" && message.notification) {
-    //                 setMessageNotifications(prev => [message.notification, ...prev])
-    //             }
-    //             if (message.category === "matchs" && message.notification) {
-    //                 setMatchNotifications(prev => [message.notification, ...prev]);
-    //             }
-    //             if (message.category === "likes" && message.notification) {
-    //                 setLikeNotifications(prev => ({
-    //                     ...prev,
-    //                     received: [message.notification, ...(prev.received || [])]
-    //                 }));
-    //             }
-    //             if (message.category === "views" && message.notification) {
-    //                 const isMyView = message.notification.receiver_id === Number(userId);
-    //                 // const isSender = message.notification.sender_id === Number(userId);
-    //                 setViewNotifications(prev => ({
-    //                     received: isMyView
-    //                         ? [message.notification, ...(prev.received || [])]
-    //                         : prev.received,
-    //                     sent: !isMyView
-    //                         ? [message.notification, ...(prev.sent || [])]
-    //                         : prev.sent
-    //                 }));
-    //             }
-    //         }
-    //         if (message.type === "refreshUI") {
-    //             const currentUser = userId;
-    //             // const currentUser = localStorage.getItem("userId");
-    //             setRefreshTrigger(prev => prev + 1);
-    //         }
-    //     }
-    //     socket.addEventListener("message", handleMessage);
-
-    //     return () => {
-    //         socket.removeEventListener("message", handleMessage);
-    //     }
-    // }, [socket, userId]);
 
     const markAsRead = async (category) => {
         setNotifications((prev) => ({ ...prev, [category]:0}));
@@ -209,24 +176,33 @@ const Dashboard = () => {
                     <div
                         className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="views"? "dark:bg-green-800 bg-green-500 text-black dark:text-white" : "dark:hover:bg-gray-800 hover:bg-gray-200"}`}
                         onClick={() => {
+                            if (activeTab === "views") {
+                                markAsRead("views");
+                                setRefreshTrigger(prev => prev + 1);
+                            }
                             setActiveTab("views");
-                            markAsRead("views");
+                            setLastClickedTab("views");
                         }}
                         
                     >
                         <Eye size={32} />
                         <span className="mt-2">Views</span>
-                        {notifications.views > 0 && (
+                        {unreadViewsCount > 0 && (
                             <span className="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded-full">
-                                {notifications.views}
+                                {unreadViewsCount}
                             </span>
                         )}
                     </div>
                     <div
                         className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="likes"? "dark:bg-green-800 bg-green-500 text-black dark:text-white" : "dark:hover:bg-gray-800 hover:bg-gray-200"}`}
-                        onClick={() => {
+                        onClick={async () => {
+                            if (activeTab === "likes") {
+                                await markAsRead("likes");
+                                setRefreshTrigger(prev => prev + 1);
+                                
+                            }
                             setActiveTab("likes");
-                            markAsRead("likes");
+                            setLastClickedTab("likes");
                         }}
                     >
                         <Heart size={32} />
@@ -239,9 +215,14 @@ const Dashboard = () => {
                     </div>
                     <div
                         className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="matchs"? "dark:bg-green-800 bg-green-500 text-black dark:text-white" : "dark:hover:bg-gray-800 hover:bg-gray-200"}`}
-                        onClick={() => {
+                        onClick={async () => {
+                            if (activeTab === "matchs") {
+                                await markAsRead("matchs");
+                                setRefreshTrigger(prev => prev + 1);
+
+                            }
                             setActiveTab("matchs");
-                            markAsRead("matchs");
+                            setLastClickedTab("matchs");
                         }}
                     >
                         <Users size={32} />
@@ -254,9 +235,13 @@ const Dashboard = () => {
                     </div>
                     <div 
                         className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="messages"? "dark:bg-green-800 bg-green-500 text-black dark:text-white" : "dark:hover:bg-gray-800 hover:bg-gray-200"}`}
-                        onClick={() => {
+                        onClick={async () => {
+                            if (activeTab === "messages") {
+                                await markAsRead("messages");
+                                setRefreshTrigger(prev => prev + 1);
+                            }
                             setActiveTab("messages");
-                            markAsRead("messages");
+                            setLastClickedTab("messages");
                         }}
                     >
                         <MessageSquare size={32} />
@@ -270,6 +255,11 @@ const Dashboard = () => {
                 </div>
 
                 <div className="dark:bg-gray-900 bg-white mt-6 p-4 bg-white rounded-lg shadow-md">
+                    {!activeTab && (
+                        <div className="text-center text-gray-600 dark:text-gray-300 text-lg">
+                            Welcome in your Dashboard ! Click on one onglet to display your notifications !
+                        </div>
+                    )}
                     {activeTab === "views" && <ViewsDashboard notifications={viewNotifications} userId={userId}/>}
                     {activeTab === "likes" && <LikesDashboard notifications={likeNotifications} setLikeNotifications={setLikeNotifications} userId={userId}/>}
                     {activeTab === "matchs" && <MatchsDashboard notifications={matchNotifications} setMatchNotifications={setMatchNotifications} userId={userId}/>}

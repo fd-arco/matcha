@@ -314,14 +314,6 @@ const initWebSocket = (server) => {
                         `, [senderId, receiverId])
                     ]);
 
-                    // const lastNotif = await pool.query(`
-                    //     SELECT created_at
-                    //     FROM notifications
-                    //     WHERE sender_id = $1 AND user_id =$2 AND type='views'
-                    //     ORDER BY created_at DESC
-                    //     LIMIT 1
-                    //     `, [senderId, receiverId]);
-
                     const now = new Date();
                     const lastSentDate = lastSent.rows[0]?.created_at;
                     const lastReceivedDate = lastReceived.rows[0]?.created_at;
@@ -417,26 +409,6 @@ const initWebSocket = (server) => {
                     } else {
                         console.warn(`⚠️ [WS Server] receiverId ${receiverId} non connecté`);
                     }
-                    // if (clients.has(senderId.toString())) {
-                    //     console.log(`📨 [WS Server] Envoi notif "sent" à senderId ${senderId}`);
-                    //     clients.get(senderId.toString()).send(JSON.stringify({
-                    //         type:"newNotification",
-                    //         category:"views",
-                    //         notification: {
-                    //             sender_id:receiverId,
-                    //             sender_name:receiverName,
-                    //             sender_photo:receiverPhoto,
-                    //             receiver_id:receiverId,
-                    //             receiver_name:receiverName,
-                    //             receiver_photo:receiverPhoto,
-                    //             is_read:false,
-                    //             created_at:new Date().toISOString()
-                    //         }
-                    //     }))
-                    // } else {
-                    //     console.warn(`⚠️ [WS Server] receiverId ${senderId} non connecté`);
-
-                    // }
                 }
                 if (data.type === "userBlocked") {
                     const {blockerId, blockedId} = data;

@@ -488,16 +488,25 @@ app.put('/messages/read', async(req, res) => {
     const {userId, matchId} = req.body;
 
     try {
-        const query = `
+        await pool.query(`
             UPDATE messages
             SET is_read = TRUE
             WHERE receiver_id = $1
             AND sender_id = $2
             AND is_read = FALSE
-        `;
+        `, [userId, matchId]);
 
-        await pool.query(query, [userId, matchId]);
-        res.json({success:true, message:"messages marques comme lus"});
+        await pool.query(`
+            UPDATE notifications
+            SET is_read = TRUE
+            WHERE user_id = $1
+            AND sender_id = $2
+            AND type='messages'
+            AND is_read = FALSE
+            `, [userId, matchId]);
+
+
+        res.json({success:true, message:"messages et notifications marques comme lus"});
     } catch (error) {
         console.error("erreur lors de la mise a jour des messages lus:", error);
         res.status(500).json({error: "erreur serveur"});
@@ -536,52 +545,70 @@ app.get('/notifications/unread', async (req, res) => {
 });
 
 
+app.get('/notifications/:userId/messages', async(req,res) => {
+    try {
+        const {userId} = req.params;
+        const result = await pool.query(`
+            SELECT n.id AS notification_id,
+                   n.is_read,
+                   n.created_at AS notification_created_at,
+                   m.content AS message_content,
+                   m.created_at AS message_created_at,
+                   sender.id AS sender_id,
+                   sender.firstname AS sender_name,
+                   pp.photo_url AS sender_photo
+            FROM notifications n
+            JOIN messages m on n.message_id = m.id
+            JOIN users sender ON sender.id = m.sender_id
+            LEFT JOIN profiles p ON p.user_id = sender.id
+            LEFT JOIN profile_photos pp ON pp.profile_id = p.id
+            WHERE n.user_id = $1 AND n.type = 'messages'
+            ORDER BY n.created_at DESC
+        `, [userId]);
+        
+        res.json(result.rows);
+    } catch (error) {
+        console.error("erreur API /notifications/:userId/messages", error);
+        return res.status(500).json({error:"erreur serveur"});
+    }
+})
+
 app.get('/notifications/:userId', async(req, res) => {
     try {
         const { userId } = req.params;
 
-        const query = `
-            WITH counts AS (
+        const [notifications, unreadViews] = await Promise.all([
+            pool.query(`
                 SELECT
-                    SUM(CASE WHEN type = 'views' THEN 1 ELSE 0 END) AS views,
                     SUM(CASE WHEN type = 'likes' THEN 1 ELSE 0 END) AS likes,
                     SUM(CASE WHEN type = 'matchs' THEN 1 ELSE 0 END) AS matchs,
                     SUM(CASE WHEN type = 'messages' THEN 1 ELSE 0 END) AS messages
                 FROM notifications WHERE user_id = $1 AND is_read=FALSE
-            )
-            SELECT
-                c.views, c.likes, c.matchs, c.messages,
-                n.id AS notification_id, n.sender_id,
-                u.firstname AS sender_name,
-                n.is_read, n.created_at,
-                m.content AS message_content,
-                m.created_at AS message_created_at,
-                p.photo_url AS sender_photo
-            FROM counts c
-            LEFT JOIN notifications n on n.user_id = $1 AND n.type = 'messages'
-            LEFT JOIN users u ON n.sender_id = u.id
-            LEFT JOIN messages m ON m.id = n.message_id
-            LEFT JOIN profiles prof ON prof.user_id = u.id
-            LEFT JOIN LATERAL (
-                SELECT photo_url
-                FROM profile_photos
-                WHERE profile_id = prof.id
-                ORDER BY uploaded_at ASC
-                LIMIT 1
-                ) p on TRUE
-            ORDER BY n.created_at DESC
-        `;
+            `, [userId]),
+
+            pool.query(`
+                SELECT COUNT(*) FROM views_received
+                WHERE user_id = $1 AND is_read = FALSE
+            `, [userId])
+        ]);
+        const notifRow = notifications.rows[0] || {};
+        const views = parseInt(unreadViews.rows[0].count, 10) || 0;
+        // const result = await pool.query(query, [userId]);
+
+        res.json([{
+            views,
+            likes:notifRow.likes || 0,
+            matchs: notifRow.matchs || 0,
+            messages: notifRow.messages || 0,
+        }]);
 
 
-        const result = await pool.query(query, [userId]);
+        // if (!result.rows.length) {
+        //     console.warn("⚠️ Aucune notification trouvée pour userId =", userId);
+        //     return res.status(200).json([]);
+        // }
 
-
-        if (!result.rows.length) {
-            console.warn("⚠️ Aucune notification trouvée pour userId =", userId);
-            return res.status(200).json([]);
-        }
-
-        res.json(result.rows);
+        // res.json(result.rows);
     } catch (error) {
         console.error("❌ Erreur API notifications", error);
         return res.status(500).json({ error: "erreur serveur" });
@@ -726,12 +753,23 @@ app.get("/notifications/:userId/likes", async (req, res) => {
 app.post('/notifications/read', async(req, res) => {
     try {
         const {userId, category} = req.body;
-        const typeMap = {views:"views", likes:"likes", matchs:"matchs", messages:"messages"};
+        if (!userId || !category) {
+            return res.status(400).json({error:"Parametres manquants"});
+        }
 
-        await pool.query(
-            `UPDATE notifications SET is_read = TRUE WHERE user_id = $1 and type=$2`,
-            [userId, typeMap[category]]
-        );
+        if (category === "views") {
+            await pool.query(
+                `UPDATE views_received SET is_read = TRUE WHERE user_id = $1 and is_read = FALSE`,
+                [userId]
+            );
+        } else {
+            const typeMap = {likes:"likes", matchs:"matchs", messages:"messages"};
+            await pool.query(
+                `UPDATE notifications SET is_read = TRUE WHERE user_id = $1 and type=$2`,
+                [userId, typeMap[category]]
+            );
+        }
+
         res.json({success:true});
     } catch (error) {
         console.error("erreur lors de la mise a jour des notifications", error);
@@ -969,69 +1007,6 @@ console.log("📥 [API] Fetch views pour userId:", userId);
     try {
         console.log("📊 [API] Requête received = profils qui m'ont vu");
         console.log("📊 [API] Requête sent = profils que j'ai vus");
-
-        // const [received, sent] = await Promise.all([
-        //     pool.query(`
-        //     SELECT
-        //         n.id AS notification_id,
-        //         n.sender_id,
-        //         u.firstname AS sender_name,
-        //         n.created_at,
-        //         p.photo_url AS sender_photo,
-        //         n.is_read
-        //     FROM notifications n
-        //     JOIN users u ON u.id = n.sender_id
-        //     LEFT JOIN profiles prof ON prof.user_id = u.id
-        //     LEFT JOIN LATERAL (
-        //         SELECT photo_url
-        //         FROM profile_photos
-        //         WHERE profile_id = prof.id
-        //         ORDER BY uploaded_at ASC
-        //         LIMIT 1
-        //     ) p ON true
-        //     WHERE n.user_id = $1 AND n.type = 'views'
-        //     ORDER BY n.created_at DESC
-        //     `, [userId]),
-
-        //     pool.query(`
-        //         SELECT
-        //             n.id AS notification_id,
-        //             n.sender_id,
-        //             sender_u.firstname AS sender_name,
-        //             sender_p.photo_url AS sender_photo,
-        //             n.user_id AS receiver_id,
-        //             receiver_u.firstname AS receiver_name,
-        //             receiver_p.photo_url AS receiver_photo,
-        //             n.created_at,
-        //             n.is_read
-        //         FROM notifications n
-        //         -- Infos du sender
-        //         JOIN users sender_u ON sender_u.id = n.sender_id
-        //         LEFT JOIN profiles sender_prof ON sender_prof.user_id = sender_u.id
-        //         LEFT JOIN LATERAL (
-        //             SELECT photo_url
-        //             FROM profile_photos
-        //             WHERE profile_id = sender_prof.id
-        //             ORDER BY uploaded_at ASC
-        //             LIMIT 1
-        //         ) sender_p ON true
-            
-        //         -- Infos du receiver
-        //         JOIN users receiver_u ON receiver_u.id = n.user_id
-        //         LEFT JOIN profiles receiver_prof ON receiver_prof.user_id = receiver_u.id
-        //         LEFT JOIN LATERAL (
-        //             SELECT photo_url
-        //             FROM profile_photos
-        //             WHERE profile_id = receiver_prof.id
-        //             ORDER BY uploaded_at ASC
-        //             LIMIT 1
-        //         ) receiver_p ON true
-            
-        //         WHERE n.sender_id = $1 AND n.type = 'views'
-        //         ORDER BY n.created_at DESC
-        //     `, [userId])
-        // ]);
-
         const [received, sent] = await Promise.all([
             pool.query(`
                 SELECT vr.*, u.firstname AS sender_name, p.photo_url AS sender_photo
