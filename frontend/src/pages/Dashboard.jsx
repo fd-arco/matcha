@@ -106,25 +106,11 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchViewNotifications = async() => {
             try {
-                console.log("📬 [Dashboard.jsx] fetch viewNotifications lancé pour userId", userId);
 
                 const res = await fetch(`http://localhost:3000/notifications/${userId}/views`, {
                     credentials:"include"
                 });
                 const data = await res.json();
-                console.log("📥 [Dashboard.jsx] Notifications reçues:", {
-                    received: data.received.map(n => ({
-                    id: n.id,
-                    sender: n.sender_name,
-                    photo:n.sender_photo,
-                    is_read: n.is_read
-                    })),
-                    sent: data.sent.map(n => ({
-                        id: n.id,
-                        receiver: n.receiver_name,
-                        photo:n.receiver_photo
-                    }))
-                });
                 setViewNotifications({
                     received:data.received,
                     sent:data.sent,

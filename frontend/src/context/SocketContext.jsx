@@ -93,7 +93,6 @@ export const SocketProvider = ({children}) => {
                     }));
                 }
                 if (message.category === "views" && message.notification) {
-                    console.log("👁️ [SocketContext] Notification de vue reçue via WebSocket :", message.notification);
                     setViewNotifications(prev => ({
                         ...prev,
                         received: [message.notification, ...(prev.received || [])]

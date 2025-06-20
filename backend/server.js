@@ -1002,11 +1002,8 @@ app.post("/like", auth, async(req,res) => {
 
 app.get('/notifications/:userId/views',auth, async(req, res) => {
     const {userId} = req.params;
-console.log("📥 [API] Fetch views pour userId:", userId);
 
     try {
-        console.log("📊 [API] Requête received = profils qui m'ont vu");
-        console.log("📊 [API] Requête sent = profils que j'ai vus");
         const [received, sent] = await Promise.all([
             pool.query(`
                 SELECT vr.*, u.firstname AS sender_name, p.photo_url AS sender_photo

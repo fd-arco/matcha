@@ -7,11 +7,6 @@ export const UserProvider = ({children}) => {
     const [loading, setLoading] = useState(true);
     const [hasProfile, setHasProfile] = useState(undefined);
 
-useEffect(() => {
-  console.log("✅ userId updated:", userId);
-}, [userId]);
-
-
     useEffect(() => {
         fetch("http://localhost:3000/my-me", {credentials:"include"})
             .then(res => res.ok ? res.json() : null)

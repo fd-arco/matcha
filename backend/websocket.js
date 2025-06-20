@@ -296,7 +296,6 @@ const initWebSocket = (server) => {
 
                 if (data.type === "viewNotification") {
                     const {senderId, receiverId} = data;
-                    console.log("📩 [WS Server] viewNotification reçue", { senderId, receiverId });
                     const [lastSent, lastReceived] = await Promise.all([
                         pool.query(`
                             SELECT created_at
@@ -320,21 +319,10 @@ const initWebSocket = (server) => {
 
                     const diffSent = lastSentDate ? Math.abs(now - new Date(lastSentDate)) / (1000 * 60) : Infinity;
                     const diffReceived = lastReceivedDate ? Math.abs(now - new Date(lastReceivedDate)) / (1000 * 60) : Infinity;
-                    // const lastDate = lastNotif.rows[0]?.created_at;
-                    // const diffMinutes = lastDate?Math.abs(now - new Date(lastDate)) / (1000 * 60) : Infinity;
-
-                    // console.log("🕒 [WS Server] now :", now.toISOString());
-                    // console.log("📅 [WS Server] lastDate :", lastDate?.toISOString?.() || lastDate);
-                    // console.log("⏱️ [WS Server] diffMinutes :", diffMinutes);
-                    // console.log("📦 [WS Server] Résultat de lastNotif.rows :", lastNotif.rows);
 
                     if (diffSent < 30 || diffReceived < 30) {
-                        console.log("🛑 [WS Server] Anti-flood activé, pas de nouvelle notif view");
                         return;
                     }
-
-                    // console.log("✅ [WS Server] Envoi des notifs view aux deux utilisateurs");
-                    console.log("📬 Insertion notif pour Bob (non lue)", { user_id: receiverId, sender_id: senderId });
 
                     await pool.query(`
                         INSERT INTO views_sent (viewer_id, viewed_id)
@@ -348,8 +336,6 @@ const initWebSocket = (server) => {
                         RETURNING *`,
                         [receiverId, senderId]
                     );
-
-                    console.log("📬 Insertion notif pour Alice (déjà lue)", { user_id: senderId, sender_id: receiverId });
 
                     const senderInfo = await pool.query(`
                         SELECT u.firstname, prof.id AS profile_id
@@ -392,7 +378,6 @@ const initWebSocket = (server) => {
                             receiverPhoto = photoRes.rows[0]?.photo_url || null;
                         }
                     if (clients.has(receiverId.toString())) {
-                        console.log(`📨 [WS Server] Envoi notif à receiverId ${receiverId}`);
                         clients.get(receiverId.toString()).send(JSON.stringify({
                             type: "newNotification",
                             category: "views",
