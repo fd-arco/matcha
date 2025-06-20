@@ -85,7 +85,7 @@ console.log("[Bandeau] 📦 totalUnread:", totalUnread);
                     )}
                </button>
                <button
-                    onClick={() => navigate("/settingsPage")}
+                    onClick={() => navigate("/settings")}
                     className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition">
                     <Settings size={25} className="text-black dark:text-white" />
                 </button>
