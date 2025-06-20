@@ -35,7 +35,9 @@ export default function EditProfile() {
     useEffect(() => {
         const fetchProfileData = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/get-profile/${userId}`);
+                const response = await fetch(`http://localhost:3000/get-profile/${userId}`, {
+                    credentials:"include"
+                });
                 const data = await response.json();
                 if (response.ok) {
                     setFormData({
@@ -197,6 +199,7 @@ export default function EditProfile() {
             const response = await fetch(`http://localhost:3000/edit-profile/${userId}`, {
                 method: "PUT",
                 body: finalFormData,
+                credentials:"include"
             });
 
             const data = await response.json();

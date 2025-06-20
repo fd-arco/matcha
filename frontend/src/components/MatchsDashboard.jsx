@@ -24,6 +24,7 @@ const MatchsDashboard = ({notifications, setMatchNotifications, userId}) => {
                     user1:userId,
                     user2:notif.sender_id,
                 }),
+                credentials:"include",
             });
             setMatchNotifications((prev) =>
                 prev.filter((n) => n.notification_id !== notif.notification_id)

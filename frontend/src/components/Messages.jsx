@@ -17,7 +17,9 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
     useEffect(() => {
         const fetchMatches = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/matches/${userId}`);
+                const response = await fetch(`http://localhost:3000/matches/${userId}`, {
+                    credentials:"include"
+                });
                 const data = await response.json();
                 const formattedMatches = data.map(match => ({
                     match_id: match.match_id,
@@ -116,7 +118,8 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
                 body: JSON.stringify({
                     userId: userId,
                     matchId: match.user_id
-                })
+                }),
+                credentials:"include"
             });
             if (socket) {
                 socket.send(JSON.stringify({

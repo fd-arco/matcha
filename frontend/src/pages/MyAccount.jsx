@@ -14,7 +14,9 @@ export default function MyAccount() {
 
         const fetchUser = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/my-account/${userId}`);
+                const response = await fetch(`http://localhost:3000/my-account/${userId}`, {
+                    credentials:"include"
+                });
                 const data = await response.json();
                 setUser(data);
             } catch(err) {

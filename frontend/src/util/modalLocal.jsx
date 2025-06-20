@@ -25,6 +25,7 @@ const ModalLocal = ({ onClose }) => {
     //           method: "POST",
     //           headers:{"content-type": "application/json"},
     //           body: JSON.stringify({latitude, longitude}),
+    //           credentials:"include",
     
     //         })
     //       };

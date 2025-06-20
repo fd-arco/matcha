@@ -13,7 +13,8 @@ const LikesDashboard = ({ notifications, setLikeNotifications, userId}) => {
                 body: JSON.stringify({
                     user1:userId,
                     user2: notif.sender_id,
-                })
+                }),
+                credentials:"include"
             })
             setLikeNotifications(prev => ({
                 ...prev,

@@ -164,6 +164,7 @@ export default function CreateProfil() {
             const response = await fetch("http://localhost:3000/create-profil", {
                 method: "POST",
                 body: finalFormData,
+                credentials:"include"
             });
 
             const data = await response.json();

@@ -21,7 +21,7 @@ const Conversation = ({match, onBack}) => {
 
 
     useEffect(()=> {
-        if (blockedUserId === match.user_id) {
+        if (blockedUserId &&  blockedUserId === match.user_id) {
             setShowBlockedModal(true);
         }
     }, [blockedUserId, match?.user_id]);
@@ -29,7 +29,9 @@ const Conversation = ({match, onBack}) => {
     useEffect(() => {
         const fetchMessages = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/messages/${userId}/${match.user_id}`);
+                const response = await fetch(`http://localhost:3000/messages/${userId}/${match.user_id}`, {
+                    credentials:"include"
+                });
                 const data = await response.json();
                 setMessages(data);
             } catch (error) {
@@ -85,7 +87,8 @@ const Conversation = ({match, onBack}) => {
                 body: JSON.stringify({
                     userId: userId,
                     matchId: match.user_id
-                })
+                }),
+                credentials:"include"
             });
             if (socket) {
                 socket.send(JSON.stringify({
@@ -109,6 +112,7 @@ const Conversation = ({match, onBack}) => {
                 reportedId: match.user_id,
                 reason: reportReason,
             }),
+            credentials:"include"
         });
         setIsReportSuccessModalOpen(true);
     } catch (err) {
@@ -126,6 +130,7 @@ const Conversation = ({match, onBack}) => {
                     blockerId: userId,
                     blockedId: match.user_id
                 }),
+                credentials:"include"
             });
             if (!res.ok) throw new Error("Échec du blocage");
             socket.send(JSON.stringify({

@@ -38,7 +38,9 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchNotifications = async() => {
             try {
-                const response = await fetch(`http://localhost:3000/notifications/${userId}`);
+                const response = await fetch(`http://localhost:3000/notifications/${userId}`, {
+                    credentials:"include"
+                });
                 const data = await response.json();
                 setNotifications({
                     views:data[0].views || 0,
@@ -56,7 +58,9 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchMessageNotification = async () => {
             try {
-                const res = await fetch(`http://localhost:3000/notifications/${userId}/messages`);
+                const res = await fetch(`http://localhost:3000/notifications/${userId}/messages`, {
+                    credentials:"include"
+                });
                 const data = await res.json();
                 setMessageNotifications(data);
             } catch (error) {
@@ -69,7 +73,9 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchLikeNotifications = async() => {
             try {
-                const res = await fetch(`http://localhost:3000/notifications/${userId}/likes`);
+                const res = await fetch(`http://localhost:3000/notifications/${userId}/likes`, {
+                    credentials:"include"
+                });
                 const data = await res.json();
                 setLikeNotifications({
                     received:data.received,
@@ -85,7 +91,9 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchMatchNotifications = async() => {
             try {
-                const res = await fetch(`http://localhost:3000/notifications/${userId}/matchs`);
+                const res = await fetch(`http://localhost:3000/notifications/${userId}/matchs`, {
+                    credentials:"include"
+                });
                 const data = await res.json();
                 setMatchNotifications(data);
             } catch (err) {
@@ -100,7 +108,9 @@ const Dashboard = () => {
             try {
                 console.log("📬 [Dashboard.jsx] fetch viewNotifications lancé pour userId", userId);
 
-                const res = await fetch(`http://localhost:3000/notifications/${userId}/views`);
+                const res = await fetch(`http://localhost:3000/notifications/${userId}/views`, {
+                    credentials:"include"
+                });
                 const data = await res.json();
                 console.log("📥 [Dashboard.jsx] Notifications reçues:", {
                     received: data.received.map(n => ({
@@ -137,9 +147,12 @@ const Dashboard = () => {
                 method:"POST",
                 headers: {"Content-type":"application/json"},
                 body: JSON.stringify({userId, category}),
+                credentials:"include"
             });
 
-            const res = await fetch(`http://localhost:3000/notifications/${userId}`);
+            const res = await fetch(`http://localhost:3000/notifications/${userId}`, {
+                credentials:"include"
+            });
             const data = await res.json();
 
             const updated = {

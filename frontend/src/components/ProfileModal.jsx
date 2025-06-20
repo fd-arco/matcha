@@ -24,7 +24,9 @@ const ProfileModal = ({viewedId, onClose}) => {
         const checkMatch = async() => {
             if (!viewerId || !viewedId || viewerId === viewedId) return;
             try {
-                const res = await fetch(`http://localhost:3000/has-match/${viewerId}/${viewedId}`);
+                const res = await fetch(`http://localhost:3000/has-match/${viewerId}/${viewedId}`, {
+                    credentials:"include"
+                });
                 const data = await res.json();
                 setHasMatch(data.hasMatch);
             } catch (err) {
@@ -38,7 +40,9 @@ const ProfileModal = ({viewedId, onClose}) => {
         // if (!viewerId || !viewedId || viewerId === viewedId) return;
         const fetchProfile = async() => {
             try {
-                const res = await fetch(`http://localhost:3000/modalprofile/${viewedId}`);
+                const res = await fetch(`http://localhost:3000/modalprofile/${viewedId}`, {
+                    credentials:"include"
+                });
                 const data = await res.json();
                 setProfile(data);
                 setPhotos(data.photos);
@@ -107,6 +111,7 @@ const ProfileModal = ({viewedId, onClose}) => {
                     reportedId:viewedId,
                     reason:reportReason,    
                 }),
+                credentials:"include"
             });
             setIsReportSuccessModalOpen(true);
         } catch (err) {
@@ -124,20 +129,14 @@ const ProfileModal = ({viewedId, onClose}) => {
                     blockerId:viewerId,
                     blockedId:viewedId
                 }),
+                credentials:"include"
             });
             if (!res.ok) throw new Error("echec du blocage");
             socket.send(
                 JSON.stringify({
-                    type:"userBlocked",
+                    type:"matchRemoved",
                     blockerId:viewerId,
-                    blockedId:viewedId,
-                })
-            )
-            socket.send(
-                JSON.stringify({
-                    type:"matchBlocked",
-                    blockerId:viewerId,
-                    blockedId:viewedId,
+                    blockedId:viewedId
                 })
             )
             onClose();

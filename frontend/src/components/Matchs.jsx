@@ -30,7 +30,9 @@ const Matchs = ({onSelectMatch}) => {
                     });
                     url += `?${query.toString()}`;
                 }
-                const res = await fetch(url);
+                const res = await fetch(url, {
+                  credentials:"include"
+                });
                 const data = await res.json();
                 setProfiles(data);
                 setCurrentPhotoIndex(0);
@@ -79,7 +81,8 @@ const Matchs = ({onSelectMatch}) => {
                 const response = await fetch(`http://localhost:3000/like`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({ likerId: userId, likedId: likedProfile.user_id})
+                    body: JSON.stringify({ likerId: userId, likedId: likedProfile.user_id}),
+                    credentials:"include"
                 });
 
                 const data = await response.json();

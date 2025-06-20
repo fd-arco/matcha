@@ -34,7 +34,9 @@ const Swipe = () => {
 
     const fetchNotifications = async () => {
       try {
-        const res = await fetch(`http://localhost:3000/notifications/${userId}`);
+        const res = await fetch(`http://localhost:3000/notifications/${userId}`, {
+          credentials:"include"
+        });
         const data = await res.json();
     
         const totalNotifs = (data[0]?.views || 0)

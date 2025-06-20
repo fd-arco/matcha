@@ -26,13 +26,14 @@ export const SocketProvider = ({children}) => {
     const [matchNotifications, setMatchNotifications] = useState([]);
     const [likeNotifications, setLikeNotifications] = useState({ received: [], sent: [] });
     const [viewNotifications, setViewNotifications] = useState({ received: [], sent: [] });
-
     useEffect(() => {
         if (!userId) return;
 
         const fetchUnreadNotifications = async () => {
             try {
-                const res = await fetch(`http://localhost:3000/notifications/unread?userId=${userId}`);
+                const res = await fetch(`http://localhost:3000/notifications/unread?userId=${userId}`, {
+                    credentials:"include"
+                });
                 const data = await res.json();
 
                 setNotifications(data);
@@ -93,20 +94,10 @@ export const SocketProvider = ({children}) => {
                 }
                 if (message.category === "views" && message.notification) {
                     console.log("👁️ [SocketContext] Notification de vue reçue via WebSocket :", message.notification);
-                    // const isMyView = message.notification.receiver_id === Number(userId);
-                    // const isSender = message.notification.sender_id === Number(userId);
                     setViewNotifications(prev => ({
                         ...prev,
                         received: [message.notification, ...(prev.received || [])]
                     }));
-                    // setViewNotifications(prev => ({
-                    //     received: isMyView
-                    //         ? [message.notification, ...(prev.received || [])]
-                    //         : prev.received,
-                    //     sent: !isMyView
-                    //         ? [message.notification, ...(prev.sent || [])]
-                    //         : prev.sent
-                    // }));
                 }
             }
             }
@@ -127,6 +118,32 @@ export const SocketProvider = ({children}) => {
             if (message.type === "matchRemoved") {
                 const {userId} = message;
                 setMatchesGlobal(prev => prev.filter(m => String(m.user_id) !== String(userId)));
+                setBlockedUserId(message.userId);
+                setViewNotifications(prev => ({
+                    ...prev,
+                    received: (prev.received || []).filter(n => n.sender_id !== userId)
+                }));
+
+                setLikeNotifications(prev => ({
+                    ...prev,
+                    received: (prev.received || []).filter(n => n.sender_id !== userId)
+                }));
+
+                setMatchNotifications(prev =>
+                    (prev || []).filter(n => n.sender_id !== userId)
+                );
+
+                setMessageNotifications(prev =>
+                    (prev || []).filter(n => n.sender_id !== userId)
+                );
+
+                setNotifications({
+                    views: (prev => (prev.received || []).filter(n => n.sender_id !== userId).length)(viewNotifications),
+                    likes: (prev => (prev.received || []).filter(n => n.sender_id !== userId).length)(likeNotifications),
+                    matchs: (prev => (prev || []).filter(n => n.sender_id !== userId).length)(matchNotifications),
+                    messages: (prev => (prev || []).filter(n => n.sender_id !== userId).length)(messageNotifications),
+                });
+
             }
             if (message.type === "refreshMatchUI") {
                 const {blockerId, blockedId} = message;
@@ -138,9 +155,6 @@ export const SocketProvider = ({children}) => {
                         )
                     )
                 }
-            }
-            if (message.type === "messageBlocked") {
-                setBlockedUserId(message.receiverId);
             }
         }
 

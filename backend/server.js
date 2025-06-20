@@ -120,7 +120,7 @@ function calculateAge(dob) {
     return age;
 }
 
-app.post("/create-profil", upload.array("photos", 6), async(req, res) => {
+app.post("/create-profil", auth, upload.array("photos", 6), async(req, res) => {
     try {
         const { user_id, name, dob, gender, interestedIn, lookingFor, bio, latitude, longitude} = req.body;
 
@@ -363,7 +363,7 @@ app.get("/me", async (req, res) => {
 });
 
 
-app.get('/user/:userId', async (req, res) => {
+app.get('/user/:userId', auth, async (req, res) => {
     const {userId} = req.params;
     
     try {
@@ -429,7 +429,7 @@ app.post("/loginUser", async (req, res) => {
         res.status(500).json({ error: "Erreur serveur" });
     }
 });
-app.get('/matches/:userId', async (req, res) => {
+app.get('/matches/:userId', auth, async (req, res) => {
     const {userId} = req.params;
 
     try {
@@ -484,7 +484,7 @@ app.get('/matches/:userId', async (req, res) => {
     }
 });
 
-app.put('/messages/read', async(req, res) => {
+app.put('/messages/read',auth, async(req, res) => {
     const {userId, matchId} = req.body;
 
     try {
@@ -514,7 +514,7 @@ app.put('/messages/read', async(req, res) => {
 })
 
 
-app.get('/notifications/unread', async (req, res) => {
+app.get('/notifications/unread',auth, async (req, res) => {
     const userId = Number(req.query.userId);
     if (!userId) return res.status(400).json({ error: "userId manquant" });
 
@@ -545,7 +545,7 @@ app.get('/notifications/unread', async (req, res) => {
 });
 
 
-app.get('/notifications/:userId/messages', async(req,res) => {
+app.get('/notifications/:userId/messages',auth, async(req,res) => {
     try {
         const {userId} = req.params;
         const result = await pool.query(`
@@ -573,7 +573,7 @@ app.get('/notifications/:userId/messages', async(req,res) => {
     }
 })
 
-app.get('/notifications/:userId', async(req, res) => {
+app.get('/notifications/:userId', auth, async(req, res) => {
     try {
         const { userId } = req.params;
 
@@ -615,7 +615,7 @@ app.get('/notifications/:userId', async(req, res) => {
     }
 });
 
-app.get('/notifications/:userId/matchs', async (req, res) => {
+app.get('/notifications/:userId/matchs',auth, async (req, res) => {
     const {userId} = req.params;
 
     try {
@@ -682,7 +682,7 @@ app.get('/notifications/:userId/matchs', async (req, res) => {
 //     }
 // })
 
-app.get("/notifications/:userId/likes", async (req, res) => {
+app.get("/notifications/:userId/likes", auth, async (req, res) => {
     const { userId } = req.params;
 
     try {
@@ -750,7 +750,7 @@ app.get("/notifications/:userId/likes", async (req, res) => {
 
 
 
-app.post('/notifications/read', async(req, res) => {
+app.post('/notifications/read', auth, async(req, res) => {
     try {
         const {userId, category} = req.body;
         if (!userId || !category) {
@@ -778,7 +778,7 @@ app.post('/notifications/read', async(req, res) => {
 
 })
 
-app.get('/messages/:userId/:matchId', async(req, res) => {
+app.get('/messages/:userId/:matchId', auth,async(req, res) => {
     const {userId, matchId} = req.params;
 
     try {
@@ -950,7 +950,7 @@ app.get('/profiles/:userId', async (req, res) => {
     }
 });
 
-app.post("/like", async(req,res) => {
+app.post("/like", auth, async(req,res) => {
     const {likerId, likedId} = req.body;
 
     try {
@@ -1000,7 +1000,7 @@ app.post("/like", async(req,res) => {
 //     }
 // })
 
-app.get('/notifications/:userId/views', async(req, res) => {
+app.get('/notifications/:userId/views',auth, async(req, res) => {
     const {userId} = req.params;
 console.log("📥 [API] Fetch views pour userId:", userId);
 
@@ -1036,8 +1036,6 @@ console.log("📥 [API] Fetch views pour userId:", userId);
                 `, [userId])
         ]);
 
-        console.log("📊 Résultat received.length =", received.rows.length);
-        console.log("📊 Résultat sent.length =", sent.rows.length);
 
         res.json({
             received:received.rows,
@@ -1049,7 +1047,7 @@ console.log("📥 [API] Fetch views pour userId:", userId);
     }
 })
 
-app.post("/unlike", async (req, res) => {
+app.post("/unlike", auth,async (req, res) => {
     const {user1, user2} = req.body;
 
     try {
@@ -1070,7 +1068,7 @@ app.post("/unlike", async (req, res) => {
     }
 });
 
-app.post("/unmatch", async(req, res) => {
+app.post("/unmatch", auth, async(req, res) => {
     const {user1, user2} = req.body;
 
     try {
@@ -1110,7 +1108,7 @@ app.post("/unmatch", async(req, res) => {
 
 })
 
-app.get("/modalprofile/:userId", async(req, res) => {
+app.get("/modalprofile/:userId", auth,async(req, res) => {
     const {userId} = req.params;
 
     try {
@@ -1156,7 +1154,7 @@ app.get("/modalprofile/:userId", async(req, res) => {
     }
 })
 
-app.get("/get-profile/:userId", async(req, res) => {
+app.get("/get-profile/:userId", auth, async(req, res) => {
     try {
         const {userId} = req.params;
         const profileResult = await pool.query(
@@ -1181,7 +1179,7 @@ app.get("/get-profile/:userId", async(req, res) => {
     }
 })
 
-app.put("/edit-profile/:userId", upload.array("photos", 6), async(req, res) => {
+app.put("/edit-profile/:userId", auth, upload.array("photos", 6), async(req, res) => {
     try {
         const {userId} = req.params;
         const {name, dob, gender, interestedIn, lookingFor, bio, passions, existingPhotos} = req.body;
@@ -1265,7 +1263,7 @@ app.put("/edit-profile/:userId", upload.array("photos", 6), async(req, res) => {
     }
 })
 
-app.get("/profiles-count", async(req, res) => {
+app.get("/profiles-count", auth, async(req, res) => {
     const {userId, ageMin, ageMax, fameMin, tagsMin} = req.query;
 
 
@@ -1363,7 +1361,7 @@ app.get("/profiles-count", async(req, res) => {
     }
 });
 
-app.get("/online-statuses", async (req, res) => {
+app.get("/online-statuses", auth,async (req, res) => {
     try {
         const userIdsParam = req.query.userIds;
         if (!userIdsParam) {
@@ -1390,7 +1388,7 @@ app.get("/online-statuses", async (req, res) => {
     }
 });
 
-app.post('/report', async(req,res) => {
+app.post('/report', auth, async(req,res) => {
     try {
         const {reporterId, reportedId, reason} = req.body;
 
@@ -1411,7 +1409,7 @@ app.post('/report', async(req,res) => {
     }
 });
 
-app.get('/my-account/:id', async(req,res) => {
+app.get('/my-account/:id', auth, async(req,res) => {
     const {id} = req.params;
 
     try {
@@ -1426,7 +1424,7 @@ app.get('/my-account/:id', async(req,res) => {
     }
 });
 
-app.get('/has-match/:user1/:user2', async(req, res) => {
+app.get('/has-match/:user1/:user2', auth, async(req, res) => {
     const {user1, user2} = req.params;
     try {
         const result = await pool.query(
@@ -1442,7 +1440,7 @@ app.get('/has-match/:user1/:user2', async(req, res) => {
     }
 });
 
-app.post('/block', async(req,res) => {
+app.post('/block', auth, async(req,res) => {
     const {blockerId, blockedId} = req.body;
     if (!blockerId || !blockedId || blockerId === blockedId) {
         return res.status(400).json({error:"Invalid Data"});
@@ -1507,7 +1505,7 @@ app.get("/config", async(req, res) => {
 }
 )
 
-app.post("/longitude", async(req, res) => {
+app.post("/longitude", auth, async(req, res) => {
 
     const { latitude, longitude } = req.body
     if(!latitude || !longitude){
