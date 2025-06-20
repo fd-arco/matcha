@@ -128,8 +128,13 @@ const Conversation = ({match, onBack}) => {
                 }),
             });
             if (!res.ok) throw new Error("Échec du blocage");
-            socket.send(JSON.stringify({ type:"userBlocked", blockerId: userId, blockedId: match.user_id }));
-            socket.send(JSON.stringify({ type:"matchBlocked", blockerId: userId, blockedId: match.user_id }));
+            socket.send(JSON.stringify({
+                type: "matchRemoved",
+                blockerId: userId,
+                blockedId:match.user_id
+            }));
+            // socket.send(JSON.stringify({ type:"userBlocked", blockerId: userId, blockedId: match.user_id }));
+            // socket.send(JSON.stringify({ type:"matchBlocked", blockerId: userId, blockedId: match.user_id }));
             setIsBlockSuccessModalOpen(true);
             onBack();
         } catch (err) {

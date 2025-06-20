@@ -1482,6 +1482,20 @@ app.post('/block', async(req,res) => {
             [blockerId, blockedId]
         );
 
+        await pool.query(
+            `DELETE FROM views_sent
+            WHERE (viewer_id = $1 AND viewed_id = $2)
+            OR (viewer_id = $2 AND viewed_id = $1)`,
+            [blockerId, blockedId]
+        );
+
+        await pool.query(
+            `DELETE FROM views_received
+            WHERE (user_id = $1 AND sender_id = $2)
+            OR (user_id = $2 AND sender_id = $1)`,
+            [blockerId, blockedId]
+        );
+
         res.json({success:true});
     } catch (error) {
         console.error("Erreur lors du blocage: ", error);

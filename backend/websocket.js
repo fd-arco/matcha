@@ -410,33 +410,35 @@ const initWebSocket = (server) => {
                         console.warn(`⚠️ [WS Server] receiverId ${receiverId} non connecté`);
                     }
                 }
-                if (data.type === "userBlocked") {
+                if (data.type === "matchRemoved") {
                     const {blockerId, blockedId} = data;
                     if (clients.has(blockerId.toString())) {
                         clients.get(blockerId.toString()).send(JSON.stringify({
-                            type:"refreshUI",
+                            type:"matchRemoved",
+                            userId: blockedId
                         }));
                     }
                     if (clients.has(blockedId.toString())) {
                         clients.get(blockedId.toString()).send(JSON.stringify({
-                            type:"refreshUI",
+                            type:"matchRemoved",
+                            userId:blockerId
                         }));
                     }
                 }
-                if (data.type === "matchBlocked") {
-                    const {blockerId, blockedId} = data;
-                    const sent = {
-                        type:"refreshMatchUI",
-                        blockerId,
-                        blockedId
-                    };
-                    if (clients.has(blockerId.toString())) {
-                        clients.get(blockerId.toString()).send(JSON.stringify(sent));
-                    }
-                    if (clients.has(blockedId.toString())) {
-                        clients.get(blockedId.toString()).send(JSON.stringify(sent));
-                    }
-                }
+                // if (data.type === "matchBlocked") {
+                //     const {blockerId, blockedId} = data;
+                //     const sent = {
+                //         type:"refreshMatchUI",
+                //         blockerId,
+                //         blockedId
+                //     };
+                //     if (clients.has(blockerId.toString())) {
+                //         clients.get(blockerId.toString()).send(JSON.stringify(sent));
+                //     }
+                //     if (clients.has(blockedId.toString())) {
+                //         clients.get(blockedId.toString()).send(JSON.stringify(sent));
+                //     }
+                // }
             } catch (error) {
                 console.error("Erreur lors de l'envoi du message:", error);
             }

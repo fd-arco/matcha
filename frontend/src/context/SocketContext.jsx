@@ -124,6 +124,10 @@ export const SocketProvider = ({children}) => {
                 }));
 
             }
+            if (message.type === "matchRemoved") {
+                const {userId} = message;
+                setMatchesGlobal(prev => prev.filter(m => String(m.user_id) !== String(userId)));
+            }
             if (message.type === "refreshMatchUI") {
                 const {blockerId, blockedId} = message;
                 const currentUser = userId;

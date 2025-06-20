@@ -35,7 +35,7 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
                     const dateB = new Date(b.last_message_created_at || 0);
                     return dateB - dateA;
                 });
-                setMatches(data);
+                setMatches(formattedMatches);
             } catch(error) {
                 console.error("Erreur lors du chargement des matchs", error);
             }
@@ -51,8 +51,12 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
     }, [matches, setOnlineStatuses]);
 
     useEffect(() => {
-
-        setMatches(matchesGlobal);
+        const sorted = [...matchesGlobal].sort((a,b) => {
+            const dateA = new Date(a.last_message_created_at || 0);
+            const dateB = new Date(b.last_message_created_at || 0);
+            return dateB - dateA;
+        })
+        setMatches(sorted);
     }, [matchesGlobal]);
 
     useEffect(() => {
