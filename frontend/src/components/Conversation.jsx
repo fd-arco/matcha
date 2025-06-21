@@ -104,7 +104,7 @@ const Conversation = ({match, onBack}) => {
 
     const handleReport = async () => {
     try {
-        await fetch("http://localhost:3000/report", {
+        await fetch("http://localhost:3000/misc/report", {
             method:"POST",
             headers:{"Content-Type":"application/json"},
             body:JSON.stringify({
@@ -123,7 +123,7 @@ const Conversation = ({match, onBack}) => {
 
     const handleBlock = async () => {
         try {
-            const res = await fetch(`http://localhost:3000/block`, {
+            const res = await fetch(`http://localhost:3000/misc/block`, {
                 method:"POST",
                 headers:{"Content-Type": "application/json"},
                 body: JSON.stringify({

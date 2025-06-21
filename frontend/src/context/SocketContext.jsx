@@ -26,8 +26,12 @@ export const SocketProvider = ({children}) => {
     const [matchNotifications, setMatchNotifications] = useState([]);
     const [likeNotifications, setLikeNotifications] = useState({ received: [], sent: [] });
     const [viewNotifications, setViewNotifications] = useState({ received: [], sent: [] });
+    
     useEffect(() => {
-        if (!userId) return;
+        if (loading) return;
+        if (!userId || typeof userId !== "number") return;
+
+        console.log("✅ Fetch unread pour userId =", userId);
 
         const fetchUnreadNotifications = async () => {
             try {
@@ -44,9 +48,6 @@ export const SocketProvider = ({children}) => {
 
         fetchUnreadNotifications();
     }, [userId]);
-
-    
-
 
     useEffect(() => {
         if (loading) return;

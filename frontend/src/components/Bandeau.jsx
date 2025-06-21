@@ -19,7 +19,7 @@ const Bandeau = () => {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/user/${userId}`, {
+                const response = await fetch(`http://localhost:3000/profile/user/${userId}`, {
                     credentials:"include"
                 });
                 const data = await response.json();

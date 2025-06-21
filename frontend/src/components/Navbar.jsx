@@ -20,7 +20,7 @@ export default function Navbar(){
         
         const fetchUser = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/user/${userId}`, {
+                const response = await fetch(`http://localhost:3000/profile/user/${userId}`, {
                     credentials:"include"
                 });
                 const data = await response.json();
@@ -63,7 +63,7 @@ export default function Navbar(){
     const handleSignOut = async () => {
         // localStorage.removeItem("userId");
         try {
-            await fetch("http://localhost:3000/signout", {
+            await fetch("http://localhost:3000/auth/signout", {
                 method:"POST",
                 credentials:"include",
             })

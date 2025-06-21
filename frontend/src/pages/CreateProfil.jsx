@@ -161,7 +161,7 @@ export default function CreateProfil() {
             finalFormData.append("photos", photo.file);
         });
         try {
-            const response = await fetch("http://localhost:3000/create-profil", {
+            const response = await fetch("http://localhost:3000/profile/create-profil", {
                 method: "POST",
                 body: finalFormData,
                 credentials:"include"

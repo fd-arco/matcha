@@ -17,7 +17,7 @@ export default function Login() {
     async function handleLoginUser(event) {
       event.preventDefault();
       try {
-        const response = await fetch("http://localhost:3000/loginUser", {
+        const response = await fetch("http://localhost:3000/auth/loginUser", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -34,7 +34,7 @@ export default function Login() {
         return;
       }
 
-      const meReponse = await fetch("http://localhost:3000/my-me", {
+      const meReponse = await fetch("http://localhost:3000/auth/my-me", {
         credentials:"include",
       });
 

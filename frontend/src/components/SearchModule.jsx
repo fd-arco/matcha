@@ -22,7 +22,7 @@ const SearchModule = () => {
 
         const fetchMatchingCount = async() => {
             try {
-                const res = await fetch(`http://localhost:3000/profiles-count?userId=${userId}&ageMin=${ageGap[0]}&ageMax=${ageGap[1]}&fameMin=${fameRating}&tagsMin=${tagsInCommon}`, {
+                const res = await fetch(`http://localhost:3000/profile/profiles-count?userId=${userId}&ageMin=${ageGap[0]}&ageMax=${ageGap[1]}&fameMin=${fameRating}&tagsMin=${tagsInCommon}`, {
                     credentials:"include"
                 });
                 const data = await res.json();

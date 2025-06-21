@@ -20,7 +20,7 @@ const Matchs = ({onSelectMatch}) => {
     useEffect(() => {
         const fetchProfiles = async() => {
             try {
-                let url = `http://localhost:3000/profiles/${userId}`;
+                let url = `http://localhost:3000/profile/profiles/${userId}`;
                 if (filters) {
                     const query = new URLSearchParams({
                         ageMin:filters.ageMin,
@@ -67,7 +67,7 @@ const Matchs = ({onSelectMatch}) => {
         if (currentIndex < profiles.length) {
             const likedProfile = profiles[currentIndex];
             try {
-                const response = await fetch(`http://localhost:3000/like`, {
+                const response = await fetch(`http://localhost:3000/likes/like`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({ likerId: userId, likedId: likedProfile.user_id}),

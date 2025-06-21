@@ -8,7 +8,7 @@ export const UserProvider = ({children}) => {
     const [hasProfile, setHasProfile] = useState(undefined);
 
     useEffect(() => {
-        fetch("http://localhost:3000/my-me", {credentials:"include"})
+        fetch("http://localhost:3000/auth/my-me", {credentials:"include"})
             .then(res => res.ok ? res.json() : null)
             .then(data => {
                 setUserId(data?.id ?? null);

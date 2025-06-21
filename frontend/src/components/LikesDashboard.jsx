@@ -7,7 +7,7 @@ const LikesDashboard = ({ notifications, setLikeNotifications, userId}) => {
 
     const handleUnlike = async(notif) => {
         try {
-            await fetch(`http://localhost:3000/unlike`, {
+            await fetch(`http://localhost:3000/likes/unlike`, {
                 method:"POST",
                 headers: {"Content-type": "application/json"},
                 body: JSON.stringify({

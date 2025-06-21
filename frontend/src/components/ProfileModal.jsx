@@ -24,7 +24,7 @@ const ProfileModal = ({viewedId, onClose}) => {
         const checkMatch = async() => {
             if (!viewerId || !viewedId || viewerId === viewedId) return;
             try {
-                const res = await fetch(`http://localhost:3000/has-match/${viewerId}/${viewedId}`, {
+                const res = await fetch(`http://localhost:3000/likes/has-match/${viewerId}/${viewedId}`, {
                     credentials:"include"
                 });
                 const data = await res.json();
@@ -40,7 +40,7 @@ const ProfileModal = ({viewedId, onClose}) => {
         // if (!viewerId || !viewedId || viewerId === viewedId) return;
         const fetchProfile = async() => {
             try {
-                const res = await fetch(`http://localhost:3000/modalprofile/${viewedId}`, {
+                const res = await fetch(`http://localhost:3000/profile/modalprofile/${viewedId}`, {
                     credentials:"include"
                 });
                 const data = await res.json();
@@ -103,7 +103,7 @@ const ProfileModal = ({viewedId, onClose}) => {
 
     const handleReport = async () => {
         try {
-            await fetch("http://localhost:3000/report", {
+            await fetch("http://localhost:3000/misc/report", {
                 method:"POST",
                 headers:{"Content-Type":"application/json"},
                 body:JSON.stringify({
@@ -122,7 +122,7 @@ const ProfileModal = ({viewedId, onClose}) => {
 
     const handleBlock = async() => {
         try {
-            const res = await fetch(`http://localhost:3000/block`, {
+            const res = await fetch(`http://localhost:3000/misc/block`, {
                 method:"POST",
                 headers:{"Content-Type": "application/json"},
                 body: JSON.stringify({

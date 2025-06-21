@@ -17,7 +17,7 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
     useEffect(() => {
         const fetchMatches = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/matches/${userId}`, {
+                const response = await fetch(`http://localhost:3000/messages/matches/${userId}`, {
                     credentials:"include"
                 });
                 const data = await response.json();

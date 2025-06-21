@@ -23,7 +23,7 @@ export default function Register (){
         event.preventDefault();
         try {
 
-            const response = await fetch("http://localhost:3000/register", {
+            const response = await fetch("http://localhost:3000/auth/register", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -39,7 +39,7 @@ export default function Register (){
                 return ;
             }
 
-            const meResponse = await fetch("http://localhost:3000/my-me", {
+            const meResponse = await fetch("http://localhost:3000/auth/my-me", {
                 credentials:"include",
             });
 
