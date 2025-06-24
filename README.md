@@ -2,6 +2,13 @@
 
 Matcha est une application de rencontres en temps réel, développée en fullstack avec **React**, **Node.js**, **PostgreSQL** et **WebSocket natif**.
 
+---
+
+## À propos
+
+Ce projet a été développé à deux en collaboration avec [Arthur](https://github.com/arlamber) et moi-même.
+
+
 Elle intègre un système de messagerie instantanée, de notifications temps réel, une logique de célébrité (fame), ainsi qu'une interface responsive pensée pour mobile.
 
 ---
@@ -84,10 +91,13 @@ Elle intègre un système de messagerie instantanée, de notifications temps ré
 
 *L'application est responsive pour une utilisation sur smartphone.*
 
-![mobile-conversation](./screenshot/responsive1.png)  
-![mobile-match](./screenshot/responsive2.png)  
-![mobile-bandeau](./screenshot/responsive3.png)
-![mobile-hamburger](./screenshot/responsive4.png)
+<p align="center">
+  <img src="./screenshot/responsive1.png" width="22%">
+  <img src="./screenshot/responsive2.png" width="22%">
+  <img src="./screenshot/responsive3.png" width="22%">
+  <img src="./screenshot/responsive4.png" width="22%">
+</p>
+
 
 ---
 
