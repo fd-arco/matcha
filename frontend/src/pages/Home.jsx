@@ -16,7 +16,7 @@ export default function Homepage() {
                 Welcome to Matcha
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-xl">
-                You will find love inchallah
+                You will find love.
             </p>
 
             {!userId && (
