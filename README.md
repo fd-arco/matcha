@@ -104,6 +104,9 @@ Elle intègre un système de messagerie instantanée, de notifications temps ré
 ## Lancement du projet
 
 Prérequis : **Docker** et **make** doivent être installés sur votre machine.
+Un fichier `.env.example` est fourni comme référence.  
+
+Certaines variables (comme les identifiants Gmail ou la clé JWT) doivent être remplacées par vos propres valeurs pour que l'application fonctionne correctement.
 
 Quelques commandes utiles :
 
