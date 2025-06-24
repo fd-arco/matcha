@@ -12,7 +12,7 @@ Elle intègre un système de messagerie instantanée, de notifications temps ré
 
 *Écran d’accueil de l’application avec accès direct à la création de compte ou à la connexion.*
 
-![capture-home](./assets/home.png)
+![capture-home](./screenshot/home.png)
 
 ---
 
@@ -20,7 +20,7 @@ Elle intègre un système de messagerie instantanée, de notifications temps ré
 
 *Formulaire de création de compte avec nom, prénom, email et mot de passe.*
 
-![capture-register](./assets/register.png)
+![capture-register](./screenshot/register.png)
 
 ---
 
@@ -28,7 +28,7 @@ Elle intègre un système de messagerie instantanée, de notifications temps ré
 
 *Complétion du profil utilisateur : photo, bio, passions, genre, orientation, et intentions (relation sérieuse, amitié, etc.). Plus le profil est complet, plus la “fame” augmente.*
 
-![capture-createprofile](./assets/createprofile.png)
+![capture-createprofile](./screenshot/createprofile.png)
 
 ---
 
@@ -36,7 +36,7 @@ Elle intègre un système de messagerie instantanée, de notifications temps ré
 
 *Affichage des profils suggérés avec indication des passions communes, du niveau de célébrité, et possibilité de liker ou passer.*
 
-![capture-swipe](./assets/swipe.png)
+![capture-swipe](./screenshot/swipe.png)
 
 ---
 
@@ -44,7 +44,7 @@ Elle intègre un système de messagerie instantanée, de notifications temps ré
 
 *Tableau de bord des interactions : vues, likes, matchs et messages. Ici, un utilisateur a liké mon profil.*
 
-![capture-dashboard](./assets/dashboard.png)
+![capture-dashboard](./screenshot/dashboard.png)
 
 ---
 
@@ -52,7 +52,7 @@ Elle intègre un système de messagerie instantanée, de notifications temps ré
 
 *Module de recherche avec filtres ajustables (âge, célébrité, distance, passions communes). Le nombre de profils correspondant est affiché en direct.*
 
-![capture-filtres](./assets/recherchefiltre.png)
+![capture-filtres](./screenshot/recherchefiltre.png)
 
 ---
 
@@ -60,7 +60,7 @@ Elle intègre un système de messagerie instantanée, de notifications temps ré
 
 *Page permettant de modifier ses informations personnelles, passions et photos.*
 
-![capture-editprofile](./assets/editprofile.png)
+![capture-editprofile](./screenshot/editprofile.png)
 
 ---
 
@@ -68,7 +68,7 @@ Elle intègre un système de messagerie instantanée, de notifications temps ré
 
 *Affichage détaillé d’un profil avec toutes les informations : nom, âge, bio, passions, intentions, et bouton de signalement.*
 
-![capture-profilemodal](./assets/profilemodal.png)
+![capture-profilemodal](./screenshot/profilemodal.png)
 
 ---
 
@@ -76,7 +76,7 @@ Elle intègre un système de messagerie instantanée, de notifications temps ré
 
 *Échange de messages entre deux utilisateurs via WebSocket, avec affichage instantané côté expéditeur et destinataire.*
 
-![gif-conversation](./assets/conversation.gif)
+![gif-conversation](./screenshot/gif-conversation.gif)
 
 ---
 
@@ -84,9 +84,10 @@ Elle intègre un système de messagerie instantanée, de notifications temps ré
 
 *L'application est responsive pour une utilisation sur smartphone.*
 
-![mobile-home](./assets/mobile-home.png)  
-![mobile-conversation](./assets/mobile-conversation.png)  
-![mobile-dashboard](./assets/mobile-dashboard.png)
+![mobile-conversation](./screenshot/responsive1.png)  
+![mobile-match](./screenshot/responsive2.png)  
+![mobile-bandeau](./screenshot/responsive3.png)
+![mobile-hamburger](./screenshot/responsive4.png)
 
 ---
 
