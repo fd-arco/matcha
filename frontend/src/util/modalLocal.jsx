@@ -171,7 +171,7 @@ const ModalLocal = ({ onClose }) => {
                   handleGetLocation
                 }
               >
-                Accept and Continue
+                Are you sure?
               </button>
               <input type="hidden" autoComplete="off" />
             </form>
@@ -188,8 +188,8 @@ const ModalLocal = ({ onClose }) => {
                <Marker position={location} />
              </GoogleMap>
            </LoadScript>
-           <div className="mt-6 flex flex-col gap-3 items-center">
-            <form >
+           <div className="mt-6 flex flex-row gap-3 items-center gap-x-3">
+            <form className="flex flex-row gap-x-3">
               <button
                 id="close-btn"
                 className="px-5 py-2 bg-green-500 text-white text-base font-semibold rounded-lg w-full shadow-md hover:bg-green-600 transition-all"
@@ -198,7 +198,17 @@ const ModalLocal = ({ onClose }) => {
                   onClose();
                 }}
               >
-                Close
+                Yes
+              </button>
+              <button
+                id="close-btn"
+                className="px-5 py-2 bg-green-500 text-white text-base font-semibold rounded-lg w-full shadow-md hover:bg-green-600 transition-all"
+                type="button"
+                onClick={() => {
+                  onClose();
+                }}
+              >
+                No
               </button>
               <input type="hidden" autoComplete="off" />
             </form>

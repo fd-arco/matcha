@@ -72,6 +72,19 @@ function calculateAge(dob) {
     return age;
 }
 
+const getDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371;
+    const toRad = deg => deg * Math.PI / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat / 2) ** 2 +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+              Math.sin(dLon / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+};
+
+
 app.post("/create-profil", upload.array("photos", 6), async(req, res) => {
     try {
         const { user_id, name, dob, gender, interestedIn, lookingFor, bio, latitude, longitude} = req.body;
@@ -670,13 +683,16 @@ app.get('/messages/:userId/:matchId', async(req, res) => {
 
 app.get('/profiles/:userId', async (req, res) => {
     const {userId} = req.params;
-    const {ageMin, ageMax, fameMin, tagsMin} = req.query;
+    const {ageMin, ageMax, fameMin, tagsMin, distanceMax} = req.query;
+    console.log("<<-------------------------------------------------->>")
+    console.log("🚩​ distanceMax dans profiles user ID ::::::", distanceMax);
+    console.log("ageMin               :::::::", ageMin);
+    console.log("agmmax               :::::::", ageMax)
+    console.log("<<-------------------------------------------------->>")
 
-
-    
     try {
         const userResult = await pool.query(
-            `SELECT gender, interested_in, passions FROM profiles WHERE user_id = $1`,
+            `SELECT gender, interested_in, passions, latitude, longitude FROM profiles WHERE user_id = $1`,
             [userId]
         );
     
@@ -684,7 +700,7 @@ app.get('/profiles/:userId', async (req, res) => {
             return res.status(404).json({error:"Profil utilisateur non trouve"});
         }
 
-        const { gender, interested_in, passions} = userResult.rows[0];
+        const { gender, interested_in, passions, latitude, longitude } = userResult.rows[0];
 
         const currentUser = {
             gender: gender?.toLowerCase(),
@@ -774,6 +790,20 @@ app.get('/profiles/:userId', async (req, res) => {
         };
 
         let filteredProfiles = result.rows.filter(profile => isOrientationMatch(currentUser, profile));
+
+        if (distanceMax && latitude && longitude) {
+            const userLat = parseFloat(latitude);
+            const userLon = parseFloat(longitude);
+        
+            filteredProfiles = filteredProfiles.filter(profile => {
+                const dist = getDistance(userLat, userLon, parseFloat(profile.latitude), parseFloat(profile.longitude));
+                if (dist > Number(distanceMax)) {
+                    console.log(`⛔ ${profile.user_id} exclu (distance ${dist.toFixed(2)} km > ${distanceMax} km)`);
+                    return false;
+                }
+                return true;
+            });
+        }
 
         if (tagsMin && userPassions) {
             filteredProfiles = filteredProfiles.filter(profile => {
@@ -1207,16 +1237,17 @@ app.put("/edit-profile/:userId", upload.array("photos", 6), async(req, res) => {
 })
 
 app.get("/profiles-count", async(req, res) => {
-    const {userId, ageMin, ageMax, fameMin, tagsMin} = req.query;
+    const {userId, ageMin, ageMax, fameMin, tagsMin, distanceMax} = req.query;
 
     console.log("🔍 Requête /profiles-count reçue avec :");
     console.log("🔸 userId:", userId);
     console.log("🔸 ageMin:", ageMin, "ageMax:", ageMax);
     console.log("🔸 fameMin:", fameMin, "tagsMin:", tagsMin);
+    console.log("🚩​ distanceMax", distanceMax);
 
     try {
             const userResult = await pool.query(
-                `SELECT passions, gender, interested_in FROM profiles WHERE user_id = $1`,
+                `SELECT passions, gender, interested_in, latitude, longitude FROM profiles WHERE user_id = $1`,
                 [userId]
             );
 
@@ -1224,7 +1255,7 @@ app.get("/profiles-count", async(req, res) => {
                 return res.status.error(404).json({error : "Profil utilisateur non trouve"});
             }
 
-            const {passions, gender, interested_in} = userResult.rows[0];
+            const {passions, gender, interested_in, latitude, longitude} = userResult.rows[0];
 
             const currentUser = {
                 gender: gender?.toLowerCase(),
@@ -1243,7 +1274,7 @@ app.get("/profiles-count", async(req, res) => {
 
             console.log("GENDER = ", gender, "INTERESTED IN = ", interested_in);
             const debugResult = await pool.query(`
-                SELECT user_id, gender, interested_in, passions
+                SELECT user_id, gender, interested_in, passions, latitude, longitude
                 FROM profiles
                 WHERE user_id != $1
             `, [userId]);
@@ -1259,7 +1290,7 @@ app.get("/profiles-count", async(req, res) => {
 
             const result = await pool.query(`
                 SELECT
-                    user_id, gender, interested_in, passions
+                    user_id, gender, interested_in, passions, latitude, longitude
                 FROM profiles p
                 WHERE p.user_id != $1
                 AND p.user_id NOT IN (
@@ -1312,6 +1343,17 @@ app.get("/profiles-count", async(req, res) => {
 
 
             let filtered = result.rows.filter((profile) => {
+                // console.log("----------------------------------------------------------")
+                // console.log("distanceMax    ::::", distanceMax)
+                // console.log("latitude user- longitude user      ;", latitude, longitude)
+                // console.log("profile. latitute longitude     ", profile.latitude, profile.longitude)
+                const distance = getDistance(latitude, longitude, profile.latitude, profile.longitude);
+                // console.log("distance entre 2 users askip-------------------->     ", distance);
+                // console.log("----------------------------------------------------------")
+                if (distance > Number(distanceMax)) {
+                    console.log(`⛔ ${profile.user_id} exclu (distance ${distance.toFixed(2)} km > ${distanceMax} km)`);
+                    return false;
+                }
                 if (!isOrientationMatch(currentUser, profile)) return false;
                 if (!tagsMin || !userPassions) return true;
                 try {

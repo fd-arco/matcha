@@ -25,11 +25,13 @@ const Matchs = ({onSelectMatch}) => {
                         ageMax:filters.ageMax,
                         fameMin:filters.fameMin,
                         tagsMin:filters.tagsMin,
+                        distanceMax: filters.distanceMax,
                     });
                     url += `?${query.toString()}`;
                 }
                 const res = await fetch(url);
                 const data = await res.json();
+                console.log("filters=====",filters)
                 console.log("DATA === ",data);
                 setProfiles(data);
                 setCurrentPhotoIndex(0);
@@ -192,7 +194,6 @@ const Matchs = ({onSelectMatch}) => {
     console.log("📷 Image path:", `http://localhost:3000${profile.photos[currentPhotoIndex]}`);
     
     let distance = null;
-    // console.log("laaaaaaaaaaaaaaaaaaaaa :     ", userLocation.lat)
     if (userLocation && userLocation.lat && profile.latitude && profile.longitude) {
       distance = getDistanceFromLatLonInKm(
         userLocation.lat,
@@ -201,6 +202,8 @@ const Matchs = ({onSelectMatch}) => {
         profile.longitude
       );
     }
+    localStorage.setItem('dist', distance)
+    
 
     let passionsArray = [];
     try {
