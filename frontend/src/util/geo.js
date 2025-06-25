@@ -8,9 +8,10 @@ export const getUserLocation = () => {
             
             const { latitude, longitude } = position.coords;
             resolve({ latitude, longitude });
+            console.log("caca")
           },
           (error) => {
-            reject('Impossible d\'obtenir la géolocalisation');
+            reject('Impossible d\'obtenir la géolocalisatiooon');
           }
         );
       } else {
@@ -18,4 +19,7 @@ export const getUserLocation = () => {
       }
     });
   };
+
+
+
   
