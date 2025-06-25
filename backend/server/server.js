@@ -34,10 +34,6 @@ server.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
 
-app.use((req, res, next) => {
-    console.log("➡️ Requête reçue :", req.method, req.url);
-    next();
-});
 
 
 

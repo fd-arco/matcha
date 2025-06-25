@@ -3,13 +3,6 @@ const router = express.Router();
 const {auth} = require("../middleware/auth");
 const pool = require("../config/db");
 
-router.use((req, res, next) => {
-    console.log("📨 Route appelée :", req.method, req.originalUrl);
-    console.log("params:", req.params);
-    console.log("query:", req.query);
-    next();
-});
-
 router.get('/unread',auth, async (req, res) => {
 const userId = Number(req.query.userId);
 if (!userId || isNaN(userId)) {

@@ -12,15 +12,7 @@ export const SocketProvider = ({children}) => {
     const [onlineStatuses, setOnlineStatuses] = useState({});
     const [userPhoto, setUserPhoto] = useState(null);
     const {userId, loading} = useUser();
-    // const userId = localStorage.getItem("userId");
     const [blockedUserId, setBlockedUserId] = useState(null);
-    // const [notifications, setNotifications] = useState({
-    //     views:0,
-    //     likes:0,
-    //     matchs:0,
-    //     messages:0,
-    // }) 
-
     const [notifications, setNotifications] = useState(null);
     const [messageNotifications, setMessageNotifications] = useState([]);
     const [matchNotifications, setMatchNotifications] = useState([]);
@@ -31,7 +23,6 @@ export const SocketProvider = ({children}) => {
         if (loading) return;
         if (!userId || typeof userId !== "number") return;
 
-        console.log("✅ Fetch unread pour userId =", userId);
 
         const fetchUnreadNotifications = async () => {
             try {
