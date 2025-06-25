@@ -13,37 +13,89 @@ import Dashboard from './pages/Dashboard.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import { FilterProvider } from './context/FilterContext.jsx';
 import { SocketProvider } from './context/SocketContext.jsx';
+import { UserProvider} from './context/UserContext.jsx'; 
 import { useState } from 'react';
+import { useUser } from './context/UserContext.jsx';
 import RootLayout from './components/RootLayout.jsx';
 import MyAccount from './pages/MyAccount.jsx';
-const getRoutes = (userId, setUserId, refreshFlag, refreshUser, hasProfile, setHasProfile) => createBrowserRouter([
+import PrivateRoute from './components/PrivateRoute.jsx';
+import PrivateRouteWithProfile from './components/PrivateRouteWithProfile.jsx';
+
+const getRoutes = () => createBrowserRouter([
   {
     path:'/',
-    element: <RootLayout setUserId={setUserId} userId={userId} refreshFlag={refreshFlag} setHasProfile={setHasProfile}/>,
+    element: <RootLayout />,
     children: [
       {path: '/user', element: <TestUser/>},
-      {path: '/', element: <Homepage userId={userId} hasProfile={hasProfile}/>},
-      {path: '/login', element: <Login setUserId={setUserId} />},
-      {path: '/register', element: <Register setUserId={setUserId} />},
-      {path: '/create-profil', element: <CreateProfil refreshUser={refreshUser}/>},
-      {path: '/swipe', element: <Swipe setUserId={setUserId} />},
-      {path: '/profile', element: <Profile />},
-      {path: '/dashboard', element: <Dashboard />},
-      {path: '/settingsPage', element: <SettingsPage/>},
-      {path: '/my-account', element:<MyAccount />}
+      {path: '/', element: <Homepage />},
+      {path: '/login', element: <Login />},
+      {path: '/register', element: <Register />},
+
+      {
+        path: '/create-profil', 
+        element: (
+          <PrivateRoute>
+            <CreateProfil />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: '/swipe', 
+        element: (
+          <PrivateRouteWithProfile>
+            <Swipe />
+          </PrivateRouteWithProfile>
+        )
+      },
+      {
+        path: '/dashboard', 
+        element: (
+          <PrivateRouteWithProfile>
+            <Dashboard />
+          </PrivateRouteWithProfile>
+        )
+      },
+      {
+        path: '/settings', 
+        element: (
+          <PrivateRouteWithProfile>
+            <SettingsPage />
+          </PrivateRouteWithProfile>
+        )
+      },
+      {
+        path: '/my-account', 
+        element: (
+          <PrivateRouteWithProfile>
+            <MyAccount />
+          </PrivateRouteWithProfile>
+        )
+      },
+      // {path: '/settingsPage', element: <SettingsPage/>},
+      // {path: '/my-account', element:<MyAccount />}
+      // {path: '/dashboard', element: <Dashboard />},
+      // {path: '/profile', element: <Profile />},
+      // {path: '/swipe', element: <Swipe />},
     ]
   }
 ]);
 
 function App() {
-  const [userId, setUserId] = useState(() => localStorage.getItem("userId"));
-  const [hasProfile, setHasProfile] = useState(false);
-  const [refreshFlag, setRefreshFlag] = useState(0);
-  const refreshUser = () => setRefreshFlag(prev => prev + 1);
-  const router = getRoutes(userId, setUserId, refreshFlag, refreshUser, hasProfile, setHasProfile);
+  const router = getRoutes();
+
+  return (
+    <UserProvider>
+      <AppWithUser router={router} />
+    </UserProvider>
+  )
+}
+
+function AppWithUser({router}) {
+  const {loading} = useUser();
+  if (loading) return <div className='text-white p-10'>Loading...</div>
   return (
       <FilterProvider>
-        <SocketProvider userId={userId}>
+        <SocketProvider>
           <RouterProvider router={router}/>
         </SocketProvider>
       </FilterProvider>

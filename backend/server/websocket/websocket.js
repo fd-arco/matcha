@@ -1,5 +1,5 @@
 const WebSocket = require('ws');
-const { Pool } = require('pg');
+const { Pool, ClientBase } = require('pg');
 
 const pool = new Pool({
     host: 'db', 
@@ -20,16 +20,14 @@ const initWebSocket = (server) => {
                 const data = JSON.parse(message);
 
                 if (data.type === "register") {
-                    console.log(`[WS] Tentative d'enregistrement pour user ${data.userId}`);
-                    clients.set(data.userId, ws);
-                    console.log(`[WS] Socket enregistré pour user ${data.userId}`);
+                    
+                    const userId = data.userId.toString();
+                    clients.set(userId, ws);
                     await pool.query(
                         `UPDATE users SET last_online = NOW() WHERE id =$1`,
                         [data.userId]
                     );
-                    console.log(`[WS] last_online mis à jour pour ${data.userId}`);
                     clients.forEach((clientWs, clientId) => {
-                            console.log(`[WS] Notifie ${clientId} que ${data.userId} est en ligne`);    
                             clientWs.send(JSON.stringify({
                                 type:"userStatusChanged",
                                 userId:data.userId,
@@ -39,14 +37,12 @@ const initWebSocket = (server) => {
 
                     const currentlyOnline = Array.from(clients.keys())
                         .filter(id => id !== data.userId.toString());
-                    console.log(`[WS] Utilisateurs déjà en ligne:`, currentlyOnline);
                     currentlyOnline.forEach(id => {
                         ws.send(JSON.stringify({
                             type:"userStatusChanged",
                             userId:id,
                             online:true
                         }))
-                        console.log(`[WS] Envoie à ${data.userId} que ${id} est en ligne`);
                     })
 
                 }
@@ -56,9 +52,7 @@ const initWebSocket = (server) => {
                         `UPDATE messages SET is_read = TRUE WHERE sender_id=$1 AND receiver_id=$2 AND is_read=FALSE`,
                         [userId, matchId]
                     );
-                    console.log("JENVOIE PAS POUR RESET UNREAD_COUNT");
                     if (clients.has(userId.toString())) {
-                        console.log("matchId = ", matchId);
                         clients.get(userId.toString()).send(JSON.stringify({
                             type: "read_messages",
                             matchId: matchId,
@@ -66,19 +60,18 @@ const initWebSocket = (server) => {
                     }
                 }
                 if (data.type === "message") {
-                    console.log("JE DOIS RENVOYER LE MESSAGE RECU AUX UTILISATEURS CONNECTES")
-                    const { senderId, receiverId, content} = data;
-                    
+                    const senderId = data.senderId.toString();
+                    const receiverId = data.receiverId.toString();
+                    const content = data.content
                     const matchCheck = await pool.query(`
                         SELECT * FROM matches
                         WHERE (user1_id = $1 AND user2_id = $2)
                         OR (user1_id = $2 AND user2_id = $1)
-                        `, [senderId, receiverId]);
+                        `, [data.senderId, data.receiverId]);
                     
                     if (matchCheck.rows.length === 0) {
-                        console.log(`[WS] ❌ Pas de match entre ${senderId} et ${receiverId}`);
-                        if (clients.has(senderId.toString())) {
-                            clients.get(senderId.toString()).send(JSON.stringify({
+                        if (clients.has(senderId)) {
+                            clients.get(senderId).send(JSON.stringify({
                                 type:"messageBlocked",
                                 reason:"No active match. You may have been blocked.",
                                 receiverId,
@@ -89,14 +82,14 @@ const initWebSocket = (server) => {
 
                     const result = await pool.query(
                         `INSERT INTO messages (sender_id, receiver_id, content, is_read) VALUES ($1, $2, $3, FALSE) RETURNING *`,
-                        [senderId, receiverId, content]
+                        [data.senderId, data.receiverId, data.content]
                     );
 
                     const savedMessage = result.rows[0];
                     
                     const notifResult = await pool.query(
-                        `INSERT INTO notifications (user_id, sender_id, type, message_id) VALUES ($1, $2, 'message', $3) RETURNING *`,
-                        [receiverId, senderId, savedMessage.id]
+                        `INSERT INTO notifications (user_id, sender_id, type, message_id) VALUES ($1, $2, 'messages', $3) RETURNING *`,
+                        [data.receiverId, data.senderId, savedMessage.id]
                     )
 
                     const insertedNotification = notifResult.rows[0];
@@ -106,7 +99,7 @@ const initWebSocket = (server) => {
                          FROM users u
                          LEFT JOIN profiles prof ON prof.user_Id = u.id
                          WHERE u.id=$1`,
-                        [senderId]
+                        [data.senderId]
                     );
                     const senderName = userResult.rows[0]?.firstname || "Someone";
                     const profileId = userResult.rows[0]?.profile_id;
@@ -123,14 +116,15 @@ const initWebSocket = (server) => {
                         );
                         senderPhoto = photoResult.rows[0]?.photo_url || null;
                     }
-                    if (clients.has(receiverId.toString())) {
-                        console.log(`ENvoie du message a ${receiverId.toString()}`);
-                        console.log(`ENVOIE de la notification a ${receiverId.toString()}`);
-                        clients.get(receiverId.toString()).send(JSON.stringify({
+
+                    const receiverClient = clients.get(receiverId);
+                    const senderClient = clients.get(senderId);
+                    if (receiverClient) {
+                        receiverClient.send(JSON.stringify({
                             type: "newMessage",
                             message: savedMessage
                         }));
-                        clients.get(receiverId.toString()).send(JSON.stringify({
+                        receiverClient.send(JSON.stringify({
                             type:"newNotification",
                             category:"messages",
                             notification: {
@@ -146,9 +140,7 @@ const initWebSocket = (server) => {
                         }))
                     }
                     
-                    console.log("BONJOUR");
-                    if (clients.has(senderId.toString())) {
-                        console.log(`ENvoie du message a ${senderId.toString()}`);
+                    if (senderClient) {
                         clients.get(senderId.toString()).send(JSON.stringify({
                             type: "newMessage",
                             message: savedMessage
@@ -157,10 +149,9 @@ const initWebSocket = (server) => {
                 }
                 if (data.type === "match") {
                     const {senderId, receiverId} = data;
-
                     const result = await pool.query(
                         `INSERT INTO notifications(user_id, sender_id, type)
-                            VALUES ($1, $2, 'match'), ($2, $1, 'match') RETURNING *`,
+                            VALUES ($1, $2, 'matchs'), ($2, $1, 'matchs') RETURNING *`,
                             [receiverId, senderId]
                     );
 
@@ -208,7 +199,10 @@ const initWebSocket = (server) => {
                         receiverPhoto = photoRes.rows[0]?.photo_url || null;
                     }
 
+                    const receiverKey = receiverId.toString();
+
                     if (clients.has(receiverId.toString())) {
+
                         clients.get(receiverId.toString()).send(JSON.stringify({
                             type:"newNotification",
                             category:"matchs",
@@ -235,6 +229,7 @@ const initWebSocket = (server) => {
                     }
 
                     if (clients.has(senderId.toString())) {
+
                         clients.get(senderId.toString()).send(JSON.stringify({
                             type:"newNotification",
                             category:"matchs",
@@ -301,22 +296,46 @@ const initWebSocket = (server) => {
 
                 if (data.type === "viewNotification") {
                     const {senderId, receiverId} = data;
-
-                    const lastNotif = await pool.query(`
-                        SELECT created_at
-                        FROM notifications
-                        WHERE sender_id = $1 AND user_id =$2 AND type='view'
-                        ORDER BY created_at DESC
-                        LIMIT 1
-                        `, [senderId, receiverId]);
+                    const [lastSent, lastReceived] = await Promise.all([
+                        pool.query(`
+                            SELECT created_at
+                            FROM views_sent
+                            WHERE viewer_id = $1 AND viewed_id = $2
+                            ORDER BY created_at DESC
+                            LIMIT 1
+                        `, [senderId, receiverId]),
+                        pool.query(`
+                            SELECT created_at
+                            FROM views_received
+                            WHERE sender_id = $1 AND user_id = $2
+                            ORDER BY created_at DESC
+                            LIMIT 1
+                        `, [senderId, receiverId])
+                    ]);
 
                     const now = new Date();
-                    const lastDate = lastNotif.rows[0]?.created_at;
-                    const diffMinutes = lastDate?Math.abs(now - new Date(lastDate)) / (1000 * 60) : Infinity;
-                    if (diffMinutes < 30) {
-                        console.log("Antiflood active");
+                    const lastSentDate = lastSent.rows[0]?.created_at;
+                    const lastReceivedDate = lastReceived.rows[0]?.created_at;
+
+                    const diffSent = lastSentDate ? Math.abs(now - new Date(lastSentDate)) / (1000 * 60) : Infinity;
+                    const diffReceived = lastReceivedDate ? Math.abs(now - new Date(lastReceivedDate)) / (1000 * 60) : Infinity;
+
+                    if (diffSent < 30 || diffReceived < 30) {
                         return;
                     }
+
+                    await pool.query(`
+                        INSERT INTO views_sent (viewer_id, viewed_id)
+                        VALUES ($1, $2)`,
+                        [senderId, receiverId]
+                    );
+
+                    const notifReceiver = await pool.query(`
+                        INSERT INTO views_received (user_id, sender_id, is_read)
+                        VALUES ($1, $2, FALSE)
+                        RETURNING *`,
+                        [receiverId, senderId]
+                    );
 
                     const senderInfo = await pool.query(`
                         SELECT u.firstname, prof.id AS profile_id
@@ -363,74 +382,48 @@ const initWebSocket = (server) => {
                             type: "newNotification",
                             category: "views",
                             notification: {
-                                sender_id: senderId,
+                                ...notifReceiver.rows[0],
                                 sender_name: senderName,
                                 sender_photo: senderPhoto,
                                 receiver_id:receiverId,
                                 receiver_name:receiverName,
                                 receiver_photo:receiverPhoto,
-                                is_read: false,
                                 created_at: new Date().toISOString(), // TODO:afficher l heure de la notification de like
                             }
                         }));
-                    }
-                    if (clients.has(senderId.toString())) {
-                        console.log("yoyoyoyoy");
-                        clients.get(senderId.toString()).send(JSON.stringify({
-                            type:"newNotification",
-                            category:"views",
-                            notification: {
-                                sender_id:receiverId,
-                                sender_name:receiverName,
-                                sender_photo:receiverPhoto,
-                                receiver_id:receiverId,
-                                receiver_name:receiverName,
-                                receiver_photo:receiverPhoto,
-                                is_read:false,
-                                created_at:new Date().toISOString()
-                            }
-                        }))
+                    } else {
+                        console.warn(`⚠️ [WS Server] receiverId ${receiverId} non connecté`);
                     }
                 }
-                if (data.type === "userBlocked") {
+                if (data.type === "matchRemoved") {
                     const {blockerId, blockedId} = data;
                     if (clients.has(blockerId.toString())) {
-                        console.log(`[WS BLOCK] Envoi de refreshUI à BLOCKER: ${blockerId}`);
                         clients.get(blockerId.toString()).send(JSON.stringify({
-                            type:"refreshUI",
+                            type:"matchRemoved",
+                            userId: blockedId
                         }));
-                    } else {
-                        console.log(`[WS BLOCK] BLOCKER ${blockerId} non connecté`);
                     }
                     if (clients.has(blockedId.toString())) {
-                        console.log(`[WS BLOCK] Envoi de refreshUI à BLOCKED: ${blockedId}`);
                         clients.get(blockedId.toString()).send(JSON.stringify({
-                            type:"refreshUI",
+                            type:"matchRemoved",
+                            userId:blockerId
                         }));
-                    } else {
-                        console.log(`[WS BLOCK] BLOCKED ${blockedId} non connecté`);
                     }
                 }
-                if (data.type === "matchBlocked") {
-                    const {blockerId, blockedId} = data;
-                    const sent = {
-                        type:"refreshMatchUI",
-                        blockerId,
-                        blockedId
-                    };
-                    if (clients.has(blockerId.toString())) {
-                        console.log(`[WS BLOCK] Envoi de refreshUI à BLOCKER: ${blockerId}`);
-                        clients.get(blockerId.toString()).send(JSON.stringify(sent));
-                    } else {
-                        console.log(`[WS BLOCK] BLOCKER ${blockerId} non connecté`);
-                    }
-                    if (clients.has(blockedId.toString())) {
-                        console.log(`[WS BLOCK] Envoi de refreshUI à BLOCKED: ${blockedId}`);
-                        clients.get(blockedId.toString()).send(JSON.stringify(sent));
-                    } else {
-                        console.log(`[WS BLOCK] BLOCKED ${blockedId} non connecté`);
-                    }
-                }
+                // if (data.type === "matchBlocked") {
+                //     const {blockerId, blockedId} = data;
+                //     const sent = {
+                //         type:"refreshMatchUI",
+                //         blockerId,
+                //         blockedId
+                //     };
+                //     if (clients.has(blockerId.toString())) {
+                //         clients.get(blockerId.toString()).send(JSON.stringify(sent));
+                //     }
+                //     if (clients.has(blockedId.toString())) {
+                //         clients.get(blockedId.toString()).send(JSON.stringify(sent));
+                //     }
+                // }
             } catch (error) {
                 console.error("Erreur lors de l'envoi du message:", error);
             }
@@ -439,7 +432,6 @@ const initWebSocket = (server) => {
         ws.on('close', async () => {
             const disconnectedUser = [...clients.entries()].find(([userId, clientWs]) => clientWs === ws);
             if (disconnectedUser) {
-                console.log(`User ${disconnectedUser[0]} disconnected`);
                 clients.delete(disconnectedUser[0]);
 
                 await pool.query(

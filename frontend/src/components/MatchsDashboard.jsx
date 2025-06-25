@@ -15,7 +15,7 @@ const MatchsDashboard = ({notifications, setMatchNotifications, userId}) => {
 
     const handleUnmatch = async(notif) => {
         try {
-            await fetch(`http://localhost:3000/unmatch`, {
+            await fetch(`http://localhost:3000/likes/unmatch`, {
                 method:"POST",
                 headers: {
                     "Content-type": "application/json",
@@ -24,6 +24,7 @@ const MatchsDashboard = ({notifications, setMatchNotifications, userId}) => {
                     user1:userId,
                     user2:notif.sender_id,
                 }),
+                credentials:"include",
             });
             setMatchNotifications((prev) =>
                 prev.filter((n) => n.notification_id !== notif.notification_id)
@@ -83,7 +84,7 @@ const MatchsDashboard = ({notifications, setMatchNotifications, userId}) => {
             )}
             {selectedProfile && (
                 <ProfileModal
-                    userId={selectedProfile.userId}
+                    viewedId={selectedProfile.userId}
                     onClose={() => setSelectedProfile(null)}
                 />
             )}

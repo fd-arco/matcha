@@ -7,44 +7,47 @@ import MatchsDashboard from "../components/MatchsDashboard";
 import MessagesDashboard from "../components/MessagesDashboard";
 import Navbar from "../components/Navbar";
 import { useSocket } from "../context/SocketContext";
+import { useUser } from "../context/UserContext";
 
-const Dashboard = ({setHasNotification}) => {
-    const {socket} = useSocket();
+const Dashboard = () => {
+    const {
+        socket, setHasNotification,
+        notifications, setNotifications,
+        messageNotifications, setMessageNotifications,
+        likeNotifications, setLikeNotifications,
+        matchNotifications, setMatchNotifications,
+        viewNotifications, setViewNotifications,
+    } = useSocket();
     const navigate = useNavigate();
     const [refreshTrigger, setRefreshTrigger] = useState(0);
-    const [activeTab, setActiveTab] = useState("views");
-    const [messageNotifications, setMessageNotifications] = useState([]);
-    const [matchNotifications, setMatchNotifications] = useState([]);
-    const [likeNotifications, setLikeNotifications] = useState({
-        received:[],
-        sent:[],
-    });
-    const [viewNotifications, setViewNotifications] = useState({
-        received: [],
-        sent: [],
-    });
-    const [notifications, setNotifications] = useState({
-        views:0,
-        likes:0,
-        matchs:0,
-        messages:0,
-    })
-    const userId = localStorage.getItem("userId");
+    const [activeTab, setActiveTab] = useState(null);
+    const [lastClickedTab, setLastClickedTab] = useState(null);
+    // const [messageNotifications, setMessageNotifications] = useState([]);
+    // const [matchNotifications, setMatchNotifications] = useState([]);
+    // const [likeNotifications, setLikeNotifications] = useState({
+    //     received:[],
+    //     sent:[],
+    // });
+    // const [viewNotifications, setViewNotifications] = useState({
+    //     received: [],
+    //     sent: [],
+    // });
+
+    const {userId} = useUser();
 
     useEffect(() => {
         const fetchNotifications = async() => {
             try {
-                const response = await fetch(`http://localhost:3000/notifications/${userId}`);
-                console.log("RESPONSE = ", response);
+                const response = await fetch(`http://localhost:3000/notifications/${userId}`, {
+                    credentials:"include"
+                });
                 const data = await response.json();
-                console.log("DATA = ", data);
                 setNotifications({
                     views:data[0].views || 0,
                     likes:data[0].likes || 0,
                     matchs:data[0].matchs || 0,
                     messages:data[0].messages || 0,
                 });
-                setMessageNotifications(data.filter(n => n.notification_id !== null));
             } catch (error) {
                 console.error("Erreur lors du chargement des notifications", error);
             }
@@ -53,11 +56,27 @@ const Dashboard = ({setHasNotification}) => {
     }, [userId, refreshTrigger]);
 
     useEffect(() => {
+        const fetchMessageNotification = async () => {
+            try {
+                const res = await fetch(`http://localhost:3000/notifications/${userId}/messages`, {
+                    credentials:"include"
+                });
+                const data = await res.json();
+                setMessageNotifications(data);
+            } catch (error) {
+                console.error("erreur fetch message notificaiton", error);
+            }
+        }
+        fetchMessageNotification();
+    }, [userId, refreshTrigger]);
+
+    useEffect(() => {
         const fetchLikeNotifications = async() => {
             try {
-                const res = await fetch(`http://localhost:3000/notifications/${userId}/likes`);
+                const res = await fetch(`http://localhost:3000/notifications/${userId}/likes`, {
+                    credentials:"include"
+                });
                 const data = await res.json();
-                console.log("LIKES FETCHED:", data);
                 setLikeNotifications({
                     received:data.received,
                     sent:data.sent,
@@ -72,7 +91,9 @@ const Dashboard = ({setHasNotification}) => {
     useEffect(() => {
         const fetchMatchNotifications = async() => {
             try {
-                const res = await fetch(`http://localhost:3000/notifications/${userId}/matchs`);
+                const res = await fetch(`http://localhost:3000/notifications/${userId}/matchs`, {
+                    credentials:"include"
+                });
                 const data = await res.json();
                 setMatchNotifications(data);
             } catch (err) {
@@ -85,7 +106,10 @@ const Dashboard = ({setHasNotification}) => {
     useEffect(() => {
         const fetchViewNotifications = async() => {
             try {
-                const res = await fetch(`http://localhost:3000/notifications/${userId}/views`);
+
+                const res = await fetch(`http://localhost:3000/notifications/${userId}/views`, {
+                    credentials:"include"
+                });
                 const data = await res.json();
                 setViewNotifications({
                     received:data.received,
@@ -98,54 +122,8 @@ const Dashboard = ({setHasNotification}) => {
         fetchViewNotifications();
     }, [userId, refreshTrigger])
 
-    useEffect(() => {
-        if (!socket) return;
-        const handleMessage = (event) => {
-            const message = JSON.parse(event.data);
+    const unreadViewsCount = viewNotifications.received?.filter(v => !v.is_read).length || 0;
 
-            if (message.type === "newNotification") {
-                console.log("RECEption de la notificaiton depuis websocket");
-                setNotifications(prev => ({
-                    ...prev, [message.category]: Number(prev[message.category]) + 1
-                }));
-                if (message.category === "messages" && message.notification) {
-                    setMessageNotifications(prev => [message.notification, ...prev])
-                }
-                if (message.category === "matchs" && message.notification) {
-                    setMatchNotifications(prev => [message.notification, ...prev]);
-                }
-                if (message.category === "likes" && message.notification) {
-                    setLikeNotifications(prev => ({
-                        ...prev,
-                        received: [message.notification, ...(prev.received || [])]
-                    }));
-                }
-                if (message.category === "views" && message.notification) {
-                    const isMyView = message.notification.receiver_id === Number(userId);
-                    // const isSender = message.notification.sender_id === Number(userId);
-                    console.log("icii");
-                    setViewNotifications(prev => ({
-                        received: isMyView
-                            ? [message.notification, ...(prev.received || [])]
-                            : prev.received,
-                        sent: !isMyView
-                            ? [message.notification, ...(prev.sent || [])]
-                            : prev.sent
-                    }));
-                }
-            }
-            if (message.type === "refreshUI") {
-                const currentUser = localStorage.getItem("userId");
-                console.log(`[WS FRONT] 👤 Utilisateur ${currentUser} a reçu le message WS : refreshUI`);
-                setRefreshTrigger(prev => prev + 1);
-            }
-        }
-        socket.addEventListener("message", handleMessage);
-
-        return () => {
-            socket.removeEventListener("message", handleMessage);
-        }
-    }, [socket, userId]);
 
     const markAsRead = async (category) => {
         setNotifications((prev) => ({ ...prev, [category]:0}));
@@ -155,9 +133,12 @@ const Dashboard = ({setHasNotification}) => {
                 method:"POST",
                 headers: {"Content-type":"application/json"},
                 body: JSON.stringify({userId, category}),
+                credentials:"include"
             });
 
-            const res = await fetch(`http://localhost:3000/notifications/${userId}`);
+            const res = await fetch(`http://localhost:3000/notifications/${userId}`, {
+                credentials:"include"
+            });
             const data = await res.json();
 
             const updated = {
@@ -176,6 +157,10 @@ const Dashboard = ({setHasNotification}) => {
         }
     }
 
+    if (!notifications) {
+        return <div className="p-8 text-center">Loading...</div>
+    }
+
     return (
         <div className="min-h-[calc(100vh-72px)] flex flex-col">
             <div className="p-6 flex-1 text-black dark:text-white bg-gray-200 dark:bg-gray-800">
@@ -190,24 +175,33 @@ const Dashboard = ({setHasNotification}) => {
                     <div
                         className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="views"? "dark:bg-green-800 bg-green-500 text-black dark:text-white" : "dark:hover:bg-gray-800 hover:bg-gray-200"}`}
                         onClick={() => {
+                            if (activeTab === "views") {
+                                markAsRead("views");
+                                setRefreshTrigger(prev => prev + 1);
+                            }
                             setActiveTab("views");
-                            markAsRead("views");
+                            setLastClickedTab("views");
                         }}
                         
                     >
                         <Eye size={32} />
                         <span className="mt-2">Views</span>
-                        {notifications.views > 0 && (
+                        {unreadViewsCount > 0 && (
                             <span className="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded-full">
-                                {notifications.views}
+                                {unreadViewsCount}
                             </span>
                         )}
                     </div>
                     <div
                         className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="likes"? "dark:bg-green-800 bg-green-500 text-black dark:text-white" : "dark:hover:bg-gray-800 hover:bg-gray-200"}`}
-                        onClick={() => {
+                        onClick={async () => {
+                            if (activeTab === "likes") {
+                                await markAsRead("likes");
+                                setRefreshTrigger(prev => prev + 1);
+                                
+                            }
                             setActiveTab("likes");
-                            markAsRead("likes");
+                            setLastClickedTab("likes");
                         }}
                     >
                         <Heart size={32} />
@@ -220,9 +214,14 @@ const Dashboard = ({setHasNotification}) => {
                     </div>
                     <div
                         className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="matchs"? "dark:bg-green-800 bg-green-500 text-black dark:text-white" : "dark:hover:bg-gray-800 hover:bg-gray-200"}`}
-                        onClick={() => {
+                        onClick={async () => {
+                            if (activeTab === "matchs") {
+                                await markAsRead("matchs");
+                                setRefreshTrigger(prev => prev + 1);
+
+                            }
                             setActiveTab("matchs");
-                            markAsRead("matchs");
+                            setLastClickedTab("matchs");
                         }}
                     >
                         <Users size={32} />
@@ -235,9 +234,13 @@ const Dashboard = ({setHasNotification}) => {
                     </div>
                     <div 
                         className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="messages"? "dark:bg-green-800 bg-green-500 text-black dark:text-white" : "dark:hover:bg-gray-800 hover:bg-gray-200"}`}
-                        onClick={() => {
+                        onClick={async () => {
+                            if (activeTab === "messages") {
+                                await markAsRead("messages");
+                                setRefreshTrigger(prev => prev + 1);
+                            }
                             setActiveTab("messages");
-                            markAsRead("messages");
+                            setLastClickedTab("messages");
                         }}
                     >
                         <MessageSquare size={32} />
@@ -251,6 +254,11 @@ const Dashboard = ({setHasNotification}) => {
                 </div>
 
                 <div className="dark:bg-gray-900 bg-white mt-6 p-4 bg-white rounded-lg shadow-md">
+                    {!activeTab && (
+                        <div className="text-center text-gray-600 dark:text-gray-300 text-lg">
+                            Welcome in your Dashboard ! Click on one onglet to display your notifications !
+                        </div>
+                    )}
                     {activeTab === "views" && <ViewsDashboard notifications={viewNotifications} userId={userId}/>}
                     {activeTab === "likes" && <LikesDashboard notifications={likeNotifications} setLikeNotifications={setLikeNotifications} userId={userId}/>}
                     {activeTab === "matchs" && <MatchsDashboard notifications={matchNotifications} setMatchNotifications={setMatchNotifications} userId={userId}/>}

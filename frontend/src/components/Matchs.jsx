@@ -4,12 +4,15 @@ import {ChevronLeft, ChevronRight, X, Heart} from "lucide-react"
 import {useFilters} from "../context/FilterContext"
 import {useSocket} from "../context/SocketContext"
 import MobileDrawerMenu from "./MobileDrawerMenu";
+import { useUser } from "../context/UserContext";
+
 const Matchs = ({onSelectMatch}) => {
     const {filters} = useFilters();
     const [profiles, setProfiles] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
-    const userId = localStorage.getItem("userId");
+    // const userId = localStorage.getItem("userId");
+    const {userId} = useUser();
     const [showMatchModal, setShowMatchModal] = useState(false);
     const [matchedProfile, setMatchedProfile] = useState(null);
     const {socket} = useSocket();
@@ -17,7 +20,7 @@ const Matchs = ({onSelectMatch}) => {
     useEffect(() => {
         const fetchProfiles = async() => {
             try {
-                let url = `http://localhost:3000/profiles/${userId}`;
+                let url = `http://localhost:3000/profile/profiles/${userId}`;
                 if (filters) {
                     const query = new URLSearchParams({
                         ageMin:filters.ageMin,
@@ -27,9 +30,10 @@ const Matchs = ({onSelectMatch}) => {
                     });
                     url += `?${query.toString()}`;
                 }
-                const res = await fetch(url);
+                const res = await fetch(url, {
+                  credentials:"include"
+                });
                 const data = await res.json();
-                console.log("DATA === ",data);
                 setProfiles(data);
                 setCurrentPhotoIndex(0);
             } catch (error) {
@@ -43,19 +47,14 @@ const Matchs = ({onSelectMatch}) => {
         const sendView = async () => {
             if (profiles.length === 0 || currentIndex >= profiles.length) return ;
             const viewedProfile = profiles[currentIndex];
-            try {
-                await fetch("http://localhost:3000/view", {
-                    method:"POST",
-                    headers:{"Content-type": "application/json"},
-                    body: JSON.stringify({viewerId: userId, viewedId: viewedProfile.user_id})
-                });
 
+            try {
                 if (socket) {
-                    socket.send(JSON.stringify({
-                        type:"viewNotification",
-                        senderId: userId,
-                        receiverId: viewedProfile.user_id,
-                    }));
+                  socket.send(JSON.stringify({
+                    type:"viewNotification",
+                    senderId: userId,
+                    receiverId: viewedProfile.user_id,
+                  }));
                 }
             } catch (err) {
                 console.error("Erreur lors de l envoie de la notif view: ", err);
@@ -68,10 +67,11 @@ const Matchs = ({onSelectMatch}) => {
         if (currentIndex < profiles.length) {
             const likedProfile = profiles[currentIndex];
             try {
-                const response = await fetch(`http://localhost:3000/like`, {
+                const response = await fetch(`http://localhost:3000/likes/like`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({ likerId: userId, likedId: likedProfile.user_id})
+                    body: JSON.stringify({ likerId: userId, likedId: likedProfile.user_id}),
+                    credentials:"include"
                 });
 
                 const data = await response.json();
@@ -86,17 +86,16 @@ const Matchs = ({onSelectMatch}) => {
 
                 if (data.match) {
                     setMatchedProfile(likedProfile);
-                    console.log("LIKED PROFILE = ", likedProfile);
                     setShowMatchModal(true);
-                    console.log("YOOO");
                     if (socket && socket.readyState === WebSocket.OPEN) {
                         socket.send(JSON.stringify({
                             type:"match",
                             senderId:userId,
                             receiverId:likedProfile.user_id,
                         }))
+                    } else {
+                      console.warn("[Matchs.jsx] Socket non prêt");
                     }
-                    console.log("Liked:", likedProfile.name);
                 } else {
                     nextProfile();
                 }
@@ -153,7 +152,6 @@ const Matchs = ({onSelectMatch}) => {
 
 
     const profile = profiles[currentIndex];
-    console.log("📷 Image path:", `http://localhost:3000${profile.photos[currentPhotoIndex]}`);
 
     let passionsArray = [];
     try {

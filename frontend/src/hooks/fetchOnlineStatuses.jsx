@@ -6,7 +6,9 @@ export const fetchOnlineStatuses = async (userIds, setOnlineStatuses) => {
 
     const idsArray = Array.isArray(userIds) ? userIds : [userIds];
     try {
-        const response = await fetch(`http://localhost:3000/online-statuses?userIds=${idsArray.join(",")}`);
+        const response = await fetch(`http://localhost:3000/misc/online-statuses?userIds=${idsArray.join(",")}`, {
+            credentials:"include"
+        });
         const data = await response.json();
 
         const newStatuses = {};

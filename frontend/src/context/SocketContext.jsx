@@ -1,4 +1,5 @@
 import React, {createContext, useContext, useEffect, useState} from "react";
+import { useUser } from "./UserContext";
 
 const SocketContext = createContext(null);
 
@@ -10,23 +11,48 @@ export const SocketProvider = ({children}) => {
     const [hasNotification, setHasNotification] = useState(false);
     const [onlineStatuses, setOnlineStatuses] = useState({});
     const [userPhoto, setUserPhoto] = useState(null);
-    const userId = localStorage.getItem("userId");
+    const {userId, loading} = useUser();
     const [blockedUserId, setBlockedUserId] = useState(null);
+    const [notifications, setNotifications] = useState(null);
+    const [messageNotifications, setMessageNotifications] = useState([]);
+    const [matchNotifications, setMatchNotifications] = useState([]);
+    const [likeNotifications, setLikeNotifications] = useState({ received: [], sent: [] });
+    const [viewNotifications, setViewNotifications] = useState({ received: [], sent: [] });
+    
+    useEffect(() => {
+        if (loading) return;
+        if (!userId || typeof userId !== "number") return;
+
+
+        const fetchUnreadNotifications = async () => {
+            try {
+                const res = await fetch(`http://localhost:3000/notifications/unread?userId=${userId}`, {
+                    credentials:"include"
+                });
+                const data = await res.json();
+
+                setNotifications(data);
+            } catch (err) {
+                console.error("errrreur fetch unread notifications:", err);
+            }
+        };
+
+        fetchUnreadNotifications();
+    }, [userId]);
 
     useEffect(() => {
+        if (loading) return;
         if (!userId) return;
 
         const newSocket = new WebSocket("ws://localhost:3000");
         setSocket(newSocket);
 
         newSocket.onopen = () => {
-            console.log("Websocket connecte depuis context");
             newSocket.send(JSON.stringify({type:"register", userId}));
         };
 
         newSocket.onmessage = (event) => {
             const message = JSON.parse(event.data);
-            console.log("[WS context] Message recu:", message);
 
             if (message.type === "newMessage") {
                 setMessagesGlobal(prev => [...prev, message.message]);
@@ -34,18 +60,43 @@ export const SocketProvider = ({children}) => {
 
             if (message.type === "read_messages") {
                 setUnreadCountTrigger(prev => !prev);
+                    setNotifications(prev => ({
+                        ...prev,
+                        messages: Math.max(0, prev.messages - 1)
+                    }));
             }
 
             if (message.type === "newNotification") {
                 setHasNotification(true);
+                if (message.type === "newNotification") {
+                setNotifications(prev => ({
+                    ...prev, [message.category]: Number(prev[message.category]) + 1
+                }));
+                if (message.category === "messages" && message.notification) {
+                    setMessageNotifications(prev => [message.notification, ...prev])
+                }
+                if (message.category === "matchs" && message.notification) {
+                    setMatchNotifications(prev => [message.notification, ...prev]);
+                }
+                if (message.category === "likes" && message.notification) {
+                    setLikeNotifications(prev => ({
+                        ...prev,
+                        received: [message.notification, ...(prev.received || [])]
+                    }));
+                }
+                if (message.category === "views" && message.notification) {
+                    setViewNotifications(prev => ({
+                        ...prev,
+                        received: [message.notification, ...(prev.received || [])]
+                    }));
+                }
+            }
             }
 
             if (message.type === "newMatch") {
                 setMatchesGlobal(prev => [...prev, message.match]);
             }
             if (message.type === "userStatusChanged") {
-                console.log("🟢 Mise à jour du status :", message.userId, message.online);
-                console.log("📦 onlineStatuses AVANT :", onlineStatuses);
                 setOnlineStatuses(prev => ({
                     ...prev,
                     [message.userId]: {
@@ -53,13 +104,41 @@ export const SocketProvider = ({children}) => {
                         lastOnline:message.lastOnline || null
                     }
                 }));
-                console.log("📦 onlineStatuses APRES :", onlineStatuses);
+
+            }
+            if (message.type === "matchRemoved") {
+                const {userId} = message;
+                setMatchesGlobal(prev => prev.filter(m => String(m.user_id) !== String(userId)));
+                setBlockedUserId(message.userId);
+                setViewNotifications(prev => ({
+                    ...prev,
+                    received: (prev.received || []).filter(n => n.sender_id !== userId)
+                }));
+
+                setLikeNotifications(prev => ({
+                    ...prev,
+                    received: (prev.received || []).filter(n => n.sender_id !== userId)
+                }));
+
+                setMatchNotifications(prev =>
+                    (prev || []).filter(n => n.sender_id !== userId)
+                );
+
+                setMessageNotifications(prev =>
+                    (prev || []).filter(n => n.sender_id !== userId)
+                );
+
+                setNotifications({
+                    views: (prev => (prev.received || []).filter(n => n.sender_id !== userId).length)(viewNotifications),
+                    likes: (prev => (prev.received || []).filter(n => n.sender_id !== userId).length)(likeNotifications),
+                    matchs: (prev => (prev || []).filter(n => n.sender_id !== userId).length)(matchNotifications),
+                    messages: (prev => (prev || []).filter(n => n.sender_id !== userId).length)(messageNotifications),
+                });
 
             }
             if (message.type === "refreshMatchUI") {
                 const {blockerId, blockedId} = message;
-                const currentUser = localStorage.getItem("userId");
-                console.log(`[WS FRONT] 👤 Utilisateur ${currentUser} a reçu le message WS : refreshMatchUI`);
+                const currentUser = userId;
                 if (userId === blockerId.toString() || userId === blockedId.toString()) {
                     setMatchesGlobal(prev =>
                         prev.filter(m =>
@@ -67,10 +146,6 @@ export const SocketProvider = ({children}) => {
                         )
                     )
                 }
-            }
-            if (message.type === "messageBlocked") {
-                console.log("Blocage detecte:", message);
-                setBlockedUserId(message.receiverId);
             }
         }
 
@@ -81,7 +156,7 @@ export const SocketProvider = ({children}) => {
         return () => {
             newSocket.close();
         }
-    }, [userId]);
+    }, [userId, loading]);
 
     return (
         <SocketContext.Provider value={{
@@ -100,6 +175,16 @@ export const SocketProvider = ({children}) => {
             setUserPhoto,
             blockedUserId,
             setBlockedUserId,
+            notifications,
+            setNotifications,
+            messageNotifications,
+            setMessageNotifications,
+            matchNotifications,
+            setMatchNotifications,
+            likeNotifications,
+            setLikeNotifications,
+            viewNotifications,
+            setViewNotifications
         }}>
             {children}
         </SocketContext.Provider>

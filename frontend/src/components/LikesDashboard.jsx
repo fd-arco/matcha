@@ -7,13 +7,14 @@ const LikesDashboard = ({ notifications, setLikeNotifications, userId}) => {
 
     const handleUnlike = async(notif) => {
         try {
-            await fetch(`http://localhost:3000/unlike`, {
+            await fetch(`http://localhost:3000/likes/unlike`, {
                 method:"POST",
                 headers: {"Content-type": "application/json"},
                 body: JSON.stringify({
                     user1:userId,
                     user2: notif.sender_id,
-                })
+                }),
+                credentials:"include"
             })
             setLikeNotifications(prev => ({
                 ...prev,
@@ -118,7 +119,8 @@ const LikesDashboard = ({ notifications, setLikeNotifications, userId}) => {
 
             {selectedProfile && (
                 <ProfileModal
-                    userId={selectedProfile.userId}
+                    viewedId={selectedProfile.userId}
+                    // viewerId={userId}
                     onClose={() => setSelectedProfile(null)}
                 />
             )}

@@ -3,13 +3,15 @@ import { Navigate, useNavigate } from "react-router-dom";
 import ModalLocal from "../util/modalLocal.jsx"
 import { getUserLocation } from "../util/geo.js";
 import ConfirmActionModal from "../components/ConfirmActionModal.jsx";
+import { useUser } from "../context/UserContext";
 
-export default function CreateProfil({refreshUser}) {
+export default function CreateProfil() {
     const [selectedPassions, setSelectedPassions] = useState([]);
     const [selectedValue, setSelectedValue] = useState("");
     const [photos, setPhotos] = useState([]);
     const navigate = useNavigate();
-    const userId = localStorage.getItem("userId");
+    const {userId, setHasProfile} = useUser();
+    // const userId = localStorage.getItem("userId");
     const [modalLocal, setModalLocal] = useState(false);
     const [infoModal, setInfoModal] = useState({
         isOpen:false,
@@ -20,7 +22,6 @@ export default function CreateProfil({refreshUser}) {
     const passionsList = ["Music", "Sports", "Reading", "Traveling", "Cooking", 
         "Gaming", "Dancing", "Art", "Photography", "Movies"
     ];
-    console.log("blablalba");
     const [formErrors, setFormErrors] = useState({});
 
     const showInfoModal = (title, message, onConfirm) => {
@@ -54,15 +55,12 @@ export default function CreateProfil({refreshUser}) {
         const file = event.target.files[0];
         if (!file)
             return;
-        console.log("FILE TYPE = ", file.type);
 
         if (!ALLOWED_TYPES.includes(file.type)) {
             showInfoModal("Invalid file", "Only JPG, PNG, or WEBP images are allowed.");
             return ;
         }
 
-        console.log("FILE SIZE = ",file.size);
-        console.log("SIZE MAX =", 1024 * 1024 * MAX_SIZE_MB);
         if (file.size > MAX_SIZE_MB * 1024 * 1024) {
             showInfoModal("File too large", `Each photo must be less than ${MAX_SIZE_MB}MB.`);
             return;
@@ -83,7 +81,6 @@ export default function CreateProfil({refreshUser}) {
     };
 
     async function handleLocalModal(){
-        console.log("ca reeeeeeeeeeeeeeeeeeeentre")
         setModalLocal(true);
     }
 
@@ -164,17 +161,17 @@ export default function CreateProfil({refreshUser}) {
             finalFormData.append("photos", photo.file);
         });
         try {
-            console.log("DANS CREATE PROFILE API")
-            const response = await fetch("http://localhost:3000/create-profil", {
+            const response = await fetch("http://localhost:3000/profile/create-profil", {
                 method: "POST",
                 body: finalFormData,
+                credentials:"include"
             });
 
             const data = await response.json();
             if (response.ok) {
                 showInfoModal("Profile created", "Your profile has been successfully created.",
                     () => {
-                        refreshUser();
+                        setHasProfile(true);
                         navigate("/swipe");
                     }
                 );
@@ -232,68 +229,68 @@ export default function CreateProfil({refreshUser}) {
                                 </select>
                                 {formErrors.gender && (<p className="text-red-500 dark:text-red-800 text-sm m-0 p-0">{formErrors.gender}</p>)}
                             </div>
-                            <div class="mb-4">
-                             <label class={`block font-medium mb-2`}>Interested in...</label>
-                             <div class="flex flex-wrap -mx-2">
-                                 <div class="px-2 w-1/3">
-                                     <label for="men" class="block font-medium mb-2 text-sm">
-                                         <input type="radio" id="men" name="interestedIn" value="men" class="mr-2 accent-green-500 dark:accent-green-800" onChange={(e) => {
+                            <div className="mb-4">
+                             <label className={`block font-medium mb-2`}>Interested in...</label>
+                             <div className="flex flex-wrap -mx-2">
+                                 <div className="px-2 w-1/3">
+                                     <label htmlFor="men" className="block font-medium mb-2 text-sm">
+                                         <input type="radio" id="men" name="interestedIn" value="men" className="mr-2 accent-green-500 dark:accent-green-800" onChange={(e) => {
                                             setFormErrors((prev) => ({...prev, interestedIn:""}));
                                          }}/>Men
                                      </label>
                                  </div>
-                                 <div class="px-2 w-1/3">
-                                     <label for="women" class="block font-medium mb-2 text-sm">
-                                         <input type="radio" id="women" name="interestedIn" value="women" class="mr-2 accent-green-500 dark:accent-green-800" onChange={(e) => {
+                                 <div className="px-2 w-1/3">
+                                     <label htmlFor="women" className="block font-medium mb-2 text-sm">
+                                         <input type="radio" id="women" name="interestedIn" value="women" className="mr-2 accent-green-500 dark:accent-green-800" onChange={(e) => {
                                             setFormErrors((prev) => ({...prev, interestedIn:""}));
                                          }} />Women
                                      </label>
                                  </div>
-                                 <div class="px-2 w-1/3">
-                                     <label for="beyond-binary" class="block font-medium mb-2 text-sm">
-                                         <input type="radio" id="beyond-binary" name="interestedIn" value="beyondBinary" class="mr-2 accent-green-500 dark:accent-green-800" onChange={(e) => {
+                                 <div className="px-2 w-1/3">
+                                     <label htmlFor="beyond-binary" className="block font-medium mb-2 text-sm">
+                                         <input type="radio" id="beyond-binary" name="interestedIn" value="beyondBinary" className="mr-2 accent-green-500 dark:accent-green-800" onChange={(e) => {
                                             setFormErrors((prev) => ({...prev, interestedIn:""}));
                                          }} />Beyond the binary
                                      </label>
                                  </div>
-                                 <div class="px-2 w-1/3">
-                                     <label for="everyone" class="block font-medium mb-2 text-sm">
-                                         <input type="radio" id="everyone" name="interestedIn" value="everyone" class="mr-2 accent-green-500 dark:accent-green-800" onChange={(e) => {
+                                 <div className="px-2 w-1/3">
+                                     <label htmlFor="everyone" className="block font-medium mb-2 text-sm">
+                                         <input type="radio" id="everyone" name="interestedIn" value="everyone" className="mr-2 accent-green-500 dark:accent-green-800" onChange={(e) => {
                                             setFormErrors((prev) => ({...prev, interestedIn:""}));
                                          }} />Everyone
                                      </label>
                                  </div>
                              </div>
-                             {formErrors.interestedIn && (<p className="text-red-500 dark:text-red-800 text-sm m-0 p-0">{formErrors.interestedIn}</p>)}
+                             {formErrors.interestedIn && (<p classNameName="text-red-500 dark:text-red-800 text-sm m-0 p-0">{formErrors.interestedIn}</p>)}
                          </div>
-                         <div class="mb-4">
-                             <label class={`block font-medium mb-2`}>What are you looking for?</label>
-                             <div class="flex flex-wrap -mx-2">
-                                 <div class="px-2 w-1/3">
-                                     <label for="serious-relationship" class="block font-medium mb-2 text-sm">
-                                         <input type="radio" id="serious-relationship" name="lookingFor" value="serious" class="mr-2 accent-green-500 dark:accent-green-800" onChange={(e) => {
+                         <div className="mb-4">
+                             <label className={`block font-medium mb-2`}>What are you looking for?</label>
+                             <div className="flex flex-wrap -mx-2">
+                                 <div className="px-2 w-1/3">
+                                     <label htmlFor="serious-relationship" className="block font-medium mb-2 text-sm">
+                                         <input type="radio" id="serious-relationship" name="lookingFor" value="serious" className="mr-2 accent-green-500 dark:accent-green-800" onChange={(e) => {
                                             setFormErrors((prev) => ({...prev, lookingFor:""}));
                                          }}/>Serious relationship
                                      </label>
                                  </div>
-                                 <div class="px-2 w-1/3">
-                                     <label for="nothing-serious" class="block font-medium mb-2 text-sm">
+                                 <div className="px-2 w-1/3">
+                                     <label htmlFor="nothing-serious" className="block font-medium mb-2 text-sm">
                                          <input type="radio" id="nothing-serious" name="lookingFor" value="nothingSerious"
-                                            class="mr-2 accent-green-500 dark:accent-green-800" onChange={(e) => {
+                                            className="mr-2 accent-green-500 dark:accent-green-800" onChange={(e) => {
                                                 setFormErrors((prev) => ({...prev, lookingFor:""}));
                                              }}/>Nothing serious
                                     </label>
                                 </div>
-                                <div class="px-2 w-1/3">
-                                    <label for="making-friends" class="block font-medium mb-2 text-sm">
-                                        <input type="radio" id="making-friends" name="lookingFor" value="makingFriends" class="mr-2 accent-green-500 dark:accent-green-800" onChange={(e) => {
+                                <div className="px-2 w-1/3">
+                                    <label htmlFor="making-friends" className="block font-medium mb-2 text-sm">
+                                        <input type="radio" id="making-friends" name="lookingFor" value="makingFriends" className="mr-2 accent-green-500 dark:accent-green-800" onChange={(e) => {
                                             setFormErrors((prev) => ({...prev, lookingFor:""}));
                                          }}/>Making friends
                                     </label>
                                 </div>
-                                <div class="px-2 w-1/3">
-                                    <label for="not-sure" class="block font-medium mb-2 text-sm">
-                                        <input type="radio" id="not-sure" name="lookingFor" value="notSure" class="mr-2 accent-green-500 dark:accent-green-800" onChange={(e) => {
+                                <div className="px-2 w-1/3">
+                                    <label htmlFor="not-sure" className="block font-medium mb-2 text-sm">
+                                        <input type="radio" id="not-sure" name="lookingFor" value="notSure" className="mr-2 accent-green-500 dark:accent-green-800" onChange={(e) => {
                                             setFormErrors((prev) => ({...prev, lookingFor:""}));
                                          }}/>I'm not sure yet
                                     </label>
@@ -368,14 +365,14 @@ export default function CreateProfil({refreshUser}) {
                     {formErrors.photos && (<p className="text-red-500 dark:text-red-800 text-sm mt-1 mb-3">{formErrors.photos}</p>)}
                     {photos.length === 0 && (
                     <div className="flex flex-col flex-grow items-center justify-center">
-                        <div class="flex-grow flex items-center justify-center">
+                        <div className="flex-grow flex items-center justify-center">
                         <img 
                             src="https://cdn-icons-png.flaticon.com/512/847/847969.png" 
                             alt="Default portrait" 
                             className="w-64 h-64 object-cover rounded-full border border-gray-400"
                         />
                         </div>
-                        <div class="flex-grow flex items-center justify-center">
+                        <div className="flex-grow flex items-center justify-center">
                         <p className="text-xl italic text-gray-500 dark:text-gray-300 text-center flex-grow flex items-center justify-center">
                         No photos uploaded
                         </p>

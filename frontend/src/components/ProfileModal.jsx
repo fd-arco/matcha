@@ -4,13 +4,15 @@ import { useSocket } from "../context/SocketContext";
 import { formatDistanceToNow } from "date-fns";
 import { enUS } from "date-fns/locale";
 import ConfirmActionModal from "./ConfirmActionModal";
+import { useUser } from "../context/UserContext";
 
-const ProfileModal = ({userId, onClose}) => {
+const ProfileModal = ({viewedId, onClose}) => {
     const [profile, setProfile] = useState(null);
     const [photos, setPhotos] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const {socket, onlineStatuses} = useSocket();
-    const viewerId = localStorage.getItem("userId");
+    const {userId} = useUser();
+    const viewerId = userId;
     const [isReportModalOpen, setIsReportModalOpen]=useState(false);
     const [reportReason, setReportReason] = useState("");
     const [isReportSuccessModalOpen, setIsReportSuccessModalOpen] = useState(false);
@@ -20,25 +22,27 @@ const ProfileModal = ({userId, onClose}) => {
 
     useEffect(() => {
         const checkMatch = async() => {
-            console.log("viewerid = ", viewerId);
-            console.log("userId = ", userId);
-            if (!viewerId || !userId || viewerId === userId) return;
+            if (!viewerId || !viewedId || viewerId === viewedId) return;
             try {
-                const res = await fetch(`http://localhost:3000/has-match/${viewerId}/${userId}`);
+                const res = await fetch(`http://localhost:3000/likes/has-match/${viewerId}/${viewedId}`, {
+                    credentials:"include"
+                });
                 const data = await res.json();
                 setHasMatch(data.hasMatch);
-                console.log("✅ hasMatch reçu du backend:", data.hasMatch);
             } catch (err) {
                 console.error("Erreur lors du check match:", err);
             }
         }
         checkMatch();
-    },[viewerId, userId]);
+    },[viewerId, viewedId]);
 
     useEffect(() => {
+        // if (!viewerId || !viewedId || viewerId === viewedId) return;
         const fetchProfile = async() => {
             try {
-                const res = await fetch(`http://localhost:3000/modalprofile/${userId}`);
+                const res = await fetch(`http://localhost:3000/profile/modalprofile/${viewedId}`, {
+                    credentials:"include"
+                });
                 const data = await res.json();
                 setProfile(data);
                 setPhotos(data.photos);
@@ -47,34 +51,32 @@ const ProfileModal = ({userId, onClose}) => {
             }
         }
         fetchProfile();
-    }, [userId]);
+    }, [viewedId]);
 
     useEffect(() => {
-        if (!socket || !viewerId || !userId) {
-            console.log("❌ Pas de socket, viewerId ou userId");
+        if (!socket || !viewerId || !viewedId) {
             return;
         }
     
-        if (viewerId === userId) {
-            console.log("ℹ️ Pas d’envoi car l’utilisateur consulte son propre profil");
+        if (viewerId === viewedId) {
             return;
         }
 
         const sendView = async () => {
             try {
-                await fetch("http://localhost:3000/view", {
-                    method:"POST",
-                    headers:{"Content-Type": "application/json"},
-                    body:JSON.stringify({
-                        viewerId:viewerId,
-                        viewedId:userId
-                    })
-                });
+                // await fetch("http://localhost:3000/view", {
+                //     method:"POST",
+                //     headers:{"Content-Type": "application/json"},
+                //     body:JSON.stringify({
+                //         viewerId:viewerId,
+                //         viewedId:viewedId
+                //     })
+                // });
                 socket.send(
                     JSON.stringify({
                         type: "viewNotification",  
                         senderId: viewerId,
-                        receiverId: userId,
+                        receiverId: viewedId,
                     })
                 );
             } catch (error) {
@@ -82,10 +84,10 @@ const ProfileModal = ({userId, onClose}) => {
             }
         }
         sendView();
-    }, [socket, viewerId, userId]);
+    }, [socket, viewerId, viewedId]);
     
 
-    if (!userId || !profile || photos.length === 0) return null;
+    if (!viewedId || !profile || photos.length === 0) return null;
 
     const handlePrev = () => {
         setCurrentIndex((prev) => (prev === 0 ? photos.length -1 : prev -1));
@@ -95,21 +97,21 @@ const ProfileModal = ({userId, onClose}) => {
         setCurrentIndex((prev) => (prev === photos.length -1 ? 0 : prev + 1));
     }
 
-    const userStatus = onlineStatuses[Number(userId)];
+    const userStatus = onlineStatuses[Number(viewedId)];
 
-    console.log("userStatus for modal userId", userId, "=", userStatus);
 
 
     const handleReport = async () => {
         try {
-            await fetch("http://localhost:3000/report", {
+            await fetch("http://localhost:3000/misc/report", {
                 method:"POST",
                 headers:{"Content-Type":"application/json"},
                 body:JSON.stringify({
                     reporterId:viewerId,
-                    reportedId:userId,
+                    reportedId:viewedId,
                     reason:reportReason,    
                 }),
+                credentials:"include"
             });
             setIsReportSuccessModalOpen(true);
         } catch (err) {
@@ -120,27 +122,21 @@ const ProfileModal = ({userId, onClose}) => {
 
     const handleBlock = async() => {
         try {
-            const res = await fetch(`http://localhost:3000/block`, {
+            const res = await fetch(`http://localhost:3000/misc/block`, {
                 method:"POST",
                 headers:{"Content-Type": "application/json"},
                 body: JSON.stringify({
                     blockerId:viewerId,
-                    blockedId:userId
+                    blockedId:viewedId
                 }),
+                credentials:"include"
             });
             if (!res.ok) throw new Error("echec du blocage");
             socket.send(
                 JSON.stringify({
-                    type:"userBlocked",
+                    type:"matchRemoved",
                     blockerId:viewerId,
-                    blockedId:userId,
-                })
-            )
-            socket.send(
-                JSON.stringify({
-                    type:"matchBlocked",
-                    blockerId:viewerId,
-                    blockedId:userId,
+                    blockedId:viewedId
                 })
             )
             onClose();
@@ -235,7 +231,7 @@ const ProfileModal = ({userId, onClose}) => {
                             </div>
                         </div>
                     )}
-                    {viewerId !== userId && (
+                    {viewerId !== viewedId && (
                     <div className={`mt-6 flex justify-center gap-10`}>
                         <button
                             onClick={() => setIsReportModalOpen(true)}

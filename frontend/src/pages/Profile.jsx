@@ -8,7 +8,7 @@ export default function Profil() {
     useEffect(() => {
         const token = sessionStorage.getItem("token");
         if (token) {
-            fetch("http://localhost:3000/me", {
+            fetch("http://localhost:3000/auth/me", {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -20,8 +20,6 @@ export default function Profil() {
                 } 
                 else 
                 {
-                    console.log("ca sort ici")
-                    console.log('tokern   ', token)
                     sessionStorage.getItem("token");
                     navigate("/register");
                 }

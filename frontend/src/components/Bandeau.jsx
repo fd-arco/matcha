@@ -3,17 +3,25 @@ import { useNavigate } from "react-router-dom";
 import {LayoutDashboard, Settings} from "lucide-react";
 import ProfileModal from "./ProfileModal";
 import { useSocket } from "../context/SocketContext";
+import { useUser } from "../context/UserContext";
 
 const Bandeau = () => {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
-    const {hasNotification, setUserPhoto} = useSocket();
-    const userId = localStorage.getItem("userId");
+    const {hasNotification, setUserPhoto, notifications} = useSocket();
+    const {userId} = useUser();
+
+    // const userId = localStorage.getItem("userId");
     const [showProfilModal, setShowProfilModal] = useState(false);
+
+
+
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/user/${userId}`);
+                const response = await fetch(`http://localhost:3000/profile/user/${userId}`, {
+                    credentials:"include"
+                });
                 const data = await response.json();
                 setUser(data);
                 setUserPhoto(data.photos[0]);
@@ -23,10 +31,13 @@ const Bandeau = () => {
         };
         fetchUser();
     }, [userId]);
-
-    if (!user) {
-        return <div className="bg-gray-200 p-4 text-center">Chargement...</div>;
+    
+    if (!notifications || !user) {
+        return <div className="bg-gray-200 p-4 text-center">Loading...</div>
     }
+
+    const totalUnread =
+        Number(notifications.views) + Number(notifications.likes) + Number(notifications.matchs) + Number(notifications.messages);
 
     return (
         //TODO:AJOUTER ONCLICK SUR LE DIV POUR REDIRIGER VERS LES EDIT PROFILE
@@ -64,18 +75,20 @@ const Bandeau = () => {
                     onClick={() => navigate("/dashboard")}
                     className="p-2 rounded-full dark:hover:bg-gray-800 hover:bg-gray-100 transition relative">
                     <LayoutDashboard size={25} className="text-black dark:text-white" />
-                    {hasNotification && (
-                        <span className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-3 h-3 text-xs flex items-center justify-center" />
+                    {totalUnread > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-3 h-3 text-xs flex items-center justify-center">
+                            {totalUnread}
+                        </span>
                     )}
                </button>
                <button
-                    onClick={() => navigate("/settingsPage")}
+                    onClick={() => navigate("/settings")}
                     className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition">
                     <Settings size={25} className="text-black dark:text-white" />
                 </button>
             </div>
             {showProfilModal && (
-                <ProfileModal userId={userId} onClose={() => setShowProfilModal(false)} />
+                <ProfileModal viewedId={userId} onClose={() => setShowProfilModal(false)} />
             )}
         </div>
     )

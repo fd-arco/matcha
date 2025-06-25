@@ -1,9 +1,10 @@
 import React from "react";
 import { useState } from "react";
 import ProfileModal from "./ProfileModal";
+import { useUser } from "../context/UserContext";
 
 const MessagesDashboard = ({notifications}) => {
-
+    const {userId} = useUser();
     const [selectedProfile, setSelectedProfile] = useState(null);
 
     const handleImageClick = (notif) => {
@@ -54,7 +55,8 @@ const MessagesDashboard = ({notifications}) => {
             )}
             {selectedProfile && (
                 <ProfileModal
-                    userId={selectedProfile.userId}
+                    viewedId={selectedProfile.userId}
+                    // viewerId={userId}
                     onClose={() => setSelectedProfile(null)}
                 />
             )} 

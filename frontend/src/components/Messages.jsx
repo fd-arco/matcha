@@ -4,20 +4,23 @@ import { fr } from "date-fns/locale";
 import ProfileModal from "./ProfileModal";
 import { useSocket } from "../context/SocketContext";
 import { fetchOnlineStatuses } from "../hooks/fetchOnlineStatuses";
+import { useUser } from "../context/UserContext";
 
 const Messages = ({onSelectMatch, selectedMatch}) => {
     const [matches, setMatches] = useState([]);
-    const {matchesGlobal, messagesGlobal, unreadCountTrigger, onlineStatuses, setOnlineStatuses} = useSocket();
-    const userId = localStorage.getItem("userId");
+    const {matchesGlobal, messagesGlobal, unreadCountTrigger, onlineStatuses, setOnlineStatuses, socket} = useSocket();
+    // const userId = localStorage.getItem("userId");
+    const {userId} = useUser();
     const [currentTime, setCurrentTime] = useState(new Date());
     const [showProfilModal, setShowProfilModal] = useState(null);
 
     useEffect(() => {
         const fetchMatches = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/matches/${userId}`);
+                const response = await fetch(`http://localhost:3000/messages/matches/${userId}`, {
+                    credentials:"include"
+                });
                 const data = await response.json();
-                console.log("DATA RECU DU SERVEUR : ", data);
                 const formattedMatches = data.map(match => ({
                     match_id: match.match_id,
                     user_id: match.user1_id === userId ? match.user2_id : match.user1_id,
@@ -34,7 +37,7 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
                     const dateB = new Date(b.last_message_created_at || 0);
                     return dateB - dateA;
                 });
-                setMatches(data);
+                setMatches(formattedMatches);
             } catch(error) {
                 console.error("Erreur lors du chargement des matchs", error);
             }
@@ -50,14 +53,17 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
     }, [matches, setOnlineStatuses]);
 
     useEffect(() => {
-        setMatches(matchesGlobal);
+        const sorted = [...matchesGlobal].sort((a,b) => {
+            const dateA = new Date(a.last_message_created_at || 0);
+            const dateB = new Date(b.last_message_created_at || 0);
+            return dateB - dateA;
+        })
+        setMatches(sorted);
     }, [matchesGlobal]);
 
     useEffect(() => {
-        console.log("dans useffect unreadcounttrigger");
         setMatches(prevMatches =>
             prevMatches.map(m => {
-                console.log("🎯 Vérification match :", { userId: m.user_id, unreadCountTrigger });
                 return m.user_id === selectedMatch?.user_id ? {...m, unread_count:0} : m
             })
         );
@@ -75,20 +81,18 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
             return ;
 
         const lastMessage = messagesGlobal[messagesGlobal.length -1];
-
         setMatches(prevMatches => {
             const updated = prevMatches.map(m => {
                 if (Number(m.user_id) === Number(lastMessage.sender_id) || Number(m.user_id) === Number(lastMessage.receiver_id)) {
-                    console.log("HE PASSE ")
+                    const isRecipient = Number(lastMessage.receiver_id) === Number(userId);
+
                     let updateMatch = {...m};
                     updateMatch.last_message = lastMessage.content;
                     updateMatch.last_message_created_at = lastMessage.created_at;
-                    const isRecipient = lastMessage.receiver_id.toString() === userId;
                     updateMatch.unread_count = parseInt(updateMatch.unread_count, 10) || 0;
+                    // const isRecipient = lastMessage.receiver_id.toString() === userId;
                     if (isRecipient) {
-                        console.log("JE PASSE ICI OU PSA???")
                         updateMatch.unread_count += 1;
-                        console.log("NOMBRE DE NOTIFICATIONS: ", updateMatch.unread_count);
                     }
                     return updateMatch;
                 }
@@ -96,7 +100,6 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
             });
 
             return updated.sort((a,b) => {
-                console.log("last message a : " + a.last_message_created_at + " last message b: " + b.last_message_created_at);
                 const dateA = new Date(a.last_message_created_at || 0);
                 const dateB = new Date(b.last_message_created_at || 0);
                 return dateB - dateA;
@@ -104,7 +107,6 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
         })
     }, [messagesGlobal, userId]);
 
-    console.log("MATCHES STATE DANS LE COMPOSANT :", matches);
 
     const handleSelectMatch = async(match) => {
         try {
@@ -116,8 +118,16 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
                 body: JSON.stringify({
                     userId: userId,
                     matchId: match.user_id
-                })
+                }),
+                credentials:"include"
             });
+            if (socket) {
+                socket.send(JSON.stringify({
+                    type:"read_messages",
+                    userId:userId,
+                    matchId:match.user_id
+                }));
+            }
             setMatches(prevMatches => prevMatches.map(m => m.user_id === match.user_id ? { ...m, unread_count: 0} : m))
             onSelectMatch(match);
         } catch (error) {
@@ -127,7 +137,7 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
 
 
     return (
-        <div className="flex-1 overflow-y-auto bg-gray-100 dark:bg-gray-700 p-4 w-full">
+        <div className="overflow-y-auto bg-gray-100 dark:bg-gray-700 p-4 w-full">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Messages</h2>
             <div className="pr-2">
             {matches.length === 0 ? (
@@ -141,7 +151,6 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
                 <ul className="space-y-2">
                     {matches.map((match) => {
                         const userStatus = onlineStatuses[match.user_id];
-                        console.log(`Status utilisateur ${match.user_id}:`, userStatus?.online, userStatus?.lastOnline);
                         return (
                         <li
                             key={match.user_id}
@@ -196,7 +205,7 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
             )}
         </div>
         {showProfilModal && (
-            <ProfileModal userId={showProfilModal} onClose={() => setShowProfilModal(null)} />
+            <ProfileModal viewedId={showProfilModal} onClose={() => setShowProfilModal(null)} />
         )}
         </div>
     )

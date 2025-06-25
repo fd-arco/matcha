@@ -12,4 +12,4 @@ RUN mkdir -p /app/uploads && chmod -R 777 /app/uploads
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["sh", "-c", "node database/migrations/migrate.js && npm start"]

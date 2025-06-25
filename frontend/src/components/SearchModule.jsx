@@ -2,6 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import {useFilters} from "../context/FilterContext"
 import UpdateModal from "./UpdateModal";
+import { useUser } from "../context/UserContext";
 
 const SearchModule = () => {
     const [ageGap, setAgeGap] = useState([18, 100]);
@@ -13,14 +14,17 @@ const SearchModule = () => {
     const {setFilters} = useFilters();
     const [showUpdateModal, setShowUpdateModal] = useState(false);
 
-    const userId = Number(localStorage.getItem("userId"));
+    // const userId = Number(localStorage.getItem("userId"));
+    const {userId} = useUser();
 
     useEffect(() => {
         if (ageGap[0] > ageGap[1]) return;
 
         const fetchMatchingCount = async() => {
             try {
-                const res = await fetch(`http://localhost:3000/profiles-count?userId=${userId}&ageMin=${ageGap[0]}&ageMax=${ageGap[1]}&fameMin=${fameRating}&tagsMin=${tagsInCommon}`);
+                const res = await fetch(`http://localhost:3000/profile/profiles-count?userId=${userId}&ageMin=${ageGap[0]}&ageMax=${ageGap[1]}&fameMin=${fameRating}&tagsMin=${tagsInCommon}`, {
+                    credentials:"include"
+                });
                 const data = await res.json();
                 setMatchingProfilesCount(data.count);
             } catch (error) {
@@ -43,9 +47,6 @@ const SearchModule = () => {
         }
         setShowUpdateModal(true);
         setFilters(newFilters);
-        console.log("Filtres selectionnes:", {
-            ageGap, fameRating, location, tagsInCommon
-        });
         //TODO: BACKEND REQUEST
     }
 

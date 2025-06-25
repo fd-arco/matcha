@@ -1,17 +1,22 @@
 import { useEffect, useState} from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { useUser } from "../context/UserContext";
 
 export default function MyAccount() {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
+    const {userId} = useUser();
     useEffect(() => {
-        const userId = localStorage.getItem("userId");
+        // const userId = localStorage.getItem("userId");
+        
         if (!userId) return;
 
         const fetchUser = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/my-account/${userId}`);
+                const response = await fetch(`http://localhost:3000/misc/my-account/${userId}`, {
+                    credentials:"include"
+                });
                 const data = await response.json();
                 setUser(data);
             } catch(err) {

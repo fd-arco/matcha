@@ -8,7 +8,7 @@ const ModalLocal = ({ onClose }) => {
   const [apiKey, setApiKey] = useState("")
 
   useEffect(() => {
-    fetch("http://localhost:3000/config")
+    fetch("http://localhost:3000/misc/config")
       .then((response) => response.json())
       .then((data) => {
         setApiKey(data.kk);
@@ -21,10 +21,11 @@ const ModalLocal = ({ onClose }) => {
     // async  function sendLocation(latitude, longitude){
     //   try{
     //       if(latitude && longitude){
-    //         const response = await fetch("http://localhost:3000/longitude",{
+    //         const response = await fetch("http://localhost:3000/misc/longitude",{
     //           method: "POST",
     //           headers:{"content-type": "application/json"},
     //           body: JSON.stringify({latitude, longitude}),
+    //           credentials:"include",
     
     //         })
     //       };

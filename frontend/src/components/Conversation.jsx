@@ -4,13 +4,15 @@ import {useSocket} from "../context/SocketContext"
 import { formatDistanceToNow } from "date-fns";
 import { enUS } from "date-fns/locale";
 import ConfirmActionModal from "./ConfirmActionModal";
+import { useUser } from "../context/UserContext";
 
 const Conversation = ({match, onBack}) => {
     const {messagesGlobal, socket, onlineStatuses, userPhoto, blockedUserId} = useSocket();
     const [showBlockedModal, setShowBlockedModal] = useState(false);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
-    const userId = localStorage.getItem("userId");
+    // const userId = localStorage.getItem("userId");
+    const {userId} = useUser();
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [reportReason, setReportReason] = useState("");
     const [isReportSuccessModalOpen, setIsReportSuccessModalOpen] = useState(false);
@@ -19,7 +21,7 @@ const Conversation = ({match, onBack}) => {
 
 
     useEffect(()=> {
-        if (blockedUserId === match.user_id) {
+        if (blockedUserId &&  blockedUserId === match.user_id) {
             setShowBlockedModal(true);
         }
     }, [blockedUserId, match?.user_id]);
@@ -27,7 +29,9 @@ const Conversation = ({match, onBack}) => {
     useEffect(() => {
         const fetchMessages = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/messages/${userId}/${match.user_id}`);
+                const response = await fetch(`http://localhost:3000/messages/${userId}/${match.user_id}`, {
+                    credentials:"include"
+                });
                 const data = await response.json();
                 setMessages(data);
             } catch (error) {
@@ -43,16 +47,10 @@ const Conversation = ({match, onBack}) => {
         const lastMessage = messagesGlobal[messagesGlobal.length - 1];
         const userIdInt = parseInt(userId, 10);
         const matchUserIdInt = parseInt(match.user_id, 10);
-        console.log("🔍 LAST MESSAGE :", lastMessage);
-        console.log("📌 match.user_id =", match.user_id, "| type:", typeof match.user_id);
-        console.log("👤 userIdInt =", userIdInt, "| type:", typeof userIdInt);
-        console.log("✉️ lastMessage.sender_id =", lastMessage.sender_id, "| type:", typeof lastMessage.sender_id);
-        console.log("✉️ lastMessage.receiver_id =", lastMessage.receiver_id, "| type:", typeof lastMessage.receiver_id);
         if (
             (lastMessage.sender_id === matchUserIdInt && lastMessage.receiver_id === userIdInt) ||
             (lastMessage.sender_id === userIdInt && lastMessage.receiver_id === matchUserIdInt)
         ) {
-            console.log("DANS USEEFFECT CONVERSATION");
             setMessages(prevMessages => [...prevMessages, lastMessage]);
     }  
     
@@ -73,6 +71,7 @@ const Conversation = ({match, onBack}) => {
             content:newMessage.trim(),
         };
 
+
         socket.send(JSON.stringify(messageData));
         setNewMessage("");
         
@@ -88,10 +87,10 @@ const Conversation = ({match, onBack}) => {
                 body: JSON.stringify({
                     userId: userId,
                     matchId: match.user_id
-                })
+                }),
+                credentials:"include"
             });
             if (socket) {
-                console.log("LE BON MATCH.USER_ID =", match.user_id);
                 socket.send(JSON.stringify({
                     type:"read_messages",
                     userId: userId,
@@ -105,7 +104,7 @@ const Conversation = ({match, onBack}) => {
 
     const handleReport = async () => {
     try {
-        await fetch("http://localhost:3000/report", {
+        await fetch("http://localhost:3000/misc/report", {
             method:"POST",
             headers:{"Content-Type":"application/json"},
             body:JSON.stringify({
@@ -113,6 +112,7 @@ const Conversation = ({match, onBack}) => {
                 reportedId: match.user_id,
                 reason: reportReason,
             }),
+            credentials:"include"
         });
         setIsReportSuccessModalOpen(true);
     } catch (err) {
@@ -123,17 +123,23 @@ const Conversation = ({match, onBack}) => {
 
     const handleBlock = async () => {
         try {
-            const res = await fetch(`http://localhost:3000/block`, {
+            const res = await fetch(`http://localhost:3000/misc/block`, {
                 method:"POST",
                 headers:{"Content-Type": "application/json"},
                 body: JSON.stringify({
                     blockerId: userId,
                     blockedId: match.user_id
                 }),
+                credentials:"include"
             });
             if (!res.ok) throw new Error("Échec du blocage");
-            socket.send(JSON.stringify({ type:"userBlocked", blockerId: userId, blockedId: match.user_id }));
-            socket.send(JSON.stringify({ type:"matchBlocked", blockerId: userId, blockedId: match.user_id }));
+            socket.send(JSON.stringify({
+                type: "matchRemoved",
+                blockerId: userId,
+                blockedId:match.user_id
+            }));
+            // socket.send(JSON.stringify({ type:"userBlocked", blockerId: userId, blockedId: match.user_id }));
+            // socket.send(JSON.stringify({ type:"matchBlocked", blockerId: userId, blockedId: match.user_id }));
             setIsBlockSuccessModalOpen(true);
             onBack();
         } catch (err) {
@@ -142,7 +148,7 @@ const Conversation = ({match, onBack}) => {
         }
     };
 
-    const userIdInt = parseInt(localStorage.getItem("userId", 10)); 
+    const userIdInt = parseInt(userId); 
 
     return (
         <div className="bg-gray-200 dark:bg-gray-800 flex flex-col items-center justify-center h-full p-4 shadow-lg">

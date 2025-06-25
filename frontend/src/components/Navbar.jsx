@@ -4,14 +4,15 @@ import { useEffect, useState} from "react";
 import { useNavigate } from "react-router-dom";
 import {User} from "lucide-react";
 import { useLocation } from "react-router-dom";
+import { useUser } from "../context/UserContext";
 
-export default function Navbar({userId, setUserId, refreshFlag, setHasProfile}){
+export default function Navbar(){
     const location = useLocation();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
-    const [localHasProfile, setLocalHasProfile] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
+    const {userId, setUserId, hasProfile, setHasProfile} = useUser();
 
     useEffect(() => {
         if (userId) {
@@ -19,26 +20,26 @@ export default function Navbar({userId, setUserId, refreshFlag, setHasProfile}){
         
         const fetchUser = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/user/${userId}`);
+                const response = await fetch(`http://localhost:3000/profile/user/${userId}`, {
+                    credentials:"include"
+                });
                 const data = await response.json();
                 setUser(data);
+                
                 const hasProf = !!data.profile_id;
-                setLocalHasProfile(hasProf);
                 setHasProfile(hasProf);
             } catch (error) {
                 console.error("Error lors du chargement du profil :", error);
                 setHasProfile(false);
-                setLocalHasProfile(false);
             }
         };
         fetchUser();
         } else {
             setIsAuthenticated(false);
             setHasProfile(false);
-            setLocalHasProfile(false);
             setUser(null);
         }
-    }, [userId, refreshFlag, setHasProfile]);
+    }, [userId, setHasProfile, hasProfile]);
 
     useEffect(() => {
         const handleKeyDown = (e) => {
@@ -59,13 +60,20 @@ export default function Navbar({userId, setUserId, refreshFlag, setHasProfile}){
         }
     }, [menuOpen]);
 
-    const handleSignOut = () => {
-        localStorage.removeItem("userId");
+    const handleSignOut = async () => {
+        // localStorage.removeItem("userId");
+        try {
+            await fetch("http://localhost:3000/auth/signout", {
+                method:"POST",
+                credentials:"include",
+            })
+        } catch (err) {
+            console.error("erreur logout:", err);
+        }
         setUserId(null);
         setIsAuthenticated(false);
         setUser(null);
         setHasProfile(false);
-        setLocalHasProfile(false);
         navigate("/");
     };
 
@@ -90,7 +98,7 @@ export default function Navbar({userId, setUserId, refreshFlag, setHasProfile}){
             <div className="w-1/3 justify-end space-x-2 hidden md:flex">
                 {isAuthenticated ? (
                     <div className="flex items-center space-x-2">
-                        {localHasProfile ? (
+                        {hasProfile ? (
                             <Link
                                 to="/my-account"
                                 className="p-2 rounded-lg shadow-lg text-white bg-blue-500 hover:bg-blue-400 dark:bg-blue-800 dark:hover:bg-blue-900 flex items-center space-x-1"
@@ -180,7 +188,7 @@ export default function Navbar({userId, setUserId, refreshFlag, setHasProfile}){
                 </div>
                 {isAuthenticated ? (
                 <div className="flex flex-col space-y-4 w-full items-center">
-                    {localHasProfile ? (
+                    {hasProfile ? (
                         <Link
                         to="/my-account"
                         onClick={() => setMenuOpen(false)}
