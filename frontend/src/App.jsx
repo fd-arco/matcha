@@ -21,7 +21,9 @@ import MyAccount from './pages/MyAccount.jsx';
 import PrivateRoute from './components/PrivateRoute.jsx';
 import PrivateRouteWithProfile from './components/PrivateRouteWithProfile.jsx';
 
-const getRoutes = () => createBrowserRouter([
+import EmailConf from './components/EmailConf.jsx'
+import ResetPasswordFront from "./components/ResetPasswordFront.jsx"
+const getRoutes = (userId, setUserId, refreshFlag, refreshUser, hasProfile, setHasProfile) => createBrowserRouter([
   {
     path:'/',
     element: <RootLayout />,
@@ -71,6 +73,22 @@ const getRoutes = () => createBrowserRouter([
           </PrivateRouteWithProfile>
         )
       },
+      {
+        path:  '/emailconf', 
+        element: (
+          <PrivateRouteWithProfile>
+            <EmailConf />
+          </PrivateRouteWithProfile>
+        )
+      },
+      {
+        path: '/PasswordConfirm', 
+        element: (
+          <PrivateRouteWithProfile>
+            <ResetPasswordFront />
+          </PrivateRouteWithProfile>
+        )
+      }
       // {path: '/settingsPage', element: <SettingsPage/>},
       // {path: '/my-account', element:<MyAccount />}
       // {path: '/dashboard', element: <Dashboard />},

@@ -40,7 +40,7 @@ router.post("/register", async(req, res) => {
             to: email,
             subject: 'Vérification de votre compte',
             text: `Merci pour votre inscription! Cliquez sur ce lien pour vérifier votre email: ${verifLink}`,
-            html: `<h2>Welcome to  MATCHA SALE CAFARD</h2><br></br><p>Merci pour votre inscription! Cliquez sur ce lien pour vérifier votre email: <a href="${verifLink}">Vérifier mon email</a></p>`
+            html: `<h2>	Welcome to MATCHA ${firstname} ${lastname}</h2><br></br><p>Merci pour votre inscription! Cliquez sur ce lien pour vérifier votre email: <a href="${verifLink}">Vérifier mon email</a></p>`
         };
 
         const transporter = nodemailer.createTransport({
@@ -106,7 +106,7 @@ router.post("/register", async(req, res) => {
 //     }
 // });
 
-router.post("/loginUser", async (req, res) => {
+router.post("/loginUser",  async (req, res) => {
 
     const { email, password } = req.body;
 
@@ -144,7 +144,42 @@ router.post("/loginUser", async (req, res) => {
     }
 });
 
-router.get("/me", async (req, res) => {
+// app.post("/loginUser", async (req, res) => {
+
+//     const { email, password } = req.body;
+
+//     if (!email || !password) {
+//         return res.status(400).json({ error: "Veuillez remplir tous les champs" });
+//     }
+
+//     try {
+//         const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+
+//         if (result.rows.length === 0) {
+//             return res.status(401).json({ error: "Email incorrect" });
+//         }
+
+//         const user = result.rows[0];
+
+//         if (user.password !== password) {
+//             return res.status(401).json({ error: "Mot de passe incorrect" });
+//         }
+
+//         const token = jwt.sign({ userId: user.id }, SECRET_KEY, { expiresIn: "7d" });
+
+//         res.json({
+//             message: `Bienvenue ${user.firstname} !`,
+//             user: { id: user.id, firstname: user.firstname, lastname: user.lastname, email: user.email },
+//             token,
+//         });
+//     } 
+//     catch (error) {
+//         console.error("Erreur lors de la connexion:", error);
+//         res.status(500).json({ error: "Erreur serveur" });
+//     }
+// });
+
+router.get("/me", auth, async (req, res) => {
 
     const token = req.headers.authorization?.split(" ")[1];
 
@@ -170,7 +205,7 @@ router.get("/me", async (req, res) => {
 
 ///////////////////////////////////////////////sendemail/////////
 
-router.get("/me", async (req, res) => {
+router.get("/me", auth,  async (req, res) => {
 
     const token = req.headers.authorization?.split(" ")[1];
 
@@ -217,6 +252,29 @@ router.get("/my-me", auth, async(req, res) => {
     }
 })
 
+// router.get('/verify-email', async (req, res) => {
+
+//     const { token } = req.query;
+
+//     try {
+//         const result = await pool.query('SELECT * FROM users WHERE veriftoken = $1', [token]);
+
+//         if (result.rows.length === 0) {
+//             return res.status(400).json({ error: 'Token invalide ou expiré.' });
+//         }
+
+//         const user = result.rows[0];
+
+//         await pool.query('UPDATE users SET verified = $1, veriftoken = NULL WHERE id = $2', [true, user.id]);
+
+//         res.status(200).json({ message: 'Votre compte a été vérifié avec succès!' });
+
+//     } catch (error) {
+//         console.error('Erreur lors de la vérification:', error);
+//         res.status(500).json({ error: 'Erreur lors de la vérification de l\'email.' });
+//     }
+// });
+
 router.get('/verify-email', async (req, res) => {
 
     const { token } = req.query;
@@ -232,7 +290,8 @@ router.get('/verify-email', async (req, res) => {
 
         await pool.query('UPDATE users SET verified = $1, veriftoken = NULL WHERE id = $2', [true, user.id]);
 
-        res.status(200).json({ message: 'Votre compte a été vérifié avec succès!' });
+        // res.status(200).json({ message: 'Votre compte a été vérifié avec succès!' });
+        res.redirect(`http://localhost:3001/emailconf`);
 
     } catch (error) {
         console.error('Erreur lors de la vérification:', error);

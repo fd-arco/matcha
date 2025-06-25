@@ -3,6 +3,8 @@ const router = express.Router();
 const {auth} = require("../middleware/auth");
 const pool = require("../config/db");
 const {clients} = require("../websocket/websocket");
+const {generateVerificationToken} = require("../utils/generateToken");
+const nodemailer = require("nodemailer");
 
 router.post("/longitude", auth, async(req, res) => {
 
@@ -148,4 +150,105 @@ router.get("/config", async(req, res) => {
     res.json({kk: process.env.REACT_APP_GOOGLE_API_KEY,});
 })
 
-module.exports = router;
+
+router.post("/reset-password", async(req, res) => {
+    
+    const { email } = req.body
+    
+    if(!email)
+        res.status(400).json(error, "erreur dans la recup du mail")
+    try{
+        const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+        
+        if (result.rows.length === 0) {
+            return res.status(401).json({ error: "Email incorrect" });
+        }
+        const user = result.rows[0];
+        
+        const verifTokenPassword = generateVerificationToken();
+        await pool.query("UPDATE users SET token_password = $1 WHERE id = $2", [verifTokenPassword, user.id]);
+        
+        const verifLinkPassword = `http://localhost:3000/misc/verify-password?token=${verifTokenPassword}`;
+        
+        const mailOptions = {
+            from: process.env.GMAIL_USER,
+            to: email,
+            subject: 'Vérification de votre compte',
+            text: `Bonjour, voici le lien pour changer votre mot de passe: ${verifLinkPassword}`,
+            html: `<h2>Welcome back to MATCHA</h2><br></br><p> voici le lien pour changer votre mot de passe: <a href="${verifLinkPassword}">Changer mon mot de passe</a></p>`
+        };
+        
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.GMAIL_USER,
+                pass: process.env.GMAIL_PASS
+            }
+        });
+        
+        await transporter.sendMail(mailOptions);
+        
+        return res.status(200).json({ message: "Email de réinitialisation envoyé !" });
+    }
+    catch(error){
+        if (error.code === '23505') 
+            {
+                console.error("erreur email cousin");
+                return res.status(400).json({ error: "L'adresse email est déjà utilisée." });
+            }
+            res.status(400).json(error, "Erreur email")
+        }
+    });
+
+    router.get('/verify-password', async (req, res) => {
+
+        const { token } = req.query;
+        try {
+            const result = await pool.query('SELECT * FROM users WHERE token_password = $1', [token]);
+    
+            if (result.rows.length === 0) {
+                return res.status(400).json({ error: 'Token invalide ou expiré.' });
+            }
+            const user = result.rows[0];
+            res.redirect(`http://localhost:3001/PasswordConfirm?token=${token}`);
+        } catch (error) {
+            console.error('Erreur lors de la vérification:', error);
+            res.status(500).json({ error: 'Erreur lors de la vérification de l\'email.' });
+        }
+    });
+    
+    // const bcrypt = require("bcrypt");
+    // const saltRounds = 10;
+    
+    router.post("/change-password", async (req, res) => {
+    
+        const { token, newPassword } = req.body;
+    
+        if (!token || !newPassword) 
+        {
+            return res.status(400).json({ error: "Token ou mot de passe manquant." });
+        }
+        try {
+    
+            const result = await pool.query("SELECT * FROM users WHERE token_password = $1", [token]);
+    
+            if (result.rows.length === 0) 
+            {
+            return res.status(400).json({ error: "Token invalide ou expiré." });
+            }
+    
+            const user = result.rows[0];
+    
+            // const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+    
+            await pool.query("UPDATE users SET password = $1, token_password = NULL WHERE id = $2",[newPassword, user.id]);
+    
+            res.status(200).json({ message: "Mot de passe modifié avec succès." });
+    
+        } catch (error) {
+            console.error("Erreur lors du changement de mot de passe:", error);
+            res.status(500).json({ error: "Erreur serveur." });
+        }
+    });
+
+    module.exports = router;

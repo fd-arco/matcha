@@ -187,6 +187,7 @@ const ProfileModal = ({viewedId, onClose}) => {
                             } border-2 border-white`}
                             title={userStatus?.online ? "Online" : "Offline"}
                         ></span>
+                        { profile.verified && (<span className="text-green-500 text-xs" title="Compte vérifié">☢️​</span>)}
                         </h2>
                         {!userStatus?.online && userStatus?.lastOnline && (
                             <p className="text-xs text-gray-500">
