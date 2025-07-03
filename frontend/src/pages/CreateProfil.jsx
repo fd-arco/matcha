@@ -148,7 +148,7 @@ export default function CreateProfil({refreshUser}) {
             return ;
         }
         
-        const location = await getUserLocation();
+        // const location = await getUserLocation();
         const finalFormData = new FormData();
         finalFormData.append("user_id", userId); //TODO:RECUPERER USER_ID DEPUIS LA CREATION DU COMPTE
         finalFormData.append("name", name);
@@ -158,8 +158,8 @@ export default function CreateProfil({refreshUser}) {
         finalFormData.append("lookingFor", lookingFor);
         finalFormData.append("bio", bio);
         finalFormData.append("passions", JSON.stringify(selectedPassions));
-        finalFormData.append("latitude", location.latitude);
-        finalFormData.append("longitude", location.longitude);
+        // finalFormData.append("latitude", location.latitude);
+        // finalFormData.append("longitude", location.longitude);
         
         photos.forEach((photo) => {
             finalFormData.append("photos", photo.file);
@@ -345,10 +345,10 @@ export default function CreateProfil({refreshUser}) {
                                 <label className="block font-medium mb-2">Location</label>
                             </div> */}
                             {/* <div className="flex space-x-8"> */}
-                                <div>
+                                {/* <div>
                                     <button  type="button" onClick={ handleLocalModal } className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-700 text-white rounded-lg w-1/2">
                                         Location
-                                    </button>
+                                    </button> */}
                                     {/* <button type="button" className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-700 rounded-lg w-full sm:w-auto" >
                                         non
                                     </button> */}
@@ -358,7 +358,7 @@ export default function CreateProfil({refreshUser}) {
                                         no
                                     </button> */}
                                 {/* </div> */}
-                            </div>
+                            {/* </div> */}
                             {formErrors.loc && (<p className="text-red-500 dark:text-red-800 text-sm m-0 p-0">{formErrors.loc}</p>)}
                             <br></br>
                             <button type="submit" className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 text-white px-4 py-2 rounded-lg w-full">

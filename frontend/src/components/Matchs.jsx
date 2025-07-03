@@ -4,6 +4,7 @@ import {ChevronLeft, ChevronRight, X, Heart} from "lucide-react"
 import {useFilters} from "../context/FilterContext"
 import {useSocket} from "../context/SocketContext"
 import MobileDrawerMenu from "./MobileDrawerMenu";
+import { ca } from "date-fns/locale";
 const Matchs = ({onSelectMatch}) => {
     const {filters} = useFilters();
     const [profiles, setProfiles] = useState([]);
@@ -31,9 +32,14 @@ const Matchs = ({onSelectMatch}) => {
                 }
                 const res = await fetch(url);
                 const data = await res.json();
-                console.log("filters=====",filters)
-                console.log("DATA === ",data);
-                setProfiles(data);
+                // console.log("filters=====",filters)
+                // console.log("DATA === ",data);
+                // setProfiles(data);
+
+                const filteredProfiles = data.filter(profile => profile.location_enabled === true);
+                console.log("Filtered profiles === ", filteredProfiles);
+                setProfiles(filteredProfiles);
+                
                 setCurrentPhotoIndex(0);
             } catch (error) {
                 console.log("erreur lors du chargement des profils: ", error);
@@ -192,6 +198,7 @@ const Matchs = ({onSelectMatch}) => {
 
     const profile = profiles[currentIndex];
     console.log("📷 Image path:", `http://localhost:3000${profile.photos[currentPhotoIndex]}`);
+    console.log("profile enabled======================+>", profile.location_enabled)
     
     let distance = null;
     if (userLocation && userLocation.lat && profile.latitude && profile.longitude) {
@@ -277,7 +284,7 @@ const Matchs = ({onSelectMatch}) => {
                 “{profile.bio}”
               </p>
             )}
-            { userLocation &&  <p className="text-md text-gray-700 dark:text-gray-300 mt-3">
+            { userLocation && <p className="text-md text-gray-700 dark:text-gray-300 mt-3">
               <span className="font-semibold">{distance}</span> km from you
             </p>}   
             <p className="text-md text-gray-700 dark:text-gray-300 mt-3">

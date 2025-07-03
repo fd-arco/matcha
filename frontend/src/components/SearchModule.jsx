@@ -2,6 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import {useFilters} from "../context/FilterContext"
 import UpdateModal from "./UpdateModal";
+import { useGeo } from "../context/GeoContext";
 
 const SearchModule = () => {
     // const [ageGap, setAgeGap] = useState([18, 100]);
@@ -30,7 +31,9 @@ const SearchModule = () => {
     const [error, setError] = useState('');
     const [matchingProfilesCount, setMatchingProfilesCount] = useState(0);
     const {setFilters} = useFilters();
+    const {canMatch} = useGeo();
     const [showUpdateModal, setShowUpdateModal] = useState(false);
+
 
     const userId = Number(localStorage.getItem("userId"));
 
@@ -100,8 +103,10 @@ const SearchModule = () => {
         setFiltersState(null);
       };
 
+      console.log("cam Matchhhhhhh =========>>>", canMatch)
+
     return (
-        <div className="bg-white dark:bg-gray-900 flex p-6 gap-6 items-start">
+       canMatch ? ( <div className="bg-white dark:bg-gray-900 flex p-6 gap-6 items-start">
             <div className="flex flex-col justify-center gap-3 p-4 w-3/5">
                 <h2 className="text-2xl font-bold font-sans">Adjust your research</h2>
                 <div className="flex flex-col gap-1  ">
@@ -205,7 +210,15 @@ const SearchModule = () => {
             {showUpdateModal && (
                 <UpdateModal onClose={() => setShowUpdateModal(false)} />
             )}
-        </div>
+        </div>) : ( 
+            <div className="flex flex-col items-center justify-center h-full text-xl text-center p-4 space-y-4">
+            <p className="dark:bg-white-800">🔒 Enable your location to see profiles.</p>
+            <div className="text-base text-gray-600">
+              <p>You have blocked location access.</p>
+              <p>Please go to your browser settings to re-enable it.</p>
+            </div>
+          </div>
+        )
     )
 }
 

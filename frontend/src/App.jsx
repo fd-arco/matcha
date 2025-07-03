@@ -13,6 +13,7 @@ import Dashboard from './pages/Dashboard.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import { FilterProvider } from './context/FilterContext.jsx';
 import { SocketProvider } from './context/SocketContext.jsx';
+import { GeoProvider } from './context/GeoContext.jsx';
 import { useState } from 'react';
 import RootLayout from './components/RootLayout.jsx';
 import MyAccount from './pages/MyAccount.jsx';
@@ -46,11 +47,13 @@ function App() {
   const refreshUser = () => setRefreshFlag(prev => prev + 1);
   const router = getRoutes(userId, setUserId, refreshFlag, refreshUser, hasProfile, setHasProfile);
   return (
+    <GeoProvider>
       <FilterProvider>
         <SocketProvider userId={userId}>
           <RouterProvider router={router}/>
         </SocketProvider>
       </FilterProvider>
+    </GeoProvider>
   );
 }
 export default App;

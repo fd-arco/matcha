@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import ConfirmActionModal from "./ConfirmActionModal";
 import ModalLocal2 from "./EditLocation.jsx"
 import { getUserLocation } from "../util/geo.js";
+import { useGeo } from "../context/GeoContext.jsx";
 
 
 export default function EditProfile() {
@@ -24,6 +25,7 @@ export default function EditProfile() {
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
     const userId = localStorage.getItem("userId");
+    const {canMatch} = useGeo()
     const [manualLocation, setManualLocation] = useState("");
     const [infoModal, setInfoModal] = useState({
         isOpen:false,
@@ -440,12 +442,12 @@ export default function EditProfile() {
                                 {formErrors.bio && (<p className="text-red-500 text-sm m-0 p-0">{formErrors.bio}</p>)}
 
                             </div>
-                            <div class="mb-4">
+                            {canMatch && <div class="mb-4">
                                 <label htmlFor="location" className="block font-medium mb-2">Change your Location</label>
                                 <button type="button" onClick={handleLocalModal} className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 px-4 py-2 rounded-lg w-full">
                                     Update Location
                                 </button>
-                            </div>
+                            </div>}
                             {modalLocal && <ModalLocal2 onClose={() => setModalLocal(false)}
                                                            onLocationSelect={(loc) => {
                                                             setManualLocation(loc)

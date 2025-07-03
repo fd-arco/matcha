@@ -104,7 +104,7 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
         })
     }, [messagesGlobal, userId]);
 
-    console.log("MATCHES STATE DANS LE COMPOSANT :", matches);
+    // console.log("MATCHES STATE DANS LE COMPOSANT :", matches);
 
     const handleSelectMatch = async(match) => {
         try {

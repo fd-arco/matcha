@@ -13,6 +13,8 @@ const http = require("http");
 const { queryObjects } = require('v8');
 const { user } = require('pg/lib/defaults');
 const { profile } = require('console');
+const fetch = require('node-fetch')
+
 
 
 const server = http.createServer(app);
@@ -117,9 +119,9 @@ app.post("/create-profil", upload.array("photos", 6), async(req, res) => {
             fame += Math.min(photoCount, 6) * 10;
         }
         const result = await pool.query(
-            `INSERT INTO profiles (user_id, name, dob, age, gender, interested_in, looking_for, passions, bio, fame, fame_bio, passions_count, photo_count, latitude, longitude)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id`,
-            [user_id, name, dob, age, gender, interestedIn, lookingFor, passionArray, bio, fame, fameBio, passionsCount, photoCount, latitude, longitude]
+            `INSERT INTO profiles (user_id, name, dob, age, gender, interested_in, looking_for, passions, bio, fame, fame_bio, passions_count, photo_count)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id`,
+            [user_id, name, dob, age, gender, interestedIn, lookingFor, passionArray, bio, fame, fameBio, passionsCount, photoCount]
         );
 
         const profile_id = result.rows[0].id;
@@ -727,6 +729,7 @@ app.get('/profiles/:userId', async (req, res) => {
                 p.fame,
                 p.latitude,
                 p.longitude,
+                p.location_enabled,
                 json_agg(pp.photo_url ORDER BY pp.id) AS photos
             FROM profiles p
             JOIN profile_photos pp ON pp.profile_id = p.id
@@ -1622,5 +1625,43 @@ app.post("/change-password", async (req, res) => {
     } catch (error) {
         console.error("Erreur lors du changement de mot de passe:", error);
         res.status(500).json({ error: "Erreur serveur." });
+    }
+});
+
+app.get('/api/ip-location', async (req, res) => {
+    try {
+        const response = await fetch('https://ipinfo.io/json')
+        if (!response.ok) {
+            return res.status(502).json({ error: 'Erreur API IP' })
+        }
+        console.log("🔙​🔚​🅱️​🅱️​🅱️​🅱️​ salut ca rentre dan sle backend")
+      const data = await response.json()
+      res.json({
+        lat: data.latitude,
+        lon: data.longitude,
+        city: data.city,
+        region: data.region,
+        country: data.country_name,
+        ip: data.ip,
+      })
+    } catch (error) {
+      console.error('Erreur fetch IP:', error)
+      res.status(500).json({ error: 'Erreur serveur' })
+    }
+  })
+
+  app.patch('/user/:userId/location-enabled', async (req, res) => {
+
+    const { userId } = req.params;
+    const { location_enabled } = req.body;
+
+    try {
+        const result = await pool.query(`UPDATE profiles SET location_enabled = $1 WHERE id = $2`,[location_enabled, userId]);
+        res.status(200).json({ success: true });
+    }
+     catch (err) {
+
+        console.error(err);
+        res.status(500).json({ error: "Erreur serveur" });
     }
 });
