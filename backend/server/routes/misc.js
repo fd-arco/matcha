@@ -148,4 +148,42 @@ router.get("/config", async(req, res) => {
     res.json({kk: process.env.REACT_APP_GOOGLE_API_KEY,});
 })
 
+router.get('/api/ip-location', auth, async (req, res) => {
+    try {
+        const response = await fetch('https://ipinfo.io/json')
+        if (!response.ok) {
+            return res.status(502).json({ error: 'Erreur API IP' })
+        }
+        console.log("🔙​🔚​🅱️​🅱️​🅱️​🅱️​ salut ca rentre dan sle backend")
+      const data = await response.json()
+      res.json({
+        lat: data.latitude,
+        lon: data.longitude,
+        city: data.city,
+        region: data.region,
+        country: data.country_name,
+        ip: data.ip,
+      })
+    } catch (error) {
+      console.error('Erreur fetch IP:', error)
+      res.status(500).json({ error: 'Erreur serveur' })
+    }
+  })
+
+router.patch('/user/:userId/location-enabled', auth, async (req, res) => {
+
+    const { userId } = req.params;
+    const { location_enabled } = req.body;
+
+    try {
+        const result = await pool.query(`UPDATE profiles SET location_enabled = $1 WHERE id = $2`,[location_enabled, userId]);
+        res.status(200).json({ success: true });
+    }
+     catch (err) {
+
+        console.error(err);
+        res.status(500).json({ error: "Erreur serveur" });
+    }
+});
+
 module.exports = router;

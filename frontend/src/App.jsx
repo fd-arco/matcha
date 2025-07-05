@@ -14,12 +14,15 @@ import SettingsPage from './pages/SettingsPage.jsx';
 import { FilterProvider } from './context/FilterContext.jsx';
 import { SocketProvider } from './context/SocketContext.jsx';
 import { UserProvider} from './context/UserContext.jsx'; 
+import { GeoProvider } from './context/GeoContext.jsx';
 import { useState } from 'react';
 import { useUser } from './context/UserContext.jsx';
 import RootLayout from './components/RootLayout.jsx';
 import MyAccount from './pages/MyAccount.jsx';
 import PrivateRoute from './components/PrivateRoute.jsx';
 import PrivateRouteWithProfile from './components/PrivateRouteWithProfile.jsx';
+import EmailConf from './components/EmailConf.jsx'
+import ResetPasswordFront from "./components/ResetPasswordFront.jsx"
 
 const getRoutes = () => createBrowserRouter([
   {
@@ -36,6 +39,22 @@ const getRoutes = () => createBrowserRouter([
         element: (
           <PrivateRoute>
             <CreateProfil />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: '/emailconf', 
+        element: (
+          <PrivateRoute>
+            <EmailConf />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: '/PasswordConfirm',
+        element: (
+          <PrivateRoute>
+            <ResetPasswordFront />
           </PrivateRoute>
         )
       },
@@ -71,11 +90,6 @@ const getRoutes = () => createBrowserRouter([
           </PrivateRouteWithProfile>
         )
       },
-      // {path: '/settingsPage', element: <SettingsPage/>},
-      // {path: '/my-account', element:<MyAccount />}
-      // {path: '/dashboard', element: <Dashboard />},
-      // {path: '/profile', element: <Profile />},
-      // {path: '/swipe', element: <Swipe />},
     ]
   }
 ]);
@@ -94,11 +108,13 @@ function AppWithUser({router}) {
   const {loading} = useUser();
   if (loading) return <div className='text-white p-10'>Loading...</div>
   return (
+    <GeoProvider>
       <FilterProvider>
         <SocketProvider>
           <RouterProvider router={router}/>
         </SocketProvider>
       </FilterProvider>
+    </GeoProvider>
   );
 }
 export default App;

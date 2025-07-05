@@ -107,7 +107,6 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
         })
     }, [messagesGlobal, userId]);
 
-
     const handleSelectMatch = async(match) => {
         try {
             await fetch("http://localhost:3000/messages/read", {

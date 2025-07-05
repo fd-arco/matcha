@@ -3,6 +3,10 @@ import UpdateModal from "../components/UpdateModal";
 import { useNavigate } from "react-router-dom";
 import ConfirmActionModal from "./ConfirmActionModal";
 import { useUser } from "../context/UserContext";
+import ModalLocal2 from "./EditLocation.jsx"
+import { getUserLocation } from "../util/geo.js";
+import { useGeo } from "../context/GeoContext.jsx";
+
 
 export default function EditProfile() {
     const [formData, setFormData] = useState({
@@ -14,6 +18,7 @@ export default function EditProfile() {
         bio: "",
     });
     const [selectedPassions, setSelectedPassions] = useState([]);
+    const [modalLocal, setModalLocal] = useState(false);
     const [selectedValue, setSelectedValue] = useState("");
     const [newPhotos, setNewPhotos] = useState([]);
     const [existingPhotos, setExistingPhotos] = useState([]);
@@ -22,6 +27,8 @@ export default function EditProfile() {
     const [showModal, setShowModal] = useState(false);
     // const userId = localStorage.getItem("userId");
     const {userId} = useUser();
+    const {canMatch} = useGeo()
+    const [manualLocation, setManualLocation] = useState("");
     const [infoModal, setInfoModal] = useState({
         isOpen:false,
         title:"",
@@ -47,6 +54,8 @@ export default function EditProfile() {
                         interestedIn: data.interested_in || "",
                         lookingFor: data.looking_for || "",
                         bio: data.bio || "",
+                        // latitude: data.latitude || "",
+                        // longitude: data.longitude || "",
                     });
                     let passionsArray = [];
                     try {
@@ -125,6 +134,11 @@ export default function EditProfile() {
         }
     };
 
+    async function handleLocalModal(){
+        console.log("ca rentre handlelocalmodal")
+        setModalLocal(true);
+    }
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         let errors = {};
@@ -180,6 +194,11 @@ export default function EditProfile() {
             return;
         }
 
+        
+        // const [showLocationModal, setShowLocationModal] = useState(false);
+
+        // const location = await getUserLocation();
+
         const finalFormData = new FormData();
         finalFormData.append("user_id", userId); // Récupérer le user ID
         finalFormData.append("name", name);
@@ -190,6 +209,11 @@ export default function EditProfile() {
         finalFormData.append("bio", bio);
         finalFormData.append("passions", JSON.stringify(selectedPassions));
         finalFormData.append("existingPhotos", JSON.stringify(existingPhotos));
+        {manualLocation.lat && finalFormData.append("latitude", manualLocation.lat)};
+        {manualLocation.lng && finalFormData.append("longitude", manualLocation.lng)};
+
+        console.log("latitude  est bien fetch,    ;",manualLocation.lat)
+        console.log("longitude  est bien fetch,    ;",manualLocation.lng)
 
         newPhotos.forEach((photo) => {
             finalFormData.append("photos", photo.file);
@@ -421,6 +445,17 @@ export default function EditProfile() {
                                 {formErrors.bio && (<p className="text-red-500 text-sm m-0 p-0">{formErrors.bio}</p>)}
 
                             </div>
+                            {canMatch && <div class="mb-4">
+                                <label htmlFor="location" className="block font-medium mb-2">Change your Location</label>
+                                <button type="button" onClick={handleLocalModal} className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 px-4 py-2 rounded-lg w-full">
+                                    Update Location
+                                </button>
+                            </div>}
+                            {modalLocal && <ModalLocal2 onClose={() => setModalLocal(false)}
+                                                           onLocationSelect={(loc) => {
+                                                            setManualLocation(loc)
+                                                            setModalLocal(false)
+                                                            }} />}
                             <div>
                                 <button type="submit" className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 px-4 py-2 rounded-lg w-full">
                                     Update Profile

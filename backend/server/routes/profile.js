@@ -4,6 +4,7 @@ const pool = require("../config/db");
 const {auth} = require("../middleware/auth");
 const multer = require("multer");
 const {calculateAge} = require('../utils/calculateAge');
+const {getDistance} = require('../utils/getDistance');
 
 const storage = multer.diskStorage({
   destination: "./uploads",
@@ -16,7 +17,7 @@ const upload = multer({ storage });
 
 router.post("/create-profil", auth, upload.array("photos", 6), async(req, res) => {
     try {
-        const { user_id, name, dob, gender, interestedIn, lookingFor, bio, latitude, longitude} = req.body;
+        const { user_id, name, dob, gender, interestedIn, lookingFor, bio} = req.body;
 
         const age = calculateAge(dob);
         let passionArray = [];
@@ -46,9 +47,9 @@ router.post("/create-profil", auth, upload.array("photos", 6), async(req, res) =
             fame += Math.min(photoCount, 6) * 10;
         }
         const result = await pool.query(
-            `INSERT INTO profiles (user_id, name, dob, age, gender, interested_in, looking_for, passions, bio, fame, fame_bio, passions_count, photo_count, latitude, longitude)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id`,
-            [user_id, name, dob, age, gender, interestedIn, lookingFor, passionArray, bio, fame, fameBio, passionsCount, photoCount, latitude, longitude]
+            `INSERT INTO profiles (user_id, name, dob, age, gender, interested_in, looking_for, passions, bio, fame, fame_bio, passions_count, photo_count)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id`,
+            [user_id, name, dob, age, gender, interestedIn, lookingFor, passionArray, bio, fame, fameBio, passionsCount, photoCount]
         );
 
         const profile_id = result.rows[0].id;
@@ -69,7 +70,7 @@ router.post("/create-profil", auth, upload.array("photos", 6), async(req, res) =
 router.put("/edit-profile/:userId", auth, upload.array("photos", 6), async(req, res) => {
     try {
         const {userId} = req.params;
-        const {name, dob, gender, interestedIn, lookingFor, bio, passions, existingPhotos} = req.body;
+        const {name, dob, gender, interestedIn, lookingFor, bio, passions, existingPhotos, latitude, longitude} = req.body;
         
         const age = calculateAge(dob);
         const passionArray = passions ? JSON.parse(passions): [];
@@ -109,8 +110,8 @@ router.put("/edit-profile/:userId", auth, upload.array("photos", 6), async(req, 
         const newFameBio = hasBioNow === true;
 
         await pool.query(
-            `UPDATE profiles SET name = $1, dob = $2, age=$3, gender=$4, interested_in=$5, looking_for=$6, passions=$7, bio=$8, fame=$9, fame_bio=$10, passions_count=$11, photo_count=$12 WHERE user_id = $13`,
-            [name, dob, age, gender, interestedIn, lookingFor, passionArray, bio, newFame, newFameBio, newPassionCount, totalPhotos, userId]
+            `UPDATE profiles SET name = $1, dob = $2, age=$3, gender=$4, interested_in=$5, looking_for=$6, passions=$7, bio=$8, fame=$9, fame_bio=$10, passions_count=$11, photo_count=$12, latitude=$13, longitude=$14 WHERE user_id = $15`,
+            [name, dob, age, gender, interestedIn, lookingFor, passionArray, bio, newFame, newFameBio, newPassionCount, totalPhotos, latitude, longitude, userId]
         );
         
         if (photosToKeep.length > 0) {
@@ -220,13 +221,13 @@ router.get("/modalprofile/:userId", auth,async(req, res) => {
 
 router.get('/profiles/:userId', async (req, res) => {
     const {userId} = req.params;
-    const {ageMin, ageMax, fameMin, tagsMin} = req.query;
+    const {ageMin, ageMax, fameMin, tagsMin, distanceMax} = req.query;
 
 
     
     try {
         const userResult = await pool.query(
-            `SELECT gender, interested_in, passions FROM profiles WHERE user_id = $1`,
+            `SELECT gender, interested_in, passions, latitude, longitude FROM profiles WHERE user_id = $1`,
             [userId]
         );
     
@@ -234,7 +235,7 @@ router.get('/profiles/:userId', async (req, res) => {
             return res.status(404).json({error:"Profil utilisateur non trouve"});
         }
 
-        const { gender, interested_in, passions} = userResult.rows[0];
+        const { gender, interested_in, passions, latitude, longitude} = userResult.rows[0];
 
         const currentUser = {
             gender: gender?.toLowerCase(),
@@ -259,10 +260,14 @@ router.get('/profiles/:userId', async (req, res) => {
                 p.looking_for,
                 p.passions,
                 p.fame,
+                p.latitude,
+                p.longitude,
+                p.location_enabled,
                 json_agg(pp.photo_url ORDER BY pp.id) AS photos
             FROM profiles p
             JOIN profile_photos pp ON pp.profile_id = p.id
             WHERE p.user_id != $1
+            AND p.location_enabled = TRUE
             AND p.user_id NOT IN (
                 SELECT liked_id FROM likes WHERE liker_id = $1
             )
@@ -323,6 +328,20 @@ router.get('/profiles/:userId', async (req, res) => {
 
         let filteredProfiles = result.rows.filter(profile => isOrientationMatch(currentUser, profile));
 
+        if (distanceMax && latitude && longitude) {
+            const userLat = parseFloat(latitude);
+            const userLon = parseFloat(longitude);
+        
+            filteredProfiles = filteredProfiles.filter(profile => {
+                const dist = getDistance(userLat, userLon, parseFloat(profile.latitude), parseFloat(profile.longitude));
+                if (dist > Number(distanceMax)) {
+                    console.log(`⛔ ${profile.user_id} exclu (distance ${dist.toFixed(2)} km > ${distanceMax} km)`);
+                    return false;
+                }
+                return true;
+            });
+        }
+
         if (tagsMin && userPassions) {
             filteredProfiles = filteredProfiles.filter(profile => {
                 try {
@@ -373,12 +392,12 @@ router.get('/profiles/:userId', async (req, res) => {
 });
 
 router.get("/profiles-count", auth, async(req, res) => {
-    const {userId, ageMin, ageMax, fameMin, tagsMin} = req.query;
+    const {userId, ageMin, ageMax, fameMin, tagsMin, distanceMax} = req.query;
 
 
     try {
             const userResult = await pool.query(
-                `SELECT passions, gender, interested_in FROM profiles WHERE user_id = $1`,
+                `SELECT passions, gender, interested_in, latitude, longitude FROM profiles WHERE user_id = $1`,
                 [userId]
             );
 
@@ -386,7 +405,7 @@ router.get("/profiles-count", auth, async(req, res) => {
                 return res.status.error(404).json({error : "Profil utilisateur non trouve"});
             }
 
-            const {passions, gender, interested_in} = userResult.rows[0];
+            const {passions, gender, interested_in, latitude, longitude} = userResult.rows[0];
 
             const currentUser = {
                 gender: gender?.toLowerCase(),
@@ -404,7 +423,7 @@ router.get("/profiles-count", auth, async(req, res) => {
             
             const result = await pool.query(`
                 SELECT
-                    user_id, gender, interested_in, passions
+                    user_id, gender, interested_in, passions, latitude, longitude
                 FROM profiles p
                 WHERE p.user_id != $1
                 AND p.user_id NOT IN (
@@ -446,6 +465,11 @@ router.get("/profiles-count", auth, async(req, res) => {
 
 
             let filtered = result.rows.filter((profile) => {
+                const distance = getDistance(latitude, longitude, profile.latitude, profile.longitude);
+                if (distance > Number(distanceMax)) {
+                    console.log(`⛔ ${profile.user_id} exclu (distance ${distance.toFixed(2)} km > ${distanceMax} km)`);
+                    return false;
+                }
                 if (!isOrientationMatch(currentUser, profile)) return false;
                 if (!tagsMin || !userPassions) return true;
                 try {
@@ -475,8 +499,8 @@ router.get('/user/:userId', auth, async (req, res) => {
     
     try {
         const userQuery = `
-        SELECT u.id AS user_id, u.email, u.firstname, u.lastname,
-        p.id AS profile_id, p.name, p.dob, p.gender, p.interested_in, p.looking_for, p.passions, p.bio, p.fame
+        SELECT u.id AS user_id, u.email, u.firstname, u.lastname, u.verified,
+        p.id AS profile_id, p.name, p.dob, p.gender, p.interested_in, p.looking_for, p.passions, p.bio, p.fame, p.latitude, p.longitude
         FROM users u
         LEFT JOIN profiles p ON u.id = p.user_id
         WHERE u.id = $1`;
