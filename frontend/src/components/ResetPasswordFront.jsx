@@ -33,7 +33,6 @@ export default function ResetPasswordFront(){
         
             if (response.ok){
 
-              console.log("mot de passe modifier:  ", data)
             } 
             else {
               console.log("flop:  ", data)

@@ -35,11 +35,7 @@ const SearchModule = () => {
     const {canMatch} = useGeo();
     const [showUpdateModal, setShowUpdateModal] = useState(false);
 
-    // const userId = Number(localStorage.getItem("userId"));
     const {userId} = useUser();
-
-    console.log("distance max brozer:                       ", distanceMax)
-    console.log("agegap[0;              ", ageGap[0])
 
     useEffect(() => {
         if (ageGap[0] > ageGap[1]) return;
@@ -97,10 +93,9 @@ const SearchModule = () => {
         }
     }, [ageGap]);
 
-      console.log("cam Matchhhhhhh =========>>>", canMatch)
 
     return (
-       canMatch ? ( <div className="bg-white dark:bg-gray-900 flex p-6 gap-6 items-start">
+       <div className="bg-white dark:bg-gray-900 flex p-6 gap-6 items-start">
             <div className="flex flex-col justify-center gap-3 p-4 w-3/5">
                 <h2 className="text-2xl font-bold font-sans">Adjust your research</h2>
                 <div className="flex flex-col gap-1  ">
@@ -204,15 +199,7 @@ const SearchModule = () => {
             {showUpdateModal && (
                 <UpdateModal onClose={() => setShowUpdateModal(false)} />
             )}
-        </div>) : ( 
-            <div className="flex flex-col items-center justify-center h-full text-xl text-center p-4 space-y-4">
-            <p className="dark:bg-white-800">🔒 Enable your location to see profiles.</p>
-            <div className="text-base text-gray-600">
-              <p>You have blocked location access.</p>
-              <p>Please go to your browser settings to re-enable it.</p>
-            </div>
-          </div>
-        )
+        </div>
     )
 }
 

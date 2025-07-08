@@ -1,11 +1,11 @@
 import {useEffect, useState} from "react"
 import MatchModal from "./MatchModal";
-import {ChevronLeft, ChevronRight, X, Heart} from "lucide-react"
+import {ChevronLeft, MapPin, ChevronRight, X, Heart} from "lucide-react"
 import {useFilters} from "../context/FilterContext"
 import {useSocket} from "../context/SocketContext"
 import MobileDrawerMenu from "./MobileDrawerMenu";
 import { useUser } from "../context/UserContext";
-import { ca } from "date-fns/locale";
+import { useGeoManager } from "../hooks/useGeoManager";
 
 const Matchs = ({onSelectMatch}) => {
     const {filters} = useFilters();
@@ -18,6 +18,7 @@ const Matchs = ({onSelectMatch}) => {
     const [matchedProfile, setMatchedProfile] = useState(null);
     const [userLocation, setUserLocation] = useState(null);
     const {socket} = useSocket();
+    const {method, position, loading, resetLocation} = useGeoManager(userId);
 
     useEffect(() => {
         const fetchProfiles = async() => {
@@ -37,6 +38,7 @@ const Matchs = ({onSelectMatch}) => {
                   credentials:"include"
                 });
                 const data = await res.json();
+                console.log("DATA DU FETCH= ", data);
                 setProfiles(data);
                 
                 setCurrentPhotoIndex(0);
@@ -57,7 +59,6 @@ const Matchs = ({onSelectMatch}) => {
           if(res.ok)
           {
             setUserLocation({ lat: data.latitude, lng: data.longitude });
-            console.log('ca rentre bien dans fetch user', data)
           }
         } catch (err) {
           console.log('cacaacacacacaacacacacacaacacacacaacacacaac')
@@ -168,9 +169,46 @@ const Matchs = ({onSelectMatch}) => {
         }
     }
 
+    if (loading) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-72px)] bg-gray-200 dark:bg-gray-800">
+          <div className="w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full animate-spin mb-3" />
+          <p className="text-sm text-gray-600 dark:text-gray-300">Loading...</p>
+        </div>
+      );
+    }
+
+
     if (profiles.length === 0 || currentIndex >= profiles.length) {
       return (
         <div className="min-h-[calc(100vh-72px)] flex flex-col justify-between items-center bg-gray-200 dark:bg-gray-800 px-4 py-6">
+          {method === 'ip' && (
+            <div className="bg-yellow-200 text-yellow-800 border border-yellow-400 px-4 py-3 rounded-md mb-6 text-center max-w-md">
+              <p className="font-semibold">
+                ⚠️ Your location is estimated using your IP address.
+              </p>
+              <p className="text-sm">
+                Enable GPS in your navigator settings to improve accuracy and see profiles closer to you.  
+              </p>
+            </div>  
+          )}
+          {method === 'manual' && (
+            <div className="bg-yellow-200 text-yellow-800 border border-yellow-400 px-4 py-3 rounded-md mb-6 text-center max-w-md">
+              <p className="font-semibold">
+                📍 You're using a manually selected location.
+              </p>
+              <p className="text-sm">
+                You can update it anytime from your profile settings.
+              </p>
+              <button
+                onClick={resetLocation}
+                className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-500 text-white hover:bg-blue-600 transition"
+              >
+                <MapPin className="w-5 h-5" />
+                Use my GPS or IP location
+              </button>
+            </div>  
+          )}
           <div className="flex-1 flex justify-center items-center w-full">
             <p className="text-gray-500 dark:text-white text-3xl font-bold text-center">
               No more profiles available!
@@ -191,21 +229,24 @@ const Matchs = ({onSelectMatch}) => {
     }
 
 
-
-    const profile = profiles[currentIndex];
-    console.log("📷 Image path:", `http://localhost:3000${profile.photos[currentPhotoIndex]}`);
-    console.log("profile enabled======================+>", profile.location_enabled)
-    
-    let distance = null;
-    if (userLocation && userLocation.lat && profile.latitude && profile.longitude) {
-      distance = getDistanceFromLatLonInKm(
-        userLocation.lat,
-        userLocation.lng,
-        profile.latitude,
-        profile.longitude
-      );
-    }
-    localStorage.setItem('dist', distance)
+      const profile = profiles[currentIndex];
+      let distance = null;
+      console.log("✅ Débogage distance:");
+      console.log("userlat:", position.lat);
+      console.log("userlong:", position.long);
+      console.log("profile.latitude:", profile?.latitude);
+      console.log("profile.longitude:", profile?.longitude);
+      if (position && position.lat && profile.latitude && profile.longitude) {
+        distance = getDistanceFromLatLonInKm(
+          position.lat,
+          position.lon,
+          profile.latitude,
+          profile.longitude
+        );
+        console.log("📏 Distance calculée:", distance);
+      } else {
+        console.warn("donnees insuffisantes pour calc la distance");
+      }
     
 
     let passionsArray = [];
@@ -221,6 +262,33 @@ const Matchs = ({onSelectMatch}) => {
 
     return (
       <div className="min-h-[calc(100vh-72px)] flex-1 flex flex-col md:justify-center justify-start px-4 bg-gray-200 dark:bg-gray-800">
+        {method === 'ip' && (
+          <div className="bg-yellow-200 text-yellow-800 border border-yellow-400 px-4 py-3 rounded-md text-center max-w-md mx-auto">
+            <p className="font-semibold">
+              ⚠️ Your location is estimated using your IP address.
+            </p>
+            <p className="text-sm">
+              Enable GPS in your navigator settings to improve accuracy and see profiles closer to you.  
+            </p>
+          </div> 
+        )}
+        {method === 'manual' && (
+            <div className="bg-blue-200 text-blue-800 border border-blue-400 px-4 py-3 rounded-md mb-6 text-center max-w-md mx-auto">
+              <p className="font-semibold">
+                📍 You're using a manually selected location.
+              </p>
+              <p className="text-sm">
+                You can update it anytime from your profile settings.
+              </p>
+              <button
+                onClick={resetLocation}
+                className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-500 text-white hover:bg-blue-600 transition"
+              >
+                <MapPin className="w-5 h-5" />
+                Use my GPS or IP location
+              </button>
+            </div>  
+        )}
         <div className="flex-1 flex items-center justify-center pt-4 pb-4">
           <div className="w-full max-w-md bg-white dark:bg-gray-900 p-4 rounded-2xl shadow-md text-center">
             <div className="text-left mb-4">
@@ -274,20 +342,22 @@ const Matchs = ({onSelectMatch}) => {
               })}
             </div>
 
-            <p className="text-md text-gray-500 dark:text-gray-400 mt-3">{profile.gender}</p>
+            <p className="text-md text-gray-500 dark:text-gray-400 mt-3">👤: {profile.gender}</p>
             {profile.bio && (
               <p className="text-sm text-gray-600 dark:text-gray-300 mt-3 italic break-words whitespace-normal overflow-hidden">
-                “{profile.bio}”
+                📝: “{profile.bio}”
               </p>
             )}
-            { userLocation && <p className="text-md text-gray-700 dark:text-gray-300 mt-3">
-              <span className="font-semibold">{distance}</span> km from you
-            </p>}   
+            {typeof distance === "number" && (
+              <p className="text-md text-gray-700 dark:text-gray-300 mt-3">
+                <span className="font-semibold">📍: {distance}</span> km from you
+              </p>
+            )} 
             <p className="text-md text-gray-700 dark:text-gray-300 mt-3">
-              Looking for: <span className="font-semibold">{profile.looking_for}</span>
+              💘: <span className="font-semibold">{profile.looking_for}</span>
             </p>
             <p className="text-md text-gray-700 dark:text-gray-300 mt-3">
-              Interested in: <span className="font-semibold">{profile.interested_in}</span>
+              🔍: <span className="font-semibold">{profile.interested_in}</span>
             </p>
             <div className="flex justify-center gap-10 mt-3">
               <button

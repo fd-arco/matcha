@@ -19,18 +19,14 @@ export default function ResetModal ({onClose}){
                 credentials: "include",
                 body: JSON.stringify({ email }),
             });
-            console.log("email a rreset;           ", email);
             const data = await response.json();
 
             if(response.ok)
             {
-                console.log(data)
-                console.log("ca renvoie bien une reponse", email)
                 setMessage(false);
                 setEnvoie(true)
             }
             else{
-                console.log("ya pas ce mail dans la bd ")
                 setMessage(true);
             }
         }

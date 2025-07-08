@@ -4,6 +4,8 @@ const {auth} = require("../middleware/auth");
 const pool = require("../config/db");
 const {clients} = require("../websocket/websocket");
 
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+
 router.post("/longitude", auth, async(req, res) => {
 
     const { latitude, longitude } = req.body
@@ -154,7 +156,6 @@ router.get('/api/ip-location', auth, async (req, res) => {
         if (!response.ok) {
             return res.status(502).json({ error: 'Erreur API IP' })
         }
-        console.log("🔙​🔚​🅱️​🅱️​🅱️​🅱️​ salut ca rentre dan sle backend")
       const data = await response.json()
       res.json({
         lat: data.latitude,
@@ -185,5 +186,85 @@ router.patch('/user/:userId/location-enabled', auth, async (req, res) => {
         res.status(500).json({ error: "Erreur serveur" });
     }
 });
+
+router.patch('/profile/update-location', auth, async (req,res) => {
+    try {
+        const {userId, latitude, longitude, city, method} = req.body;
+    
+        console.log("⏺️ Reçu dans PATCH /profile/update-location:");
+        console.log("userId:", userId);
+        console.log("latitude:", latitude);
+        console.log("longitude:", longitude);
+        console.log("city:", city);
+        console.log("method:", method);
+        
+        if (!userId) {
+            return res.status(400).json({error:'userId requis'});
+        }
+    
+        let finalLat = latitude;
+        let finalLon = longitude;
+        let finalCity = city || 'unknown';
+        
+
+        if (method === 'ip') {
+            if (!city) return res.status(400).json({error:'city manquante pour methode  ip'});
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(city)}&country=France&format=json`);
+            const data = await response.json();
+            if (!data) return res.status(404).json({error: 'ville non trouve'});
+    
+            finalLat = parseFloat(data[0].lat);
+            finalLon = parseFloat(data[0].lon);
+        }
+    
+        await pool.query(
+            `UPDATE profiles SET latitude=$1, longitude=$2, city=$3, method=$4 WHERE user_id=$5`,
+            [finalLat, finalLon, finalCity, method, userId]
+        )
+        console.log("///////update dans PATCH /profile/update-location:");
+        console.log("userId:", userId);
+        console.log("latitude:", finalLat);
+        console.log("longitude:", finalLon);
+        console.log("city:", finalCity);
+
+        return res.json({
+            message:"updatelocation in db",
+            latitude:finalLat,
+            longitude:finalLon,
+            city:finalCity,
+            method,
+        })
+    } catch (error) {
+        console.error('erreur update-locationL:', error);
+        res.status(500).json({error:'erreur serveur update-location'});
+    }
+})
+
+router.get('/profile/get-location/:userId', auth, async(req,res) => {
+    const {userId} = req.params;
+
+    try {
+        const result = await pool.query(
+            `SELECT latitude, longitude, city, method FROM profiles WHERE user_id = $1`,
+            [userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({error: 'Profil nono trouve'});
+        }
+        const profile = result.rows[0];
+
+        return res.json({
+            latitude: profile.latitude,
+            longitude:profile.longitude,
+            city:profile.city,
+            method:profile.method
+        });
+    } catch (error) {
+        console.error("erreur getlocation:", error);
+        return res.status(500).json({error:'erreur serveur'});
+    }
+})
+
 
 module.exports = router;

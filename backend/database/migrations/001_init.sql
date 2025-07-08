@@ -30,6 +30,8 @@ CREATE TABLE IF NOT EXISTS profiles (
     photo_count INTEGER DEFAULT 0,
     latitude DOUBLE PRECISION,
     longitude DOUBLE PRECISION,
+    method VARCHAR(20),
+    city VARCHAR(100),
     location_enabled BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

@@ -236,6 +236,7 @@ router.get('/profiles/:userId', async (req, res) => {
         }
 
         const { gender, interested_in, passions, latitude, longitude} = userResult.rows[0];
+        console.log('User:', { gender, interested_in, passions, latitude, longitude });
 
         const currentUser = {
             gender: gender?.toLowerCase(),
@@ -263,11 +264,11 @@ router.get('/profiles/:userId', async (req, res) => {
                 p.latitude,
                 p.longitude,
                 p.location_enabled,
+                p.city,
                 json_agg(pp.photo_url ORDER BY pp.id) AS photos
             FROM profiles p
             JOIN profile_photos pp ON pp.profile_id = p.id
             WHERE p.user_id != $1
-            AND p.location_enabled = TRUE
             AND p.user_id NOT IN (
                 SELECT liked_id FROM likes WHERE liker_id = $1
             )
@@ -298,7 +299,8 @@ router.get('/profiles/:userId', async (req, res) => {
         `;
 
         const result = await pool.query(query, values);
-
+        console.log('Profils bruts SQL:', result.rows.length);
+        console.log('profiles:', result.rows);
         const genderToInterestedMap = {
             male:'men',
             female:'women',
@@ -328,19 +330,30 @@ router.get('/profiles/:userId', async (req, res) => {
 
         let filteredProfiles = result.rows.filter(profile => isOrientationMatch(currentUser, profile));
 
+console.log('Après filtre orientation:', filteredProfiles.length);
+
+console.log(`- Utilisateur : lat=${latitude}, lon=${longitude}`);
+filteredProfiles = filteredProfiles.filter(profile => {
+                console.log(`- Candidat   : lat=${profile.latitude}, lon=${profile.longitude}`);
+});
+
+
         if (distanceMax && latitude && longitude) {
             const userLat = parseFloat(latitude);
             const userLon = parseFloat(longitude);
         
             filteredProfiles = filteredProfiles.filter(profile => {
                 const dist = getDistance(userLat, userLon, parseFloat(profile.latitude), parseFloat(profile.longitude));
+                console.log(`- Distance   : ${dist.toFixed(2)} km (max autorisé: ${distanceMax})`);
                 if (dist > Number(distanceMax)) {
-                    console.log(`⛔ ${profile.user_id} exclu (distance ${dist.toFixed(2)} km > ${distanceMax} km)`);
                     return false;
                 }
                 return true;
             });
         }
+
+        console.log('Après filtre distance:', filteredProfiles.length);
+
 
         if (tagsMin && userPassions) {
             filteredProfiles = filteredProfiles.filter(profile => {
@@ -359,6 +372,9 @@ router.get('/profiles/:userId', async (req, res) => {
                 }
             })
         }
+
+        console.log('Après filtre passions:', filteredProfiles.length);
+
 
         filteredProfiles = filteredProfiles
             .map(profile => {
@@ -384,6 +400,9 @@ router.get('/profiles/:userId', async (req, res) => {
             .filter(Boolean)
             .sort((a, b) => b.score - a.score);
 
+console.log('Profils finaux retournés:', filteredProfiles.length);
+
+
         res.json(filteredProfiles);
     } catch (error) {
         console.error("Erreur lors de la recuperation des profils a swipe: ", error);
@@ -406,6 +425,7 @@ router.get("/profiles-count", auth, async(req, res) => {
             }
 
             const {passions, gender, interested_in, latitude, longitude} = userResult.rows[0];
+            console.log("📍 Utilisateur position :", latitude, longitude);
 
             const currentUser = {
                 gender: gender?.toLowerCase(),
@@ -466,8 +486,13 @@ router.get("/profiles-count", auth, async(req, res) => {
 
             let filtered = result.rows.filter((profile) => {
                 const distance = getDistance(latitude, longitude, profile.latitude, profile.longitude);
+                console.log("latitude = ", latitude);
+                console.log("longitude = ", longitude);
+                console.log("profile latitude = ", profile.latitude);
+                console.log("proifle longitude = ", profile.longitude);
+                console.log(`🧭 Distance vers ${profile.user_id}: ${distance.toFixed(2)} km`);
+
                 if (distance > Number(distanceMax)) {
-                    console.log(`⛔ ${profile.user_id} exclu (distance ${distance.toFixed(2)} km > ${distanceMax} km)`);
                     return false;
                 }
                 if (!isOrientationMatch(currentUser, profile)) return false;
@@ -500,7 +525,7 @@ router.get('/user/:userId', auth, async (req, res) => {
     try {
         const userQuery = `
         SELECT u.id AS user_id, u.email, u.firstname, u.lastname, u.verified,
-        p.id AS profile_id, p.name, p.dob, p.gender, p.interested_in, p.looking_for, p.passions, p.bio, p.fame, p.latitude, p.longitude
+        p.id AS profile_id, p.name, p.dob, p.gender, p.interested_in, p.looking_for, p.passions, p.bio, p.fame, p.latitude, p.longitude, p.city
         FROM users u
         LEFT JOIN profiles p ON u.id = p.user_id
         WHERE u.id = $1`;

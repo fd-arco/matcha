@@ -6,6 +6,7 @@ import { useUser } from "../context/UserContext";
 import ModalLocal2 from "./EditLocation.jsx"
 import { getUserLocation } from "../util/geo.js";
 import { useGeo } from "../context/GeoContext.jsx";
+import { useGeoManager } from "../hooks/useGeoManager.jsx";
 
 
 export default function EditProfile() {
@@ -18,17 +19,14 @@ export default function EditProfile() {
         bio: "",
     });
     const [selectedPassions, setSelectedPassions] = useState([]);
-    const [modalLocal, setModalLocal] = useState(false);
     const [selectedValue, setSelectedValue] = useState("");
     const [newPhotos, setNewPhotos] = useState([]);
     const [existingPhotos, setExistingPhotos] = useState([]);
     const [formErrors, setFormErrors] = useState({});
-    const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
-    // const userId = localStorage.getItem("userId");
+    const [modalLocal, setModalLocal] = useState(false);
     const {userId} = useUser();
-    const {canMatch} = useGeo()
-    const [manualLocation, setManualLocation] = useState("");
+    const {method, position, loading, setPosition, setMethod} = useGeoManager(userId);
     const [infoModal, setInfoModal] = useState({
         isOpen:false,
         title:"",
@@ -38,6 +36,8 @@ export default function EditProfile() {
         "Music", "Sports", "Reading", "Traveling", "Cooking", 
         "Gaming", "Dancing", "Art", "Photography", "Movies"
     ];
+
+    // console.log("location dans editprofile=", position);
 
     useEffect(() => {
         const fetchProfileData = async () => {
@@ -54,8 +54,6 @@ export default function EditProfile() {
                         interestedIn: data.interested_in || "",
                         lookingFor: data.looking_for || "",
                         bio: data.bio || "",
-                        // latitude: data.latitude || "",
-                        // longitude: data.longitude || "",
                     });
                     let passionsArray = [];
                     try {
@@ -134,11 +132,6 @@ export default function EditProfile() {
         }
     };
 
-    async function handleLocalModal(){
-        console.log("ca rentre handlelocalmodal")
-        setModalLocal(true);
-    }
-
     const handleSubmit = async (event) => {
         event.preventDefault();
         let errors = {};
@@ -194,11 +187,6 @@ export default function EditProfile() {
             return;
         }
 
-        
-        // const [showLocationModal, setShowLocationModal] = useState(false);
-
-        // const location = await getUserLocation();
-
         const finalFormData = new FormData();
         finalFormData.append("user_id", userId); // Récupérer le user ID
         finalFormData.append("name", name);
@@ -209,11 +197,6 @@ export default function EditProfile() {
         finalFormData.append("bio", bio);
         finalFormData.append("passions", JSON.stringify(selectedPassions));
         finalFormData.append("existingPhotos", JSON.stringify(existingPhotos));
-        {manualLocation.lat && finalFormData.append("latitude", manualLocation.lat)};
-        {manualLocation.lng && finalFormData.append("longitude", manualLocation.lng)};
-
-        console.log("latitude  est bien fetch,    ;",manualLocation.lat)
-        console.log("longitude  est bien fetch,    ;",manualLocation.lng)
 
         newPhotos.forEach((photo) => {
             finalFormData.append("photos", photo.file);
@@ -237,6 +220,21 @@ export default function EditProfile() {
             alert("Unable to update profile.");
         }
     };
+
+    if (loading || !position) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-72px)] bg-gray-200 dark:bg-gray-800">
+          <div className="w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full animate-spin mb-3" />
+          <p className="text-sm text-gray-600 dark:text-gray-300">Loading...</p>
+        </div>
+      );
+    }
+
+    console.log("📤 [EditProfile] OUVERTURE ModalLocal2 avec:");
+    console.log("    → position:", position);
+    console.log("    → method:", method);
+    console.log("    → loading:", loading);
+
 
     return (
         <div className="text-black dark:text-white transition-colors duration-300 flex flex-col">
@@ -445,17 +443,16 @@ export default function EditProfile() {
                                 {formErrors.bio && (<p className="text-red-500 text-sm m-0 p-0">{formErrors.bio}</p>)}
 
                             </div>
-                            {canMatch && <div class="mb-4">
+                            <div class="mb-4">
                                 <label htmlFor="location" className="block font-medium mb-2">Change your Location</label>
-                                <button type="button" onClick={handleLocalModal} className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 px-4 py-2 rounded-lg w-full">
+                                <button 
+                                    type="button" 
+                                    className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 px-4 py-2 rounded-lg w-full"
+                                    onClick={() => setModalLocal(true)}
+                                >
                                     Update Location
                                 </button>
-                            </div>}
-                            {modalLocal && <ModalLocal2 onClose={() => setModalLocal(false)}
-                                                           onLocationSelect={(loc) => {
-                                                            setManualLocation(loc)
-                                                            setModalLocal(false)
-                                                            }} />}
+                            </div>
                             <div>
                                 <button type="submit" className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 px-4 py-2 rounded-lg w-full">
                                     Update Profile
@@ -523,6 +520,15 @@ export default function EditProfile() {
                     </div>
                 </div>
             </div>
+            {modalLocal && (
+                <ModalLocal2
+                    onClose={() => setModalLocal(false)}
+                    position={position}
+                    method={method}
+                    setPosition={setPosition}
+                    setMethod={setMethod}
+                />
+            )}
             {showModal && (
                 <UpdateModal onClose={() => setShowModal(false)} />
             )}

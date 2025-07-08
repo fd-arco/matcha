@@ -12,7 +12,6 @@ export default function CreateProfil() {
     const navigate = useNavigate();
     const {userId, setHasProfile} = useUser();
     // const userId = localStorage.getItem("userId");
-    const [modalLocal, setModalLocal] = useState(false);
     const [infoModal, setInfoModal] = useState({
         isOpen:false,
         title:"",
@@ -80,9 +79,6 @@ export default function CreateProfil() {
         setPhotos(photos.filter((_, i) => i !== index));
     };
 
-    async function handleLocalModal(){
-        setModalLocal(true);
-    }
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -183,11 +179,6 @@ export default function CreateProfil() {
             console.error("Erreur lors de l'envoi du profil:", error);
             alert("Impossible de creer le profil.");
         }
-
-        async function handleLocalModal(){
-            setModalLocal(true);
-        }
-
     }
 
     return (
@@ -366,7 +357,6 @@ export default function CreateProfil() {
 
                         </form>
                     </div>
-                    {modalLocal && <ModalLocal onClose={() => setModalLocal(false)}/>}                   
                     {/* SECTION DROITE: UPLOAD DES PHOTOS */}
                     <div className="w-full md:w-[48%] flex flex-col">
                     <h2 className={`text-2xl font-medium mb-4`}>Upload your photos (max 6)</h2>

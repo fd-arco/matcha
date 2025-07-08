@@ -1,6 +1,5 @@
 export default function mailLogModal({ onClose }){
 
-    console.log("close modal ca rentre");
 
     return (
             <div class="fixed z-10 inset-0 overflow-y-auto" id="my-email-modal">
