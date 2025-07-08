@@ -1,7 +1,7 @@
 import '../App.css'
 import DarkModeToggle from '../util/dark';
 import { Link } from 'react-router-dom';
-import { useState, useEffect} from 'react';
+import { useState, useEffect, useRef} from 'react';
 import { useNavigate } from "react-router-dom";
 import EmailLogModal from "../util/modalLogin.jsx"
 import { useUser } from '../context/UserContext.jsx';
@@ -16,9 +16,16 @@ export default function Login() {
     const [modal, setModal] = useState(false)
     const {setUserId, setHasProfile} = useUser();
     const [reset, setResetPassword] = useState(false);
+    const formRef = useRef();
 
     async function handleLoginUser(event) {
       event.preventDefault();
+
+      if (!formRef.current.checkValidity()) {
+        formRef.current.reportValidity();
+        return;
+      }
+
       try {
         const response = await fetch("http://localhost:3000/auth/loginUser", {
           method: "POST",
@@ -120,7 +127,7 @@ export default function Login() {
               <h1 className="pt-8 pb-6 font-bold text-dark dark:text-white text-5xl text-center cursor-default">
                 Login
               </h1>
-              <form onSubmit={handleLoginUser} className="space-y-4">
+              <form ref={formRef} onSubmit={handleLoginUser} className="space-y-4">
                 <div>
                   <label
                     htmlFor="email"
@@ -132,7 +139,8 @@ export default function Login() {
                     id="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="border p-3 dark:bg-indigo-700 dark:text-gray-300 dark:border-gray-700 shadow-md placeholder-bg-gray-700 dark:placeholder-bg-gray-400 placeholder:text-base focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full"
+                    className="border p-3 shadow-md dark:bg-gray-600 dark:text-gray-300 dark:border-gray-700 placeholder:text-gray-800 dark:placeholder:text-gray-800 focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full"
+                    // className="border p-3 dark:bg-grey-200 dark:text-gray-300 dark:border-gray-700 shadow-md  dark:placeholder-gray-400 placeholder:text-base focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full"
                     type="email"
                     placeholder="Email"
                     required
@@ -149,7 +157,8 @@ export default function Login() {
                     id="password"
                     onChange={(e) => setPassword(e.target.value)}
                     value={password}
-                    className="border p-3 shadow-md dark:bg-indigo-700 dark:text-gray-300 dark:border-gray-700 placeholder-bg-gray-700 dark:placeholder-bg-gray-40 placeholder:text-base focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full"
+                    className="border p-3 shadow-md dark:bg-gray-600 dark:text-gray-300 dark:border-gray-700 placeholder:text-gray-800 dark:placeholder:text-gray-800 focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full"
+                    // className="border p-3 shadow-md dark:bg-grey-600 dark:text-gray-800 dark:border-gray-700  dark:placeholder-bg-gray-40 placeholder:text-base focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full"
                     type="password"
                     placeholder="Password"
                     required

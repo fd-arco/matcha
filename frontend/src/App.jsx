@@ -52,12 +52,9 @@ const getRoutes = () => createBrowserRouter([
       },
       {
         path: '/PasswordConfirm',
-        element: (
-          <PrivateRoute>
-            <ResetPasswordFront />
-          </PrivateRoute>
-        )
+        element: <ResetPasswordFront />
       },
+      
       {
         path: '/swipe', 
         element: (

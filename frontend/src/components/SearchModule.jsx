@@ -186,11 +186,11 @@ const SearchModule = () => {
                 >
                     Save filters
                 </button>
-                <button className="mt-6 bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 px-6 py-2 rounded-lg shadow"
-                // onClick={resetFilters}
+                {/* <button className="mt-6 bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 px-6 py-2 rounded-lg shadow"
+                onClick={resetFilters}
                 >
                     Reset filters
-                </button>
+                </button> */}
             </div>
             <div className="w-2/5 m-auto flex flex-col justify-center items-center bg-gray-200 dark:bg-gray-800 rounded-lg p-6 shadow-lg">
                 <span className="text-7xl font-extrabold text-green-500 dark:text-green-800">{matchingProfilesCount}</span>
