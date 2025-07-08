@@ -223,6 +223,7 @@ router.get('/profiles/:userId', async (req, res) => {
     const {userId} = req.params;
     const {ageMin, ageMax, fameMin, tagsMin, distanceMax} = req.query;
 
+    console.log('🧪 Filtres reçus:', { ageMin, ageMax, fameMin, tagsMin, distanceMax });
 
     
     try {
@@ -333,16 +334,20 @@ router.get('/profiles/:userId', async (req, res) => {
 console.log('Après filtre orientation:', filteredProfiles.length);
 
 console.log(`- Utilisateur : lat=${latitude}, lon=${longitude}`);
-filteredProfiles = filteredProfiles.filter(profile => {
+        filteredProfiles.filter(profile => {
                 console.log(`- Candidat   : lat=${profile.latitude}, lon=${profile.longitude}`);
 });
 
-
         if (distanceMax && latitude && longitude) {
+            console.log("DANS LE IF");
             const userLat = parseFloat(latitude);
             const userLon = parseFloat(longitude);
-        
+            
             filteredProfiles = filteredProfiles.filter(profile => {
+                console.log("userLat=", userLat);
+                console.log("userLon=", userLon);
+                console.log("profilelat=", parseFloat(profile.latitude));
+                console.log("profilelon=", parseFloat(profile.longitude));
                 const dist = getDistance(userLat, userLon, parseFloat(profile.latitude), parseFloat(profile.longitude));
                 console.log(`- Distance   : ${dist.toFixed(2)} km (max autorisé: ${distanceMax})`);
                 if (dist > Number(distanceMax)) {
