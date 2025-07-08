@@ -188,10 +188,9 @@ router.post("/signout", (req,res) => {
     res.status(200).json({message:"disconnected"});
 })
 
-router.post("/reset-password", auth, async(req, res) => {
+router.post("/reset-password", async(req, res) => {
 
     const { email } = req.body
-
     if(!email)
         res.status(400).json(error, "erreur dans la recup du mail")
     try{
@@ -238,7 +237,7 @@ router.post("/reset-password", auth, async(req, res) => {
 });
 
 router.get('/verify-password', async (req, res) => {
-
+    console.log("cacac pourrrrirririririririrriririririri")
     const { token } = req.query;
     try {
         const result = await pool.query('SELECT * FROM users WHERE token_password = $1', [token]);
@@ -254,7 +253,7 @@ router.get('/verify-password', async (req, res) => {
     }
 });
 
-router.post("/change-password", auth, async (req, res) => {
+router.post("/change-password", async (req, res) => {
 
     const { token, newPassword } = req.body;
 

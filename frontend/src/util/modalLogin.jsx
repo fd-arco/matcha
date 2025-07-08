@@ -24,7 +24,7 @@ export default function mailLogModal({ onClose }){
                         </div>
                         <div class="mt-5 sm:mt-6">
                             <button
-                                class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#679267] text-base font-medium text-white hover:bg-[#4E754E] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:bg-[#4E754E] sm:text-sm"
+                                class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2  sm:text-sm"
                                 onClick={onClose}>
                                 OK
                             </button>
