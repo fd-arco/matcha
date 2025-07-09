@@ -60,7 +60,7 @@ export default function Register (){
     }
 
     return (
-        <div className="bg-gray-200 dark:text-white dark:bg-gray-600 min-h-screen flex items-center justify-center p-4">
+        <div className="bg-gray-200 dark:text-white dark:bg-gray-600 min-h-[calc(100vh-72px)] flex items-center justify-center p-4">
             <div className="w-full max-w-[900px] bg-[#13131a] rounded-3xl overflow-hidden shadow-2xl flex flex-col lg:flex-row">
             <div className="w-full lg:w-1/2 relative">
                 <div className="relative h-full">
@@ -109,7 +109,7 @@ export default function Register (){
                             </button>
                         </div>
                         <br></br>
-                            <button type="submit" className="w-full  bg-green-400 dark:text-white hover:bg-green-300 dark:bg-green-800 dark:hover:bg-green-700 text-black rounded-lg p-3 transition-colors">
+                            <button type="submit" className="w-full  bg-green-500 dark:text-white hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 text-black rounded-lg p-3 transition-colors">
                                 Create account
                             </button>
                         <div className="relative my-8">

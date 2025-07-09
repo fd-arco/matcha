@@ -38,7 +38,6 @@ const Matchs = ({onSelectMatch}) => {
                   credentials:"include"
                 });
                 const data = await res.json();
-                console.log("DATA DU FETCH= ", data);
                 setProfiles(data);
                 
                 setCurrentPhotoIndex(0);
@@ -153,7 +152,17 @@ const Matchs = ({onSelectMatch}) => {
     }
 
         
-    const handlePass = () => {
+    const handlePass = async () => {
+        const viewedProfile = profiles[currentIndex];
+        await fetch("http://localhost:3000/likes/ignored", {
+          method:"POST",
+          headers:{"Content-type":"application/json"},
+          credentials:"include",
+          body: JSON.stringify({
+            viewer_id:userId,
+            viewed_id:viewedProfile.user_id
+        })
+      });
         nextProfile();
     };
 
@@ -231,11 +240,6 @@ const Matchs = ({onSelectMatch}) => {
 
       const profile = profiles[currentIndex];
       let distance = null;
-      console.log("✅ Débogage distance:");
-      console.log("userlat:", position.lat);
-      console.log("userlong:", position.long);
-      console.log("profile.latitude:", profile?.latitude);
-      console.log("profile.longitude:", profile?.longitude);
       if (position && position.lat && profile.latitude && profile.longitude) {
         distance = getDistanceFromLatLonInKm(
           position.lat,
@@ -243,7 +247,6 @@ const Matchs = ({onSelectMatch}) => {
           profile.latitude,
           profile.longitude
         );
-        console.log("📏 Distance calculée:", distance);
       } else {
         console.warn("donnees insuffisantes pour calc la distance");
       }

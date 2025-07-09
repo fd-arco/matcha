@@ -31,7 +31,7 @@ export default function MyAccount() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-200 dark:bg-gray-800 text-black dark:text-white p-8">
+        <div className="min-h-[calc(100vh-72px)] bg-gray-200 dark:bg-gray-800 text-black dark:text-white p-8">
         <button
             onClick={() => navigate("/swipe")}
             className="mb-4 px-4 py-2 bg-green-500 dark:bg-green-800 hover:bg-green-400 dark:hover:bg-green-900 text-black dark:text-white rounded-lg transition flex items-center space-x-2">

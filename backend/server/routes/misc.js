@@ -191,13 +191,6 @@ router.patch('/profile/update-location', auth, async (req,res) => {
     try {
         const {userId, latitude, longitude, city, method} = req.body;
     
-        // console.log("⏺️ Reçu dans PATCH /profile/update-location:");
-        // console.log("userId:", userId);
-        // console.log("latitude:", latitude);
-        // console.log("longitude:", longitude);
-        // console.log("city:", city);
-        // console.log("method:", method);
-        
         if (!userId) {
             return res.status(400).json({error:'userId requis'});
         }
@@ -221,11 +214,6 @@ router.patch('/profile/update-location', auth, async (req,res) => {
             `UPDATE profiles SET latitude=$1, longitude=$2, city=$3, method=$4 WHERE user_id=$5`,
             [finalLat, finalLon, finalCity, method, userId]
         )
-        // console.log("///////update dans PATCH /profile/update-location:");
-        // console.log("userId:", userId);
-        // console.log("latitude:", finalLat);
-        // console.log("longitude:", finalLon);
-        // console.log("city:", finalCity);
 
         return res.json({
             message:"updatelocation in db",

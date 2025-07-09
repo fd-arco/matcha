@@ -117,4 +117,22 @@ router.get('/has-match/:user1/:user2', auth, async(req, res) => {
     }
 });
 
+router.post('/ignored', auth, async(req, res) => {
+    const {viewer_id, viewed_id} = req.body;
+    console.log("viewer_id = ", viewer_id);
+    console.log("viewed_id=", viewed_id);
+    try {
+        await pool.query(`
+            INSERT INTO ignored_profiles (viewer_id, viewed_id)
+            VALUES ($1, $2)
+            ON CONFLICT DO NOTHING`,
+            [viewer_id, viewed_id]
+        );
+        res.status(201).json({message:'profil ignored'});
+    } catch (error) {
+        console.error('erreur ajout ignored:', error);
+        res.status(500).json({error:'erreur serveur ignored'})
+    }
+})
+
 module.exports = router;

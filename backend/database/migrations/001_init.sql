@@ -43,6 +43,13 @@ CREATE TABLE IF NOT EXISTS profile_photos (
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS ignored_profiles (
+    id SERIAL PRIMARY KEY,
+    viewer_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    viewed_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
 -- Création de la table messages
 CREATE TABLE IF NOT EXISTS messages (
     id SERIAL PRIMARY KEY,

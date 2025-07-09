@@ -22,10 +22,15 @@ if (!userId || isNaN(userId)) {
         `;
         const { rows } = await pool.query(query, [userId]);
 
+        const viewsResult = await pool.query(`
+            SELECT COUNT(*) FROM views_received
+            WHERE user_id = $1 AND is_read=false
+            `, [userId]);
+
         const result = {
             messages: 0,
             likes: 0,
-            views: 0,
+            views: Number(viewsResult.rows[0].count),
             matchs: 0
         };
         rows.forEach(row => {

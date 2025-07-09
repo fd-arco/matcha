@@ -14,7 +14,6 @@ async function getLocationFromDB(userId) {
 } 
 
 async function updateLocationInDB({userId, latitude=null, longitude=null, city=null, method=null}) {
-    console.log("method:", method);
     try {
       const response = await fetch(`http://localhost:3000/misc/profile/update-location`, {
         method:'PATCH',
@@ -120,10 +119,7 @@ export function useGeoManager(userId) {
         async function init () {
             const current = await getLocationFromDB(userId);
             setMethod(current.method);
-            console.log("📥 [useGeoManager] Données DB:", current);
             if (current.method === 'manual') {
-                console.log("🛠️ [useGeoManager] Mode manuel détecté");
-                console.log("📍 [useGeoManager] setPosition({lat:", current.latitude, ", lon:", current.longitude, "})");
                 setPosition({lat:current.latitude, lon:current.longitude});
                 setCity(current.city ?? null);
                 setLoading(false);

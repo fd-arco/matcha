@@ -223,7 +223,6 @@ router.get('/profiles/:userId', async (req, res) => {
     const {userId} = req.params;
     const {ageMin, ageMax, fameMin, tagsMin, distanceMax} = req.query;
 
-    console.log('🧪 Filtres reçus:', { ageMin, ageMax, fameMin, tagsMin, distanceMax });
 
     
     try {
@@ -237,7 +236,6 @@ router.get('/profiles/:userId', async (req, res) => {
         }
 
         const { gender, interested_in, passions, latitude, longitude} = userResult.rows[0];
-        console.log('User:', { gender, interested_in, passions, latitude, longitude });
 
         const currentUser = {
             gender: gender?.toLowerCase(),
@@ -272,6 +270,9 @@ router.get('/profiles/:userId', async (req, res) => {
             WHERE p.user_id != $1
             AND p.user_id NOT IN (
                 SELECT liked_id FROM likes WHERE liker_id = $1
+            )
+            AND p.user_id NOT IN (
+                SELECT viewed_id FROM ignored_profiles WHERE viewer_id = $1
             )
             AND p.user_id NOT IN (
                 SELECT blocked_id FROM blocks WHERE blocker_id = $1
@@ -331,25 +332,14 @@ router.get('/profiles/:userId', async (req, res) => {
 
         let filteredProfiles = result.rows.filter(profile => isOrientationMatch(currentUser, profile));
 
-console.log('Après filtre orientation:', filteredProfiles.length);
 
-console.log(`- Utilisateur : lat=${latitude}, lon=${longitude}`);
-        filteredProfiles.filter(profile => {
-                console.log(`- Candidat   : lat=${profile.latitude}, lon=${profile.longitude}`);
-});
 
         if (distanceMax && latitude && longitude) {
-            console.log("DANS LE IF");
             const userLat = parseFloat(latitude);
             const userLon = parseFloat(longitude);
             
             filteredProfiles = filteredProfiles.filter(profile => {
-                console.log("userLat=", userLat);
-                console.log("userLon=", userLon);
-                console.log("profilelat=", parseFloat(profile.latitude));
-                console.log("profilelon=", parseFloat(profile.longitude));
                 const dist = getDistance(userLat, userLon, parseFloat(profile.latitude), parseFloat(profile.longitude));
-                console.log(`- Distance   : ${dist.toFixed(2)} km (max autorisé: ${distanceMax})`);
                 if (dist > Number(distanceMax)) {
                     return false;
                 }
@@ -357,7 +347,6 @@ console.log(`- Utilisateur : lat=${latitude}, lon=${longitude}`);
             });
         }
 
-        console.log('Après filtre distance:', filteredProfiles.length);
 
 
         if (tagsMin && userPassions) {
@@ -378,7 +367,6 @@ console.log(`- Utilisateur : lat=${latitude}, lon=${longitude}`);
             })
         }
 
-        console.log('Après filtre passions:', filteredProfiles.length);
 
 
         filteredProfiles = filteredProfiles
@@ -405,7 +393,6 @@ console.log(`- Utilisateur : lat=${latitude}, lon=${longitude}`);
             .filter(Boolean)
             .sort((a, b) => b.score - a.score);
 
-console.log('Profils finaux retournés:', filteredProfiles.length);
 
 
         res.json(filteredProfiles);
@@ -417,7 +404,7 @@ console.log('Profils finaux retournés:', filteredProfiles.length);
 
 router.get("/profiles-count", auth, async(req, res) => {
     const {userId, ageMin, ageMax, fameMin, tagsMin, distanceMax} = req.query;
-
+    console.log("📥 Params reçus:", { userId, ageMin, ageMax, fameMin, tagsMin, distanceMax });
 
     try {
             const userResult = await pool.query(
@@ -426,11 +413,12 @@ router.get("/profiles-count", auth, async(req, res) => {
             );
 
             if (userResult.rows.length === 0) {
+                console.warn("❌ Aucun profil trouvé pour l'utilisateur.");
                 return res.status.error(404).json({error : "Profil utilisateur non trouve"});
             }
 
             const {passions, gender, interested_in, latitude, longitude} = userResult.rows[0];
-            console.log("📍 Utilisateur position :", latitude, longitude);
+            console.log("👤 Utilisateur trouvé:", { gender, interested_in, latitude, longitude });
 
             const currentUser = {
                 gender: gender?.toLowerCase(),
@@ -454,12 +442,22 @@ router.get("/profiles-count", auth, async(req, res) => {
                 AND p.user_id NOT IN (
                     SELECT liked_id FROM likes WHERE liker_id = $1    
                 )
+                AND p.user_id NOT IN (
+                    SELECT viewed_id FROM ignored_profiles WHERE viewer_id = $1
+                )
+                AND p.user_id NOT IN (
+                    SELECT blocked_id FROM blocks WHERE blocker_id = $1
+                    UNION
+                    SELECT blocker_id FROM blocks WHERE blocked_id = $1
+                )
                 AND p.age BETWEEN $2 AND $3
                 AND p.fame >= $4
                 AND p.passions IS NOT NULL
                 `, [userId, ageMin, ageMax, fameMin]);
                 
-            
+            console.log(`🔍 Profils initiaux en base: ${result.rows.length}`);
+
+
             const genderToInterestedMap = {
                 male:'men',
                 female:'women',
@@ -491,17 +489,20 @@ router.get("/profiles-count", auth, async(req, res) => {
 
             let filtered = result.rows.filter((profile) => {
                 const distance = getDistance(latitude, longitude, profile.latitude, profile.longitude);
-                console.log("latitude = ", latitude);
-                console.log("longitude = ", longitude);
-                console.log("profile latitude = ", profile.latitude);
-                console.log("proifle longitude = ", profile.longitude);
-                console.log(`🧭 Distance vers ${profile.user_id}: ${distance.toFixed(2)} km`);
+                console.log(`📍 ${profile.user_id} → Distance: ${distance.toFixed(2)} km`);
 
                 if (distance > Number(distanceMax)) {
+                console.log(`❌ ${profile.user_id} exclu pour distance (${distance.toFixed(2)} > ${distanceMax})`);
                     return false;
                 }
-                if (!isOrientationMatch(currentUser, profile)) return false;
-                if (!tagsMin || !userPassions) return true;
+                if (!isOrientationMatch(currentUser, profile)) {
+                console.log(`❌ ${profile.user_id} exclu pour orientation`);
+                    return false;
+                }
+                if (!tagsMin || !userPassions) {
+                    console.log(`✅ ${profile.user_id} accepté (pas de filtrage tags)`);
+                    return true;
+                }
                 try {
                     const profilePassions = JSON.parse(
                         profile.passions
@@ -510,13 +511,14 @@ router.get("/profiles-count", auth, async(req, res) => {
                             .replace(/([^",\[\]\s]+)(?=,|\])/g, '"$1"')
                     );
                     const common = profilePassions.filter(p => userPassions.includes(p));
+                    console.log(`🧩 ${profile.user_id} passions communes:`, common);
                     return common.length >= Number(tagsMin);
                 } catch(e) {
                     console.error("Erreur parsing passions dans profile-count:", e.message);
                     return false;
                 }
             });
-
+        console.log("✅ Profils finaux retenus:", filtered.map(p => p.user_id));
         res.json({count:parseInt(filtered.length, 10)});
     } catch (error) {
         console.error("Erreur lors du comptage des profils:", error);
