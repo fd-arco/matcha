@@ -61,58 +61,7 @@ export default function Login() {
       console.error("erreur lors de la connexion");
       setMessage("erreur serveur");
     }
-        // const token = data.token;
-        // const user = data.user;
-
-        // sessionStorage.setItem("token", token);
-        // localStorage.setItem("userId", user.id); //TODO:PROVISION FAIRE AVEC COOKIES PLUSTARD
-        // localStorage.setItem("token", token);
-        // setUserId(user.id);
-        // setTimeout(() => { navigate("/swipe") }, 1500);
-        // setTimeout(async () => {
-        //   try {
-        //     const resProfile = await fetch(`http://localhost:3000/user/${user.id}`);
-        //     const profileData = await resProfile.json();
-  
-        //     if (profileData.profile_id) {
-        //       navigate("/swipe");
-        //     } else {
-        //       navigate("/create-profil");
-        //     }
-        //       setUserId(user.id);
-        //   } catch (err) {
-        //     console.error("erreur lors de la recuperation du profil:", err);
-        //     navigate("/create-profil");
-        //   }
-        // }, 10);
-
-        /*setTimeout(() => { navigate("/profil") }, 1500);*/
-
     }
-
-      // if (response.ok) {
-
-      //     const token = data.token
-      //     console.log("ca token :::", token)
-      //     sessionStorage.setItem("token", token);
-      //     setTimeout(() => {
-      //       navigate("/profil");
-      //   }, 1500);
-      // }
-
-//       else {
-//         setModal(true);
-//         console.log("caca boudin")
-//         setMessage(data.error);
-//       }
-//     } 
-//   catch (error) 
-//   {
-//       console.error("Erreur lors de la connexion:", error);
-//       setMessage("Erreur serveur");
-//   }
-// }
-
 
     return (
       <div className="h-screen w-screen flex justify-center items-center bg-gray-200 dark:bg-gray-600 dark:text-white">

@@ -7,6 +7,7 @@ const pool = require("../config/db");
 const {generateVerificationToken} = require("../utils/generateToken");
 const nodemailer = require("nodemailer");
 const SECRET_KEY = process.env.JWT_SECRET;
+const bcrypt = require('bcrypt');
 
 router.post("/register", async(req, res) => {
     const { email, firstname, lastname, password } = req.body;
@@ -15,12 +16,12 @@ router.post("/register", async(req, res) => {
         return res.status(400).json({ error: "Veuillez remplir tous les champs" });
     }
     try {
-        
+        const hashedPassword = await bcrypt.hash(password,10);
         const verifTokenMail = generateVerificationToken();
 
         const result = await pool.query(
             'INSERT INTO users (email, firstname, lastname, password, verified, veriftoken) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [email, firstname, lastname, password, false, verifTokenMail]
+            [email, firstname, lastname, hashedPassword, false, verifTokenMail]
         );
 
         const user = result.rows[0];
@@ -88,8 +89,9 @@ router.post("/loginUser", async (req, res) => {
 
         const user = result.rows[0];
 
-        if (user.password !== password) {
-            return res.status(401).json({ error: "Mot de passe incorrect" });
+        const passwordMatch = await bcrypt.compare(password, user.password);
+        if (!passwordMatch) {
+            return res.status(401).json({error:"mot de passe incorrect "});
         }
 
         const token = jwt.sign({ userId: user.id }, SECRET_KEY, { expiresIn: "7d" });
