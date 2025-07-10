@@ -7,13 +7,32 @@ const {calculateAge} = require('../utils/calculateAge');
 const {getDistance} = require('../utils/getDistance');
 
 const storage = multer.diskStorage({
-  destination: "./uploads",
+  destination: (req, file, cb) => {
+    cb(null, "./uploads");
+  },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+    const uniqueName = Date.now() + "-" + file.originalname;
+    cb(null, uniqueName);
   },
 });
 
-const upload = multer({ storage });
+const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+const fileFilter = (req, file, cb) => {
+    if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(new Error("only JPG, PNG, and WEBP images are allowed"), false);
+    }
+};
+
+const upload = multer({
+    storage,
+    fileFilter,
+    limits:{fileSize:2*1024*1024},
+ });
+
+
 
 router.post("/create-profil", auth, upload.array("photos", 6), async(req, res) => {
     try {
@@ -301,8 +320,6 @@ router.get('/profiles/:userId', async (req, res) => {
         `;
 
         const result = await pool.query(query, values);
-        console.log('Profils bruts SQL:', result.rows.length);
-        console.log('profiles:', result.rows);
         const genderToInterestedMap = {
             male:'men',
             female:'women',
@@ -404,7 +421,6 @@ router.get('/profiles/:userId', async (req, res) => {
 
 router.get("/profiles-count", auth, async(req, res) => {
     const {userId, ageMin, ageMax, fameMin, tagsMin, distanceMax} = req.query;
-    console.log("📥 Params reçus:", { userId, ageMin, ageMax, fameMin, tagsMin, distanceMax });
 
     try {
             const userResult = await pool.query(
@@ -418,7 +434,6 @@ router.get("/profiles-count", auth, async(req, res) => {
             }
 
             const {passions, gender, interested_in, latitude, longitude} = userResult.rows[0];
-            console.log("👤 Utilisateur trouvé:", { gender, interested_in, latitude, longitude });
 
             const currentUser = {
                 gender: gender?.toLowerCase(),
@@ -455,7 +470,6 @@ router.get("/profiles-count", auth, async(req, res) => {
                 AND p.passions IS NOT NULL
                 `, [userId, ageMin, ageMax, fameMin]);
                 
-            console.log(`🔍 Profils initiaux en base: ${result.rows.length}`);
 
 
             const genderToInterestedMap = {
@@ -489,18 +503,14 @@ router.get("/profiles-count", auth, async(req, res) => {
 
             let filtered = result.rows.filter((profile) => {
                 const distance = getDistance(latitude, longitude, profile.latitude, profile.longitude);
-                console.log(`📍 ${profile.user_id} → Distance: ${distance.toFixed(2)} km`);
 
                 if (distance > Number(distanceMax)) {
-                console.log(`❌ ${profile.user_id} exclu pour distance (${distance.toFixed(2)} > ${distanceMax})`);
                     return false;
                 }
                 if (!isOrientationMatch(currentUser, profile)) {
-                console.log(`❌ ${profile.user_id} exclu pour orientation`);
                     return false;
                 }
                 if (!tagsMin || !userPassions) {
-                    console.log(`✅ ${profile.user_id} accepté (pas de filtrage tags)`);
                     return true;
                 }
                 try {
@@ -511,14 +521,12 @@ router.get("/profiles-count", auth, async(req, res) => {
                             .replace(/([^",\[\]\s]+)(?=,|\])/g, '"$1"')
                     );
                     const common = profilePassions.filter(p => userPassions.includes(p));
-                    console.log(`🧩 ${profile.user_id} passions communes:`, common);
                     return common.length >= Number(tagsMin);
                 } catch(e) {
                     console.error("Erreur parsing passions dans profile-count:", e.message);
                     return false;
                 }
             });
-        console.log("✅ Profils finaux retenus:", filtered.map(p => p.user_id));
         res.json({count:parseInt(filtered.length, 10)});
     } catch (error) {
         console.error("Erreur lors du comptage des profils:", error);

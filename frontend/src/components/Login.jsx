@@ -64,7 +64,7 @@ export default function Login() {
     }
 
     return (
-      <div className="h-screen w-screen flex justify-center items-center bg-gray-200 dark:bg-gray-600 dark:text-white">
+      <div className="min-h-[calc(100vh-72px)] w-screen flex justify-center items-center bg-gray-200 dark:bg-gray-600 dark:text-white">
         <div className="grid gap-8">
           <div
             id="back-div"
@@ -133,25 +133,6 @@ export default function Login() {
                   </a>
                 </h3>
               </div>
-              {/* <div
-                id="third-party-auth"
-                className="flex items-center justify-center mt-5 flex-wrap"
-              >
-                <button className="hover:scale-105 ease-in-out duration-300 shadow-lg p-2 rounded-lg m-1">
-                  <img
-                    className="max-w-[25px]"
-                    src="https://ucarecdn.com/8f25a2ba-bdcf-4ff1-b596-088f330416ef/"
-                    alt="Google"
-                  />
-                </button>
-                <button className="hover:scale-105 ease-in-out duration-300 shadow-lg p-2 rounded-lg m-1">
-                  <img
-                    className="max-w-[25px] filter dark:invert"
-                    src="https://ucarecdn.com/be5b0ffd-85e8-4639-83a6-5162dfa15a16/"
-                    alt="Github"
-                  />
-                </button>
-              </div> */}
             </div>
           </div>
         </div>

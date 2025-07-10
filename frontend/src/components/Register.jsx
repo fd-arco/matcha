@@ -18,9 +18,20 @@ export default function Register (){
     const [sent, setSent] = useState(false);
     const navigate = useNavigate();
     const {setUserId, setHasProfile} = useUser();
+    const [errors, setErrors] = useState({});
+
+    function isPasswordSecure(password) {
+        const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+        return regex.test(password);
+    }
 
     async function handleRegister(event) {
         event.preventDefault();
+        if (!isPasswordSecure(password)) {
+            setErrors({password:"Password must be at least 8 characters long and include at least one uppercase letter and one number."});
+            return ;
+        }
+        setErrors({});
         try {
 
             const response = await fetch("http://localhost:3000/auth/register", {
@@ -88,7 +99,7 @@ export default function Register (){
                         Already have an account?
                         <a href="https://abhirajk.vercel.app/" className="text-white hover:underline">Log in</a>
                     </p> */}
-                    <form className="space-y-4" onSubmit={ handleRegister }  >
+                    <form className="space-y-2" onSubmit={ handleRegister }  >
                         <div className="flex flex-col md:flex-row gap-4">
                             <input type="text" onChange={(event) => setFirstName(event.target.value)} 
                             value={firstname} placeholder="First name" className="w-full dark:text-white placeholder-gray-700 dark:placeholder-gray-400 md:w-1/2 bg-gray-300 dark:bg-gray-600 text-black rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600" required/>
@@ -101,13 +112,10 @@ export default function Register (){
                         <div className="relative">
                             <input type="password" onChange={(event) => setPassword(event.target.value)}
                             value={password} placeholder="Enter your password" className="w-full dark:text-white placeholder-gray-700 dark:placeholder-gray-400 bg-gray-300 dark:bg-gray-600 text-black rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-600"/>
-                            <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2">
-                                {/* <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg> */}
-                            </button>
                         </div>
+                            {errors.password && (
+                                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+                            )}
                         <br></br>
                             <button type="submit" className="w-full  bg-green-500 dark:text-white hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 text-black rounded-lg p-3 transition-colors">
                                 Create account

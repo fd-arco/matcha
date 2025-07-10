@@ -60,7 +60,6 @@ const Matchs = ({onSelectMatch}) => {
             setUserLocation({ lat: data.latitude, lng: data.longitude });
           }
         } catch (err) {
-          console.log('cacaacacacacaacacacacacaacacacacaacacacaac')
           console.error("Erreur position user connecté:", err);
         }
       };

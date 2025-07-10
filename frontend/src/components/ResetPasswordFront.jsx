@@ -11,13 +11,28 @@ export default function ResetPasswordFront(){
     const [password, setPassword] = useState("")
     const [newPassword, setNEwPassword] = useState("")
     const [confirm, setConfirm] = useState("")
+    const [errors, setErrors] = useState({});
+
+    function isPasswordSecure(password) {
+      const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+      return regex.test(password);
+    }
+
 
     async function HandleResetPassword(event) {
         event.preventDefault();
 
+        if (!isPasswordSecure(newPassword)) {
+          setErrors({
+            password: "Password must be at least 8 characters long and include at least one uppercase letter and one number."
+          });
+          return;
+        }
         if (newPassword !== confirm) {
-            alert("Les mots de passe ne correspondent pas.");
-            return;
+          setErrors({
+            confirm:"Passwords do not match"
+          });
+          return;
           }
         
           try {
@@ -66,6 +81,9 @@ export default function ResetPasswordFront(){
                         className="border p-3 shadow-md rounded-lg w-full dark:bg-gray-800 dark:text-white dark:border-gray-700 placeholder-gray-400 dark:placeholder-gray-500 focus:scale-105 transition duration-300 ease-in-out"
                         required
                       />
+                      {errors.password && (
+                        <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+                      )}                      
                     </div>
     
                     <div>
@@ -82,7 +100,9 @@ export default function ResetPasswordFront(){
                         required
                       />
                     </div>
-    
+                    {errors.confirm && (
+                      <p className="text-red-500 text-sm mt-1">{errors.confirm}</p>
+                    )}
                     <button
                       type="submit"
                       className="bg-gradient-to-l text-dark dark:text-white from-green-500 to-green-700 shadow-lg mt-6 p-2 rounded-lg w-full hover:scale-105 hover:from-green-500 hover:to-green-500 transition duration-300 ease-in-out"
@@ -105,65 +125,3 @@ export default function ResetPasswordFront(){
     
     
   }
-
-//     return(
-
-//           <div className="h-screen w-screen flex justify-center items-center bg-gray-200 dark:bg-gray-600 dark:text-white">
-//                 <div className="grid gap-8">
-//                   <div
-//                     id="back-div"
-//                     className="bg-gradient-to-r from-green-700 to-green-500 rounded-[26px] m-4"
-//                   >
-//                     <div
-//                       className="text-dark dark:text-white border-[20px] border-transparent rounded-[20px] bg-white dark:bg-gray-900 bg-white shadow-lg xl:p-10 2xl:p-10 lg:p-10 md:p-10 sm:p-2 m-2"
-//                     >
-//                       <h1 className="pt-8 pb-6 font-bold text-dark dark:text-white text-5xl text-center cursor-default">
-//                         Choose a new Password..
-//                       </h1>
-//                       <form className="space-y-4" onSubmit={HandleResetPassword}>
-//                         <div>
-//                           <label
-//                             htmlFor="New password"
-//                             className="mb-2 text-dark dark:text-white text-lg"
-//                           >
-//                             New Password
-//                           </label>
-//                           <input
-//                             id="password"
-//                             onChange={(event) => setNEwPassword(event.target.value)}
-//                             value={newPassword}
-//                             className="border p-3 shadow-md dark:bg-grey-400 dark:text-gray-300 dark:border-gray-700 placeholder-bg-gray-700 dark:placeholder-bg-gray-40 placeholder:text-base focus:scale-105 ease-in-out duration-300  rounded-lg w-full"
-//                             type="password"
-//                             placeholder="password"
-//                             required
-//                           />
-//                         </div>
-//                         <div>
-//                           <label
-//                             htmlFor="password"
-//                             className="mb-2 text-dark dark:text-white text-lg"
-//                           >
-//                            Confirm New Password
-//                           </label>                          <input
-//                             id="password"
-//                             onChange={(event) => setConfirm(event.target.value)}
-//                             value={confirm}
-//                             className="border p-3 shadow-md dark:bg-grey-400 dark:text-gray-300 dark:border-gray-700 placeholder-bg-gray-700 dark:placeholder-bg-gray-40 placeholder:text-base focus:scale-105 ease-in-out duration-300  rounded-lg w-full"
-//                             type="password"
-//                             placeholder="confirm"
-//                             required
-//                           />
-//                         </div>
-//                         <button
-//                           className="bg-gradient-to-l text-dark dark:text-white from-green-500 to-green-700 shadow-lg mt-6 p-2 rounded-lg w-full hover:scale-105 hover:from-green-500 hover:to-green-500 transition duration-300 ease-in-out"
-//                           type="submit"
-//                         >
-//                          Change Password
-//                         </button>
-//                       </form>
-//                     </div>
-//                   </div>
-//                 </div>
-//               </div>
-//     );
-// }

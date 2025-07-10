@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
-// const bcrypt = require("bcrypt");
 const {auth} = require("../middleware/auth");
 const pool = require("../config/db");
 const {generateVerificationToken} = require("../utils/generateToken");
@@ -239,7 +238,6 @@ router.post("/reset-password", async(req, res) => {
 });
 
 router.get('/verify-password', async (req, res) => {
-    console.log("cacac pourrrrirririririririrriririririri")
     const { token } = req.query;
     try {
         const result = await pool.query('SELECT * FROM users WHERE token_password = $1', [token]);
@@ -274,9 +272,9 @@ router.post("/change-password", async (req, res) => {
 
         const user = result.rows[0];
 
-        // const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+        const hashedPassword = await bcrypt.hash(newPassword,10);
 
-        await pool.query("UPDATE users SET password = $1, token_password = NULL WHERE id = $2",[newPassword, user.id]);
+        await pool.query("UPDATE users SET password = $1, token_password = NULL WHERE id = $2",[hashedPassword, user.id]);
 
         res.status(200).json({ message: "Mot de passe modifié avec succès." });
 

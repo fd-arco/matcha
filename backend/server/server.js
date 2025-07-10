@@ -18,7 +18,7 @@ app.use(cors({ origin: "http://localhost:3001", credentials: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use("/uploads", express.static("uploads"));
-
+app.use("/fakeprofilephotos", express.static("fakeprofilephotos"));
 app.use("/auth", require("./routes/auth"));
 app.use("/profile", require("./routes/profile"));
 app.use("/messages", require("./routes/messages"));

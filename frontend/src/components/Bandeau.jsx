@@ -39,11 +39,6 @@ const Bandeau = () => {
     const totalUnread =
         Number(notifications.views) + Number(notifications.likes) + Number(notifications.matchs) + Number(notifications.messages);
 
-    console.log("📦 Bandeau → notifications:", notifications);
-
-
-console.log("📊 Bandeau → totalUnread:", totalUnread);
-
     return (
         //TODO:AJOUTER ONCLICK SUR LE DIV POUR REDIRIGER VERS LES EDIT PROFILE
         <div className="bg-green-500 dark:bg-green-800 text-black dark:text-white p-4 flex flex-wrap items-center justify-between gap-4"> 

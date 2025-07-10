@@ -37,8 +37,6 @@ export default function EditProfile() {
         "Gaming", "Dancing", "Art", "Photography", "Movies"
     ];
 
-    // console.log("location dans editprofile=", position);
-
     useEffect(() => {
         const fetchProfileData = async () => {
             try {
@@ -229,12 +227,6 @@ export default function EditProfile() {
         </div>
       );
     }
-
-    console.log("📤 [EditProfile] OUVERTURE ModalLocal2 avec:");
-    console.log("    → position:", position);
-    console.log("    → method:", method);
-    console.log("    → loading:", loading);
-
 
     return (
         <div className="text-black dark:text-white transition-colors duration-300 flex flex-col">

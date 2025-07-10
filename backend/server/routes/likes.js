@@ -119,8 +119,6 @@ router.get('/has-match/:user1/:user2', auth, async(req, res) => {
 
 router.post('/ignored', auth, async(req, res) => {
     const {viewer_id, viewed_id} = req.body;
-    console.log("viewer_id = ", viewer_id);
-    console.log("viewed_id=", viewed_id);
     try {
         await pool.query(`
             INSERT INTO ignored_profiles (viewer_id, viewed_id)

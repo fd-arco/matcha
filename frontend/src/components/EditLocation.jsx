@@ -22,10 +22,8 @@ const ModalLocal2 = ({ onClose,  onLocationSelect, position, setPosition, method
       });
     }, []);
     useEffect(() => {
-      console.log("📍 [ModalLocal2] Position reçue dans props:", position);
 
       if (!position) {
-        console.warn("❌ [ModalLocal2] Position est null ou undefined !");
         setCurrentLoc(null);
         return;
       }
@@ -34,10 +32,8 @@ const ModalLocal2 = ({ onClose,  onLocationSelect, position, setPosition, method
       const lng = position.lng ?? position.lon ?? null;
 
       if (lat !== null && lng !== null) {
-        console.log("🧭 [ModalLocal2] Position OK → setCurrentLoc:", { lat, lng });
         setCurrentLoc({ lat, lng });
       } else {
-        console.warn("⚠️ [ModalLocal2] lat ou lng est undefined → pas de carte");
         setCurrentLoc(null);
       }
     }, [position]);
@@ -45,8 +41,6 @@ const ModalLocal2 = ({ onClose,  onLocationSelect, position, setPosition, method
 
   const handleLocationUpdate = async () => {
     if (!currentLoc) return;
-
-    console.log("📤 Submitting new location to backend →", currentLoc);
 
     try {
       const res = await fetch(`http://localhost:3000/misc/profile/update-location`, {
@@ -67,7 +61,6 @@ const ModalLocal2 = ({ onClose,  onLocationSelect, position, setPosition, method
         console.error("❌ Erreur lors du PATCH update-location");
         return;
       }
-      console.log("✅ Localisation mise à jour :", await res.json());
       setShowSuccessModal(true);
     } catch (err) {
       console.error("❌ Erreur globale dans handleLocationUpdate:", err);
@@ -112,8 +105,6 @@ return (
                 onDragEnd={(e) => {
                   const newLat = e.latLng.lat();
                   const newLng = e.latLng.lng();
-                  const draggedLoc = { lat: newLat, lng: newLng };
-                  console.log("🖱️ Marker dragged →", draggedLoc);
                   setCurrentLoc({ lat: newLat, lng: newLng });
                 }}
               />
