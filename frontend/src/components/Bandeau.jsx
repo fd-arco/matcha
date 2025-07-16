@@ -59,7 +59,7 @@ const Bandeau = () => {
                             className="w-4 h-4 rounded-full bg-green-500 border-2 border-white"
                             title="En ligne"
                         ></span>
-                        { user.verified && (<span className="text-green-500 text-xs" title="Compte vérifié">☢️​</span>)}
+                        { user.verified && (<span className="text-green-500 text-xs" title="Compte vérifié">✔️​</span>)}
                     </div>
  
                 </div>

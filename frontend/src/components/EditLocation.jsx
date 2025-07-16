@@ -11,6 +11,8 @@ const ModalLocal2 = ({ onClose,  onLocationSelect, position, setPosition, method
   const [currentLoc, setCurrentLoc] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
+  console.log("setcurrent loc :             ", setCurrentLoc)
+
   useEffect(() => {
     fetch("http://localhost:3000/misc/config")
       .then((response) => response.json())

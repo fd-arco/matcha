@@ -199,6 +199,7 @@ router.get("/modalprofile/:userId", auth,async(req, res) => {
         const userProfile = await pool.query(`
             SELECT
                 u.firstname,
+                u.verified,
                 prof.age,
                 prof.gender,
                 prof.interested_in,
@@ -242,7 +243,6 @@ router.get('/profiles/:userId', async (req, res) => {
     const {userId} = req.params;
     const {ageMin, ageMax, fameMin, tagsMin, distanceMax} = req.query;
 
-
     
     try {
         const userResult = await pool.query(
@@ -283,9 +283,11 @@ router.get('/profiles/:userId', async (req, res) => {
                 p.longitude,
                 p.location_enabled,
                 p.city,
+                u.verified,
                 json_agg(pp.photo_url ORDER BY pp.id) AS photos
             FROM profiles p
             JOIN profile_photos pp ON pp.profile_id = p.id
+            JOIN users u ON u.id = p.user_id
             WHERE p.user_id != $1
             AND p.user_id NOT IN (
                 SELECT liked_id FROM likes WHERE liker_id = $1
@@ -316,7 +318,7 @@ router.get('/profiles/:userId', async (req, res) => {
         }
 
         query += `
-            GROUP BY p.id
+            GROUP BY p.id, u.verified
         `;
 
         const result = await pool.query(query, values);

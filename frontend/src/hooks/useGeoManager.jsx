@@ -61,66 +61,67 @@ export function useGeoManager(userId) {
     const [city, setCity] = useState(null);
     const [method, setMethod] = useState(null);
     const [loading, setLoading] = useState(true);
-
     const resetLocation = async () => {
-        setLoading(true);
-        const status = await navigator.permissions.query({name:'geolocation'});
-        if (status.state === 'granted' || status.state==='prompt') {
-            navigator.geolocation.getCurrentPosition(
-                async (pos) => {
-                    const {latitude, longitude} = pos.coords;
-                    setPosition({lat:latitude, lon:longitude});
-                    setCity(null);
-                    setMethod('gps');
-                    await updateLocationInDB({
-                        userId,
-                        latitude, 
-                        longitude,
-                        method:'gps'
-                    });
-                    setLoading(false);
-                },
-                async(error) => {
-                    console.warn("refus ou erreur gps:", error)
-                    const loc = await getLocationByIP();
-                    if (loc) {
-                        const result = await updateLocationInDB({
-                            userId,
-                            city:loc.city,
-                            method:'ip'
-                        })
-                        if (result) {
-                            setPosition({lat:result.latitude, lon:result.longitude});
-                            setCity(result.city);
-                            setMethod(result.method);
-                        }
-                        setLoading(false);
-                    }
-                })
-            } else {
-                const loc = await getLocationByIP();
-                if (loc) {
-                    const result = await updateLocationInDB({
-                        userId, 
-                        city:loc.city,
-                        method:'ip'
-                    })
-                    if (result) {
-                        setPosition({lat:result.latitude,lon:result.longitude})
-                        setCity(result.city);
-                        setMethod(result.method);
-                    }
-                }
-                setLoading(false);
+      setLoading(true);
+      const status = await navigator.permissions.query({name:'geolocation'});
+      if (status.state === 'granted' || status.state==='prompt') {
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            const {latitude, longitude} = pos.coords;
+            setPosition({lat:latitude, lon:longitude});
+            setCity(null);
+            setMethod('gps');
+            await updateLocationInDB({
+              userId,
+              latitude, 
+              longitude,
+              method:'gps'
+            });
+            setLoading(false);
+          },
+          async(error) => {
+            console.warn("refus ou erreur gps:", error)
+            const loc = await getLocationByIP();
+            if (loc) {
+              const result = await updateLocationInDB({
+                userId,
+                city:loc.city,
+                method:'ip'
+              })
+              if (result) {
+                setPosition({lat:result.latitude, lon:result.longitude});
+                setCity(result.city);
+                setMethod(result.method);
+              }
+              setLoading(false);
             }
+          })
+        } else {
+          const loc = await getLocationByIP();
+          if (loc) {
+            const result = await updateLocationInDB({
+              userId, 
+              city:loc.city,
+              method:'ip'
+            })
+            if (result) {
+              setPosition({lat:result.latitude,lon:result.longitude})
+              setCity(result.city);
+              setMethod(result.method);
+            }
+          }
+          setLoading(false);
         }
-
-    useEffect(() => {
+      }
+      
+      useEffect(() => {
         async function init () {
-            const current = await getLocationFromDB(userId);
-            setMethod(current.method);
-            if (current.method === 'manual') {
+          const current = await getLocationFromDB(userId);
+          setMethod(current.method);
+          if (current.method === 'manual') {
+                console.log("   icic    ")
                 setPosition({lat:current.latitude, lon:current.longitude});
+                console.log("position dans usegemanager  ::  ", position)
                 setCity(current.city ?? null);
                 setLoading(false);
             } else {

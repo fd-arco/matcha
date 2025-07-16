@@ -239,6 +239,8 @@ const Matchs = ({onSelectMatch}) => {
 
       const profile = profiles[currentIndex];
       let distance = null;
+      console.log("position du user connecter=======================>>>", position)
+      console.log("position du profile============>", profile.latitude, profile.longitude)
       if (position && position.lat && profile.latitude && profile.longitude) {
         distance = getDistanceFromLatLonInKm(
           position.lat,
@@ -294,7 +296,7 @@ const Matchs = ({onSelectMatch}) => {
         <div className="flex-1 flex items-center justify-center pt-4 pb-4">
           <div className="w-full max-w-md bg-white dark:bg-gray-900 p-4 rounded-2xl shadow-md text-center">
             <div className="text-left mb-4">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white truncate max-w-full">{profile.name}, {profile.age}</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white truncate max-w-full">{profile.name}, {profile.age} {profile.verified && <span className="ml-2">✔️</span>} </h2>
               <div className="flex items-center mt-1">
                 <span className="text-yellow-400 mr-1">⭐</span>
                 <span className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Fame: {profile.fame}</span>
