@@ -72,7 +72,7 @@ const Matchs = ({onSelectMatch}) => {
             const viewedProfile = profiles[currentIndex];
 
             try {
-                if (socket) {
+                if (socket && socket.readyState === WebSocket.OPEN) {
                   socket.send(JSON.stringify({
                     type:"viewNotification",
                     senderId: userId,
