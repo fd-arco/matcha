@@ -18,7 +18,8 @@ export const SocketProvider = ({children}) => {
     const [matchNotifications, setMatchNotifications] = useState([]);
     const [likeNotifications, setLikeNotifications] = useState({ received: [], sent: [] });
     const [viewNotifications, setViewNotifications] = useState({ received: [], sent: [] });
-    
+    const [matchStatus, setMatchStatus] = useState({});
+
     useEffect(() => {
         if (loading) return;
         if (!userId || typeof userId !== "number") return;
@@ -94,8 +95,12 @@ export const SocketProvider = ({children}) => {
             }
 
             if (message.type === "newMatch") {
-                setMatchesGlobal(prev => [...prev, message.match]);
+                setMatchesGlobal(prev => {
+                    const filtered = prev.filter(m => m.user_id !== message.match.user_id);
+                    return [...filtered, message.match];
+                });
             }
+
             if (message.type === "userStatusChanged") {
                 setOnlineStatuses(prev => ({
                     ...prev,
@@ -135,6 +140,56 @@ export const SocketProvider = ({children}) => {
                     messages: (prev => (prev || []).filter(n => n.sender_id !== userId).length)(messageNotifications),
                 });
 
+            }
+            if (message.type === "match_status_update") {
+                const {user1, user2, isMatched} = message;
+                const key1 = `${user1}-${user2}`;
+                const key2 = `${user2}-${user1}`;
+
+                console.log(`socketContext on recupere user1=${user1}, user2= ${user2}, isMatched=${isMatched}`);
+                if (userId === user1 || userId === user2) {
+                    setMatchStatus(prev => ({
+                        ...prev,
+                        [key1]:isMatched,
+                        [key2]:isMatched
+                    }));
+
+                    if (!isMatched) {
+                        setMatchesGlobal(prev =>
+                            prev.filter(
+                                match =>
+                                    !(
+                                        (match.user_id === user1 && userId === user2) ||
+                                        (match.user_id === user2 && userId === user1)
+                                    )
+                            )
+                        )
+                        
+                        const otherUserId = userId === user1 ? user2 : user1;
+                        
+                        setLikeNotifications(prev => ({
+                            ...prev,
+                            received: (prev.received || []).filter(n => n.sender_id !== otherUserId),
+                            sent: (prev.sent || []).filter(n => n.liked_id !== otherUserId),
+                        }));
+                        
+                        setMatchNotifications(prev =>
+                            (prev || []).filter(n => n.sender_id !== otherUserId)
+                        );
+                        
+                        setNotifications(prev => ({
+                            ...prev,
+                            likes: (prevLikes =>
+                                (prevLikes.received || []).filter(n => n.sender_id !== otherUserId).length
+                            )(likeNotifications),
+                            matchs: (prevMatchs =>
+                                (prevMatchs || []).filter(n => n.sender_id !== otherUserId).length
+                            )(matchNotifications),
+                        }));
+                    }
+
+                    console.log(`matchStatus dans le usestate = ${matchStatus}`);
+                }
             }
             if (message.type === "refreshMatchUI") {
                 const {blockerId, blockedId} = message;
@@ -184,7 +239,8 @@ export const SocketProvider = ({children}) => {
             likeNotifications,
             setLikeNotifications,
             viewNotifications,
-            setViewNotifications
+            setViewNotifications,
+            matchStatus
         }}>
             {children}
         </SocketContext.Provider>

@@ -19,6 +19,11 @@ router.post("/like", auth, async(req,res) => {
              [likedId, likerId]
         );
 
+        await pool.query(
+            `UPDATE profiles SET fame = LEAST(1000, fame + 10) WHERE user_id = $1`,
+            [likedId]
+        );
+
         const checkMatch = await pool.query(
             `SELECT COUNT(*) AS count FROM likes 
             WHERE (liker_id = $1 AND liked_id = $2)
@@ -28,6 +33,10 @@ router.post("/like", auth, async(req,res) => {
         if (parseInt(checkMatch.rows[0].count, 10) === 2) {
             await pool.query(
                 `INSERT INTO matches (user1_id, user2_id) VALUES ($1, $2)`,
+                [likerId, likedId]
+            );
+            await pool.query(
+                `UPDATE profiles SET fame = LEAST(1000, fame + 15) WHERE user_id IN ($1, $2)`,
                 [likerId, likedId]
             );
             return res.json({match:true, message:"C'est un match!"});
@@ -52,6 +61,11 @@ router.post("/unlike", auth,async (req, res) => {
         await pool.query(
             `DELETE FROM notifications WHERE sender_id = $1 AND user_id = $2 AND type='likes'`,
             [user1, user2]
+        );
+
+        await pool.query(
+            `UPDATE profiles SET fame = GREATEST(0, fame - 10) WHERE user_id=$1`,
+            [user2]
         );
 
         res.status(200).json({success: true, message:"unlike effectue"});
@@ -93,6 +107,11 @@ router.post("/unmatch", auth, async(req, res) => {
              (user_id = $1 AND sender_id = $2) OR
             (user_id = $2 AND sender_id = $1)
             )`, [user1, user2])
+
+        await pool.query(
+            `UPDATE profiles SET fame = GREATEST(0, fame - 15) WHERE user_id = $1`,
+            [user2]
+        );
             res.status(200).json({success:true, message:"Unmatch effectue avec succes"});
     } catch (error) {
         console.error("erreur lors du unmatch: ", error);
@@ -126,6 +145,10 @@ router.post('/ignored', auth, async(req, res) => {
             ON CONFLICT DO NOTHING`,
             [viewer_id, viewed_id]
         );
+        await pool.query(`
+            UPDATE profiles
+            SET fame = GREATEST(0, fame - 5) WHERE user_id = $1`,
+            [viewed_id]);
         res.status(201).json({message:'profil ignored'});
     } catch (error) {
         console.error('erreur ajout ignored:', error);

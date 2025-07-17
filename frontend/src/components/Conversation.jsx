@@ -7,24 +7,45 @@ import ConfirmActionModal from "./ConfirmActionModal";
 import { useUser } from "../context/UserContext";
 
 const Conversation = ({match, onBack}) => {
-    const {messagesGlobal, socket, onlineStatuses, userPhoto, blockedUserId} = useSocket();
+    const {messagesGlobal, socket, onlineStatuses, userPhoto, blockedUserId, matchStatus} = useSocket();
     const [showBlockedModal, setShowBlockedModal] = useState(false);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
-    // const userId = localStorage.getItem("userId");
     const {userId} = useUser();
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [reportReason, setReportReason] = useState("");
     const [isReportSuccessModalOpen, setIsReportSuccessModalOpen] = useState(false);
     const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
     const [isBlockSuccessModalOpen, setIsBlockSuccessModalOpen] = useState(false);
-
+    // const [isStillMatched, setIsStillMatched] = useState(true);
+    const [reasonBlocked, setReasonBlocked] = useState("");
 
     useEffect(()=> {
         if (blockedUserId &&  blockedUserId === match.user_id) {
+            setReasonBlocked("blocked");
             setShowBlockedModal(true);
         }
     }, [blockedUserId, match?.user_id]);
+
+    // useEffect(() => {
+    //     const checkMatchStatus = async () => {
+    //         try {
+    //             const res = await fetch(`http://localhost:3000/misc/match-check/${userId}/${match.user_id}`, {
+    //                 credentials:"include"
+    //             });
+    //             const data = await res.json();
+    //             if (!data.isMatched) {
+    //                 setReasonBlocked("unmatched");
+    //                 setShowBlockedModal(true);
+    //                 console.log("ya plus de match");
+    //             }
+    //         } catch (error) {
+    //             console.error("erreur verif match :", error);
+    //             setIsStillMatched(false);
+    //         }
+    //     }
+    //     checkMatchStatus();
+    // }, [userId, match.user_id]);
 
     useEffect(() => {
         const fetchMessages = async () => {
@@ -57,13 +78,22 @@ const Conversation = ({match, onBack}) => {
     }, [messagesGlobal, match.user_id, socket, userId]);
 
     const sendMessage = () => {
-        if (!newMessage.trim() || !socket) return;
+        const matchKey = `${userId}-${match.user_id}`;
+        console.log(`matchKey = ${matchKey}`);
+        if (!newMessage.trim() || !socket) {
+            return;
+        }
+        console.log(`matchStatus[matchkey] = ${matchStatus[matchKey]}`);
+        if (matchStatus[matchKey] === false) {
+            setReasonBlocked("unmatched");
+            setShowBlockedModal(true);
+            return;
+        }
         if (blockedUserId === match.user_id) {
             setShowBlockedModal(true);
             setNewMessage("");
             return;
         }
-        
         const messageData = {
             type:"message",
             senderId: userId,
@@ -138,8 +168,6 @@ const Conversation = ({match, onBack}) => {
                 blockerId: userId,
                 blockedId:match.user_id
             }));
-            // socket.send(JSON.stringify({ type:"userBlocked", blockerId: userId, blockedId: match.user_id }));
-            // socket.send(JSON.stringify({ type:"matchBlocked", blockerId: userId, blockedId: match.user_id }));
             setIsBlockSuccessModalOpen(true);
             onBack();
         } catch (err) {
@@ -255,8 +283,16 @@ const Conversation = ({match, onBack}) => {
             {showBlockedModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
                     <div className="bg-white p-6 rounded shadow-lg max-w-md text-center">
-                        <h2 className="text-lg font-bold mb-4">This user has blocked you ❌</h2>
-                        <p>You can no longer send messages to this person.</p>
+                        <h2 className="text-lg font-bold mb-4">
+                            {reasonBlocked === "blocked"
+                                ? "This user has blocked you ❌"
+                                : "You are no longer matched with this person 💔"}
+                        </h2>
+                        <p>
+                            {reasonBlocked ===  "blocked"
+                                ? "You can no longer send messages to this person."
+                                : "You can no longer interact with this person."}
+                        </p>
                         <button
                             className="mt-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
                             onClick={() => setShowBlockedModal(false)}

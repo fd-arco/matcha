@@ -1,10 +1,12 @@
 import React from "react";
 import {useState} from "react";
 import ProfileModal from "./ProfileModal";
+import { useSocket } from "../context/SocketContext";
 
 const MatchsDashboard = ({notifications, setMatchNotifications, userId}) => {
     const [selectedProfile, setSelectedProfile] = useState(null);
-    
+    const {socket} = useSocket();
+
     const handleImageClick = (notif) => {
         setSelectedProfile({
             userId: notif.sender_id,
@@ -29,6 +31,12 @@ const MatchsDashboard = ({notifications, setMatchNotifications, userId}) => {
             setMatchNotifications((prev) =>
                 prev.filter((n) => n.notification_id !== notif.notification_id)
             );
+            console.log("envoi de matchsdashboard a websocket.js");
+            socket.send(JSON.stringify({
+                type:"check_match_status",
+                user1: userId,
+                user2:notif.sender_id,
+            }));
         } catch (err) {
             console.error("error lors du unmatch:", err);
         }

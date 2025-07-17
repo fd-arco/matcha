@@ -435,7 +435,7 @@ export default function EditProfile() {
                                 {formErrors.bio && (<p className="text-red-500 text-sm m-0 p-0">{formErrors.bio}</p>)}
 
                             </div>
-                            <div class="mb-4">
+                            <div className="mb-4">
                                 <label htmlFor="location" className="block font-medium mb-2">Change your Location</label>
                                 <button 
                                     type="button" 

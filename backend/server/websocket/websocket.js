@@ -229,7 +229,6 @@ const initWebSocket = (server) => {
                     }
 
                     if (clients.has(senderId.toString())) {
-
                         clients.get(senderId.toString()).send(JSON.stringify({
                             type:"newNotification",
                             category:"matchs",
@@ -253,6 +252,24 @@ const initWebSocket = (server) => {
                                 unread_count:0,
                             }
                         }))
+                    }
+                    if (clients.has(senderId.toString())) {
+                        console.log(`envoi a ${senderId} qu on update le statut`)
+                        clients.get(senderId.toString()).send(JSON.stringify({
+                            type:"match_status_update",
+                            user1:senderId,
+                            user2:receiverId,
+                            isMatched:true
+                        }));
+                    }
+                    if (clients.has(receiverId.toString())) {
+                        console.log(`envoi a ${receiverId} qu on update le statut`)
+                        clients.get(receiverId.toString()).send(JSON.stringify({
+                            type:"match_status_update",
+                            user1:senderId,
+                            user2:receiverId,
+                            isMatched:true
+                        }));
                     }
                 }
                 if (data.type === "likeNotification") {
@@ -410,20 +427,37 @@ const initWebSocket = (server) => {
                         }));
                     }
                 }
-                // if (data.type === "matchBlocked") {
-                //     const {blockerId, blockedId} = data;
-                //     const sent = {
-                //         type:"refreshMatchUI",
-                //         blockerId,
-                //         blockedId
-                //     };
-                //     if (clients.has(blockerId.toString())) {
-                //         clients.get(blockerId.toString()).send(JSON.stringify(sent));
-                //     }
-                //     if (clients.has(blockedId.toString())) {
-                //         clients.get(blockedId.toString()).send(JSON.stringify(sent));
-                //     }
-                // }
+                if (data.type === "check_match_status") {
+                    const {user1, user2} = data;
+                    console.log(`reception dans check matchstatus qu il faut mettre a false user1=${user1} user2=${user2}`);
+
+                    const result = await pool.query(
+                        `SELECT COUNT(*) FROM matches
+                         WHERE (user1_id = $1 AND user2_id = $2)
+                         OR (user1_id = $2 AND user2_id = $1)`,
+                         [user1, user2]
+                    );
+                    const isMatched = parseInt(result.rows[0].count, 10) > 0;
+                    console.log(`dans checkmatchstatus on a isMatched egale a ${isMatched}`);
+                    if (clients.has(user2.toString())) {
+                        console.log(`on envoie bien matchstatus update a ${user2}`);
+                        clients.get(user2.toString()).send(JSON.stringify({
+                            type:"match_status_update",
+                            user1,
+                            user2,
+                            isMatched,
+                        }));
+                    }
+                    if (clients.has(user1.toString())) {
+                        console.log(`on envoie bien matchstatus update a ${user1}`);
+                        clients.get(user2.toString()).send(JSON.stringify({
+                            type:"match_status_update",
+                            user1,
+                            user2,
+                            isMatched,
+                        }));
+                    }
+                }
             } catch (error) {
                 console.error("Erreur lors de l'envoi du message:", error);
             }

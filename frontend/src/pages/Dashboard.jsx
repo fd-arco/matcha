@@ -22,16 +22,6 @@ const Dashboard = () => {
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [activeTab, setActiveTab] = useState(null);
     const [lastClickedTab, setLastClickedTab] = useState(null);
-    // const [messageNotifications, setMessageNotifications] = useState([]);
-    // const [matchNotifications, setMatchNotifications] = useState([]);
-    // const [likeNotifications, setLikeNotifications] = useState({
-    //     received:[],
-    //     sent:[],
-    // });
-    // const [viewNotifications, setViewNotifications] = useState({
-    //     received: [],
-    //     sent: [],
-    // });
 
     const {userId} = useUser();
 
@@ -174,9 +164,9 @@ const Dashboard = () => {
                 <div className="grid grid-cols-4 gap-4 bg-white dark:bg-gray-900 p-4 rounded-lg shadow-md">
                     <div
                         className={`relative flex flex-col items-center p-4 cursor-pointer rounded-lg ${activeTab==="views"? "dark:bg-green-800 bg-green-500 text-black dark:text-white" : "dark:hover:bg-gray-800 hover:bg-gray-200"}`}
-                        onClick={() => {
+                        onClick={async () => {
                             if (activeTab === "views") {
-                                markAsRead("views");
+                                await markAsRead("views");
                                 setRefreshTrigger(prev => prev + 1);
                             }
                             setActiveTab("views");

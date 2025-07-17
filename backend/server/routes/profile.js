@@ -398,7 +398,13 @@ router.get('/profiles/:userId', async (req, res) => {
                             .replace(/([^",\[\]\s]+)(?=,|\])/g, '"$1"')
                     );
                     const common = profilePassions.filter(p => userPassions.includes(p));
-                    const score = (common.length * 3) + (profile.fame / 100);
+                    const userLat = parseFloat(latitude);
+                    const userLon = parseFloat(longitude);
+                    const profileLat = parseFloat(profile.latitude);
+                    const profileLon = parseFloat(profile.longitude);
+                    const dist = getDistance(userLat, userLon, profileLat, profileLon);
+                    const distanceScore = 10 * Math.exp(-dist/100);
+                    const score = (common.length * 3) + (profile.fame / 100) + distanceScore;
                     return {
                         ...profile,
                         score,

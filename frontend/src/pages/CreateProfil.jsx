@@ -181,7 +181,7 @@ export default function CreateProfil() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-200 text-black dark:bg-gray-800 dark:text-white transition-colors duration-300 flex flex-col">
+        <div className="min-h-[calc(100vh-72px)] bg-gray-200 text-black dark:bg-gray-800 dark:text-white transition-colors duration-300 flex flex-col">
             <div className="flex-1 flex items-center justify-center px-4">
                 <div className="bg-white dark:bg-gray-900 rounded-lg px-8 py-6 mx-auto my-8 max-w-5xl w-full flex flex-wrap md:flex-nowrap justify-between gap-6">
                     
@@ -252,7 +252,7 @@ export default function CreateProfil() {
                                      </label>
                                  </div>
                              </div>
-                             {formErrors.interestedIn && (<p classNameName="text-red-500 dark:text-red-800 text-sm m-0 p-0">{formErrors.interestedIn}</p>)}
+                             {formErrors.interestedIn && (<p className="text-red-500 dark:text-red-800 text-sm m-0 p-0">{formErrors.interestedIn}</p>)}
                          </div>
                          <div className="mb-4">
                              <label className={`block font-medium mb-2`}>What are you looking for?</label>

@@ -1,21 +1,17 @@
-import logo from './logo.svg';
 import './App.css';
 import Login from "./components/Login.jsx";
 import { createBrowserRouter, RouterProvider, Link } from 'react-router-dom';
 import Homepage from "./pages/Home.jsx";
-import Navbar from "./components/Navbar.jsx"
 import TestUser from "./pages/User.jsx";
 import Register from './components/Register.jsx';
 import CreateProfil from "./pages/CreateProfil.jsx"
 import Swipe from "./pages/Swipe.jsx";
-import Profile from "./pages/Profile.jsx"
 import Dashboard from './pages/Dashboard.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import { FilterProvider } from './context/FilterContext.jsx';
 import { SocketProvider } from './context/SocketContext.jsx';
 import { UserProvider} from './context/UserContext.jsx'; 
 import { GeoProvider } from './context/GeoContext.jsx';
-import { useState } from 'react';
 import { useUser } from './context/UserContext.jsx';
 import RootLayout from './components/RootLayout.jsx';
 import MyAccount from './pages/MyAccount.jsx';

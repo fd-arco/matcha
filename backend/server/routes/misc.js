@@ -254,5 +254,24 @@ router.get('/profile/get-location/:userId', auth, async(req,res) => {
     }
 })
 
+router.get("/match-check/:user1/:user2", async(req, res) => {
+    const {user1, user2} = req.params;
+
+    try {
+        const result = await pool.query(
+            `SELECT COUNT(*) FROM matches
+            WHERE (user1_id = $1 AND user2_id = $2)
+            OR (user1_id = $2 AND user2_id = $1)`,
+            [user1, user2]
+        );
+        const isMatched = parseInt(result.rows[0].count, 10) > 0;
+        console.log("isMAtched = ", isMatched);
+        res.status(500).json({isMatched});
+    } catch (error) {
+        console.error("erreur verif match", error);
+        res.status(500).json({error:"server error"});
+    }
+})
+
 
 module.exports = router;
