@@ -20,10 +20,18 @@ export default function Login() {
 
     async function handleLoginUser(event) {
       event.preventDefault();
+      setMessage("");
 
-      if (!formRef.current.checkValidity()) {
-        formRef.current.reportValidity();
-        return;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!email.trim() || !emailRegex.test(email)) {
+        setMessage("Please enter a valid email.");
+        return ;
+      }
+
+      if (!password.trim()) {
+        setMessage("Please enter a password.");
+        return ;
       }
 
       try {
@@ -40,7 +48,7 @@ export default function Login() {
 
       if (!response.ok) {
         setModal(true);
-        setMessage(data.error || "erreur de connexion");
+        setMessage(data.error || "Connexion error.");
         return;
       }
 
@@ -76,7 +84,7 @@ export default function Login() {
               <h1 className="pt-8 pb-6 font-bold text-dark dark:text-white text-5xl text-center cursor-default">
                 Login
               </h1>
-              <form ref={formRef} onSubmit={handleLoginUser} className="space-y-4">
+              <form ref={formRef} onSubmit={handleLoginUser} className="space-y-4" noValidate>
                 <div>
                   <label
                     htmlFor="email"
@@ -89,7 +97,6 @@ export default function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="border p-3 shadow-md dark:bg-gray-600 dark:text-gray-300 dark:border-gray-700 placeholder:text-gray-800 dark:placeholder:text-gray-800 focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full"
-                    // className="border p-3 dark:bg-grey-200 dark:text-gray-300 dark:border-gray-700 shadow-md  dark:placeholder-gray-400 placeholder:text-base focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full"
                     type="email"
                     placeholder="Email"
                     required
@@ -113,6 +120,11 @@ export default function Login() {
                     required
                   />
                 </div>
+
+            {message && (
+              <div className="text-red-500 text-sm mt-2 text-center">{message}</div>
+            )}
+
                 <button
                   className="bg-gradient-to-l text-dark dark:text-white from-green-500 to-green-700 shadow-lg mt-6 p-2 rounded-lg w-full hover:scale-105 hover:from-green-500 hover:to-green-500 transition duration-300 ease-in-out"
                   type="submit"
