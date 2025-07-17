@@ -40,7 +40,7 @@ export default function Login() {
 
       if (!response.ok) {
         setModal(true);
-        setMessage(data.error || "erreur de connexion");
+        setMessage("erreur de connexion");
         return;
       }
 

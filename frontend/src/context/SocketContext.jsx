@@ -19,6 +19,8 @@ export const SocketProvider = ({children}) => {
     const [likeNotifications, setLikeNotifications] = useState({ received: [], sent: [] });
     const [viewNotifications, setViewNotifications] = useState({ received: [], sent: [] });
     const [matchStatus, setMatchStatus] = useState({});
+    const [messageCounts, setMessageCounts] = useState({});
+
 
     useEffect(() => {
         if (loading) return;
@@ -59,13 +61,39 @@ export const SocketProvider = ({children}) => {
                 setMessagesGlobal(prev => [...prev, message.message]);
             }
 
-            if (message.type === "read_messages") {
-                setUnreadCountTrigger(prev => !prev);
-                    // setNotifications(prev => ({
-                    //     ...prev,
-                    //     messages: Math.max(0, prev.messages - 1)
-                    // }));
+            if (message.type === "newMessage") {
+            setMessagesGlobal(prev => [...prev, message.message]);
+
+            const senderId = message.message.sender_id;
+            const receiverId = message.message.receiver_id;
+
+            const isRecipient = Number(receiverId) === Number(userId);
+            const otherUserId = isRecipient ? senderId : receiverId;
+
+            if (isRecipient) {
+                setMessageCounts(prev => ({
+                    ...prev,
+                    [otherUserId]: (prev[otherUserId] || 0) + 1
+                }));
+
+                setNotifications(prev => ({
+                    ...prev,
+                    messages: Object.values({
+                        ...prev.messageCounts,
+                        [otherUserId]: (prev.messageCounts?.[otherUserId] || 0) + 1
+                    }).reduce((a,b) => a+b, 0)
+                }));
             }
+        }
+
+
+            // if (message.type === "read_messages") {
+            //     setUnreadCountTrigger(prev => !prev);
+            //         // setNotifications(prev => ({
+            //         //     ...prev,
+            //         //     messages: Math.max(0, prev.messages - 1)
+            //         // }));
+            // }
 
             if (message.type === "newNotification") {
                 setHasNotification(true);
@@ -213,13 +241,26 @@ export const SocketProvider = ({children}) => {
         }
     }, [userId, loading]);
 
-    const resetMessageNotifications = () => {
-    setNotifications(prev => ({
-        ...prev,
-        messages: 0
-    }));
-};
+//     const resetMessageNotifications = () => {
+//     setNotifications(prev => ({
+//         ...prev,
+//         messages: 0
+//     }));
+// };
 
+            const resetMessageNotificationForUser = (otherUserId) => {
+                setMessageCounts(prev => {
+                    const updated = { ...prev };
+                    delete updated[otherUserId];
+
+                    setNotifications(prev => ({
+                        ...prev,
+                        messages: Object.values(updated).reduce((a, b) => a + b, 0)
+                    }));
+
+                    return updated;
+                });
+            };
 
     return (
         <SocketContext.Provider value={{
@@ -234,7 +275,9 @@ export const SocketProvider = ({children}) => {
             setHasNotification,
             onlineStatuses,
             setOnlineStatuses,
-            resetMessageNotifications,
+            // resetMessageNotifications,
+            resetMessageNotificationForUser,
+            messageCounts,
             userPhoto,
             setUserPhoto,
             blockedUserId,

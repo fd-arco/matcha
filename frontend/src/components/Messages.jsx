@@ -8,7 +8,7 @@ import { useUser } from "../context/UserContext";
 
 const Messages = ({onSelectMatch, selectedMatch}) => {
     const [matches, setMatches] = useState([]);
-    const {matchesGlobal, messagesGlobal, unreadCountTrigger, onlineStatuses, setOnlineStatuses, socket, resetMessageNotifications} = useSocket();
+    const {matchesGlobal, messagesGlobal, unreadCountTrigger, onlineStatuses, setOnlineStatuses, socket, resetMessageNotifications, resetMessageNotificationForUser} = useSocket();
     // const userId = localStorage.getItem("userId");
     const {userId} = useUser();
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -128,7 +128,9 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
                 }));
             }
             setMatches(prevMatches => prevMatches.map(m => m.user_id === match.user_id ? { ...m, unread_count: 0} : m))
-            resetMessageNotifications();
+            // resetMessageNotifications();
+            resetMessageNotificationForUser(match.user_id);
+
             onSelectMatch(match);
         } catch (error) {
             console.error("Erreur lors de la mise a jour des messages lus :" , error);
