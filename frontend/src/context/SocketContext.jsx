@@ -60,10 +60,10 @@ export const SocketProvider = ({children}) => {
 
             if (message.type === "read_messages") {
                 setUnreadCountTrigger(prev => !prev);
-                    setNotifications(prev => ({
-                        ...prev,
-                        messages: Math.max(0, prev.messages - 1)
-                    }));
+                    // setNotifications(prev => ({
+                    //     ...prev,
+                    //     messages: Math.max(0, prev.messages - 1)
+                    // }));
             }
 
             if (message.type === "newNotification") {
@@ -158,6 +158,14 @@ export const SocketProvider = ({children}) => {
         }
     }, [userId, loading]);
 
+    const resetMessageNotifications = () => {
+    setNotifications(prev => ({
+        ...prev,
+        messages: 0
+    }));
+};
+
+
     return (
         <SocketContext.Provider value={{
             socket,
@@ -171,6 +179,7 @@ export const SocketProvider = ({children}) => {
             setHasNotification,
             onlineStatuses,
             setOnlineStatuses,
+            resetMessageNotifications,
             userPhoto,
             setUserPhoto,
             blockedUserId,

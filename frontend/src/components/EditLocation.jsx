@@ -23,6 +23,7 @@ const ModalLocal2 = ({ onClose,  onLocationSelect, position, setPosition, method
         console.error('Erreur lors de la récupération de la clé API', error);
       });
     }, []);
+    
     useEffect(() => {
 
       if (!position) {
