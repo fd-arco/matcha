@@ -44,6 +44,12 @@ export const SocketProvider = ({children}) => {
     }, [userId]);
 
     useEffect(() => {
+        console.log("📦 likeNotifications mis à jour:");
+        console.log("received =", likeNotifications.received);
+        console.log("sent     =", likeNotifications.sent);
+    }, [likeNotifications]);
+
+    useEffect(() => {
         if (loading) return;
         if (!userId) return;
 
@@ -181,7 +187,6 @@ export const SocketProvider = ({children}) => {
                         [key1]:isMatched,
                         [key2]:isMatched
                     }));
-
                     if (!isMatched) {
                         setMatchesGlobal(prev =>
                             prev.filter(
@@ -192,30 +197,50 @@ export const SocketProvider = ({children}) => {
                                     )
                             )
                         )
-                        
-                        const otherUserId = userId === user1 ? user2 : user1;
-                        
-                        setLikeNotifications(prev => ({
-                            ...prev,
-                            received: (prev.received || []).filter(n => n.sender_id !== otherUserId),
-                            sent: (prev.sent || []).filter(n => n.liked_id !== otherUserId),
-                        }));
-                        
-                        setMatchNotifications(prev =>
-                            (prev || []).filter(n => n.sender_id !== otherUserId)
-                        );
-                        
-                        setNotifications(prev => ({
-                            ...prev,
-                            likes: (prevLikes =>
-                                (prevLikes.received || []).filter(n => n.sender_id !== otherUserId).length
-                            )(likeNotifications),
-                            matchs: (prevMatchs =>
-                                (prevMatchs || []).filter(n => n.sender_id !== otherUserId).length
-                            )(matchNotifications),
-                        }));
-                    }
+                        const isInvolved = (notif) =>
+                            (notif.sender_id === user1 && notif.receiver_id === user2) ||
+                            (notif.sender_id === user2 && notif.receiver_id === user1);
 
+                        console.log("🟠 Avant suppression:");
+                        console.log("likes.received", likeNotifications.received.filter(isInvolved));
+                        console.log("likes.sent", likeNotifications.sent.filter(isInvolved));
+                        console.log("matchs", matchNotifications.filter(isInvolved));
+
+                        // 1. Supprimer les notifs visuelles
+                        setMatchNotifications(prev =>
+                            prev.filter(n => !isInvolved(n))
+                        );
+
+                        setLikeNotifications(prev => {
+                            const newReceived = prev.received.filter(n => !isInvolved(n));
+                            const newSent = prev.sent.filter(n => !isInvolved(n));
+
+                            console.log("🟢 Après suppression:");
+                            console.log("likes.received", newReceived);
+                            console.log("likes.sent", newSent);
+                            return {
+                                received: prev.received.filter(n => !isInvolved(n)),
+                                sent: prev.sent.filter(n => !isInvolved(n)),
+                            }
+                        });
+
+                        // 2. Décrémenter le compteur de notifs non lues
+                        setNotifications(prev => {
+                            let updated = { ...prev };
+
+                            // Vérifie si une notif match avec ce user existe encore
+                            const stillHasMatchWithBob = matchNotifications.some(n => isInvolved(n));
+                            if (!stillHasMatchWithBob && prev.matchs > 0)
+                                updated.matchs = prev.matchs - 1;
+
+                            // Vérifie si une notif like avec ce user existe encore
+                            const stillHasLikeWithBob = likeNotifications.received.some(n => isInvolved(n));
+                            if (!stillHasLikeWithBob && prev.likes > 0)
+                                updated.likes = prev.likes - 1;
+
+                            return updated;
+                        });
+                    }
                     console.log(`matchStatus dans le usestate = ${matchStatus}`);
                 }
             }

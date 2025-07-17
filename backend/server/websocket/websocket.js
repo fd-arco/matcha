@@ -450,7 +450,7 @@ const initWebSocket = (server) => {
                     }
                     if (clients.has(user1.toString())) {
                         console.log(`on envoie bien matchstatus update a ${user1}`);
-                        clients.get(user2.toString()).send(JSON.stringify({
+                        clients.get(user1.toString()).send(JSON.stringify({
                             type:"match_status_update",
                             user1,
                             user2,
