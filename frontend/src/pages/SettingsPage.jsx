@@ -1,7 +1,6 @@
 import React, {useState} from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import {Search, Settings, ArrowLeft, Edit} from "lucide-react";
+import {Search, ArrowLeft, Edit} from "lucide-react";
 import SearchModule from "../components/SearchModule";
 import EditProfile from "../components/EditProfile";
 

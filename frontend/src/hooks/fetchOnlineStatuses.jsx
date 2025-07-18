@@ -1,6 +1,3 @@
-import { useEffect } from "react";
-import { useSocket } from "../context/SocketContext";
-
 export const fetchOnlineStatuses = async (userIds, setOnlineStatuses) => {
     if (!userIds || userIds.length === 0) return;
 

@@ -8,7 +8,6 @@ export default function ResetPasswordFront(){
     const token = searchParams.get("token");
 
     const [erase, setErase] = useState(false)
-    const [password, setPassword] = useState("")
     const [newPassword, setNEwPassword] = useState("")
     const [confirm, setConfirm] = useState("")
     const [errors, setErrors] = useState({});

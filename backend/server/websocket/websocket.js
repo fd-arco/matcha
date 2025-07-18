@@ -48,14 +48,26 @@ const initWebSocket = (server) => {
                 }
                 if (data.type === "read_messages") {
                     const {userId, matchId} = data;
-                    await pool.query(
-                        `UPDATE messages SET is_read = TRUE WHERE sender_id=$1 AND receiver_id=$2 AND is_read=FALSE`,
-                        [userId, matchId]
+                            await pool.query(`
+                                UPDATE notifications
+                                SET is_read = TRUE
+                                WHERE user_id = $1
+                                AND sender_id = $2
+                                AND type='messages'
+                                AND is_read = FALSE
+                                `, [userId, matchId]);
+                    const result = await pool.query(
+                        `UPDATE messages SET is_read = TRUE WHERE sender_id=$1 AND receiver_id=$2 AND is_read=FALSE RETURNING id`,
+                        [matchId, userId]
                     );
+                    const readCount = result.rowCount;
+                    console.log("Marquage comme lu entre sender:", matchId, "receiver:", userId);
+                    console.log("Messages lus :", result.rowCount);
                     if (clients.has(userId.toString())) {
                         clients.get(userId.toString()).send(JSON.stringify({
                             type: "read_messages",
                             matchId: matchId,
+                            count: readCount,
                         }));
                     }
                 }
@@ -198,7 +210,6 @@ const initWebSocket = (server) => {
                         receiverPhoto = photoRes.rows[0]?.photo_url || null;
                     }
 
-                    const receiverKey = receiverId.toString();
 
                     if (clients.has(receiverId.toString())) {
 

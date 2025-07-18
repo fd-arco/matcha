@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
-import { getUserLocation } from "../util/geo.js";
+import { useNavigate } from "react-router-dom";
 import ConfirmActionModal from "../components/ConfirmActionModal.jsx";
 import { useUser } from "../context/UserContext";
 
@@ -10,7 +9,6 @@ export default function CreateProfil() {
     const [photos, setPhotos] = useState([]);
     const navigate = useNavigate();
     const {userId, setHasProfile} = useUser();
-    // const userId = localStorage.getItem("userId");
     const [infoModal, setInfoModal] = useState({
         isOpen:false,
         title:"",

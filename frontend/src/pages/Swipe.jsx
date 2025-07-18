@@ -1,9 +1,8 @@
 import React from "react";
-import Navbar from "../components/Navbar";
 import Bandeau from "../components/Bandeau";
 import Messages from "../components/Messages";
 import Matchs from "../components/Matchs";
-import {useState, useRef, useEffect} from "react";
+import {useState, useEffect} from "react";
 import Conversation from "../components/Conversation";
 import { useSocket } from "../context/SocketContext";
 import { useUser } from "../context/UserContext";

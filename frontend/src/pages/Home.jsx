@@ -1,9 +1,4 @@
-// import Header from "../components/Header.jsx"
-import tahm from "../util/tahm.jpg"
-import DarkModeToggle from "../util/dark";
-import Navbar from "../components/Navbar";
 import { Link } from 'react-router-dom'
-import { useEffect } from "react";
 import { useUser } from "../context/UserContext"
 
 export default function Homepage() {
