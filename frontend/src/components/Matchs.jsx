@@ -12,7 +12,6 @@ const Matchs = ({onSelectMatch}) => {
     const [profiles, setProfiles] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
-    // const userId = localStorage.getItem("userId");
     const {userId} = useUser();
     const [showMatchModal, setShowMatchModal] = useState(false);
     const [matchedProfile, setMatchedProfile] = useState(null);
@@ -239,8 +238,6 @@ const Matchs = ({onSelectMatch}) => {
 
       const profile = profiles[currentIndex];
       let distance = null;
-      console.log("position du user connecter=======================>>>", position)
-      console.log("position du profile============>", profile.latitude, profile.longitude)
       if (position && position.lat && profile.latitude && profile.longitude) {
         distance = getDistanceFromLatLonInKm(
           position.lat,

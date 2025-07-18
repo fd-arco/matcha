@@ -1,7 +1,5 @@
 import '../App.css'
-import DarkModeToggle from '../util/dark';
-import { Link } from 'react-router-dom';
-import { useState, useEffect, useRef} from 'react';
+import { useState, useRef} from 'react';
 import { useNavigate } from "react-router-dom";
 import EmailLogModal from "../util/modalLogin.jsx"
 import { useUser } from '../context/UserContext.jsx';

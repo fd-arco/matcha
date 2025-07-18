@@ -44,12 +44,6 @@ export const SocketProvider = ({children}) => {
     }, [userId]);
 
     useEffect(() => {
-        console.log("📦 likeNotifications mis à jour:");
-        console.log("received =", likeNotifications.received);
-        console.log("sent     =", likeNotifications.sent);
-    }, [likeNotifications]);
-
-    useEffect(() => {
         if (loading) return;
         if (!userId) return;
 
@@ -82,24 +76,24 @@ export const SocketProvider = ({children}) => {
                     [otherUserId]: (prev[otherUserId] || 0) + 1
                 }));
 
-                setNotifications(prev => ({
-                    ...prev,
-                    messages: Object.values({
-                        ...prev.messageCounts,
-                        [otherUserId]: (prev.messageCounts?.[otherUserId] || 0) + 1
-                    }).reduce((a,b) => a+b, 0)
-                }));
+                // setNotifications(prev => ({
+                //     ...prev,
+                //     messages: Object.values({
+                //         ...prev.messageCounts,
+                //         [otherUserId]: (prev.messageCounts?.[otherUserId] || 0) + 1
+                //     }).reduce((a,b) => a+b, 0)
+                // }));
             }
         }
 
 
-            // if (message.type === "read_messages") {
-            //     setUnreadCountTrigger(prev => !prev);
-            //         // setNotifications(prev => ({
-            //         //     ...prev,
-            //         //     messages: Math.max(0, prev.messages - 1)
-            //         // }));
-            // }
+            if (message.type === "read_messages") {
+                setUnreadCountTrigger(prev => !prev);
+                    // setNotifications(prev => ({
+                    //     ...prev,
+                    //     messages: Math.max(0, prev.messages - 1)
+                    // }));
+            }
 
             if (message.type === "newNotification") {
                 setHasNotification(true);
@@ -180,7 +174,6 @@ export const SocketProvider = ({children}) => {
                 const key1 = `${user1}-${user2}`;
                 const key2 = `${user2}-${user1}`;
 
-                console.log(`socketContext on recupere user1=${user1}, user2= ${user2}, isMatched=${isMatched}`);
                 if (userId === user1 || userId === user2) {
                     setMatchStatus(prev => ({
                         ...prev,
@@ -201,12 +194,6 @@ export const SocketProvider = ({children}) => {
                             (notif.sender_id === user1 && notif.receiver_id === user2) ||
                             (notif.sender_id === user2 && notif.receiver_id === user1);
 
-                        console.log("🟠 Avant suppression:");
-                        console.log("likes.received", likeNotifications.received.filter(isInvolved));
-                        console.log("likes.sent", likeNotifications.sent.filter(isInvolved));
-                        console.log("matchs", matchNotifications.filter(isInvolved));
-
-                        // 1. Supprimer les notifs visuelles
                         setMatchNotifications(prev =>
                             prev.filter(n => !isInvolved(n))
                         );
@@ -215,25 +202,19 @@ export const SocketProvider = ({children}) => {
                             const newReceived = prev.received.filter(n => !isInvolved(n));
                             const newSent = prev.sent.filter(n => !isInvolved(n));
 
-                            console.log("🟢 Après suppression:");
-                            console.log("likes.received", newReceived);
-                            console.log("likes.sent", newSent);
                             return {
                                 received: prev.received.filter(n => !isInvolved(n)),
                                 sent: prev.sent.filter(n => !isInvolved(n)),
                             }
                         });
 
-                        // 2. Décrémenter le compteur de notifs non lues
                         setNotifications(prev => {
                             let updated = { ...prev };
 
-                            // Vérifie si une notif match avec ce user existe encore
                             const stillHasMatchWithBob = matchNotifications.some(n => isInvolved(n));
                             if (!stillHasMatchWithBob && prev.matchs > 0)
                                 updated.matchs = prev.matchs - 1;
 
-                            // Vérifie si une notif like avec ce user existe encore
                             const stillHasLikeWithBob = likeNotifications.received.some(n => isInvolved(n));
                             if (!stillHasLikeWithBob && prev.likes > 0)
                                 updated.likes = prev.likes - 1;
@@ -241,7 +222,6 @@ export const SocketProvider = ({children}) => {
                             return updated;
                         });
                     }
-                    console.log(`matchStatus dans le usestate = ${matchStatus}`);
                 }
             }
             if (message.type === "refreshMatchUI") {
@@ -277,12 +257,6 @@ export const SocketProvider = ({children}) => {
                 setMessageCounts(prev => {
                     const updated = { ...prev };
                     delete updated[otherUserId];
-
-                    setNotifications(prev => ({
-                        ...prev,
-                        messages: Object.values(updated).reduce((a, b) => a + b, 0)
-                    }));
-
                     return updated;
                 });
             };

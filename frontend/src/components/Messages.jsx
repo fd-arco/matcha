@@ -9,7 +9,6 @@ import { useUser } from "../context/UserContext";
 const Messages = ({onSelectMatch, selectedMatch}) => {
     const [matches, setMatches] = useState([]);
     const {matchesGlobal, messagesGlobal, unreadCountTrigger, onlineStatuses, setOnlineStatuses, socket, resetMessageNotifications, resetMessageNotificationForUser} = useSocket();
-    // const userId = localStorage.getItem("userId");
     const {userId} = useUser();
     const [currentTime, setCurrentTime] = useState(new Date());
     const [showProfilModal, setShowProfilModal] = useState(null);
@@ -90,7 +89,6 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
                     updateMatch.last_message = lastMessage.content;
                     updateMatch.last_message_created_at = lastMessage.created_at;
                     updateMatch.unread_count = parseInt(updateMatch.unread_count, 10) || 0;
-                    // const isRecipient = lastMessage.receiver_id.toString() === userId;
                     if (isRecipient) {
                         updateMatch.unread_count += 1;
                     }
@@ -128,7 +126,6 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
                 }));
             }
             setMatches(prevMatches => prevMatches.map(m => m.user_id === match.user_id ? { ...m, unread_count: 0} : m))
-            // resetMessageNotifications();
             resetMessageNotificationForUser(match.user_id);
 
             onSelectMatch(match);

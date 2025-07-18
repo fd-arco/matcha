@@ -8,13 +8,9 @@ import { useUser } from "../context/UserContext";
 const Bandeau = () => {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
-    const {hasNotification, setUserPhoto, notifications, messageCounts} = useSocket();
+    const {setUserPhoto, notifications, messageCounts} = useSocket();
     const {userId} = useUser();
-
-    // const userId = localStorage.getItem("userId");
     const [showProfilModal, setShowProfilModal] = useState(false);
-
-
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -37,7 +33,8 @@ const Bandeau = () => {
     }
 
     const totalUnread =
-        Number(notifications.views) + Number(notifications.likes) + Number(notifications.matchs) + (messageCounts ? Object.values(messageCounts).reduce((a, b) => a + b, 0) : 0);
+        Number(notifications.views) + Number(notifications.likes) + Number(notifications.matchs) + Number(notifications.messages);
+        // (messageCounts ? Object.values(messageCounts).reduce((a, b) => a + b, 0) : 0);
 
 
     return (

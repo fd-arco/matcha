@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
-import { getUserLocation } from '../util/geo.js';
 import { useUser } from '../context/UserContext.jsx';
-import { useGeoManager } from '../hooks/useGeoManager.jsx';
 import UpdateModal from './UpdateModal.jsx';
 
-const ModalLocal2 = ({ onClose,  onLocationSelect, position, setPosition, method, setMethod }) => {
+const ModalLocal2 = ({ onClose, position, setPosition, setMethod }) => {
   const [apiKey, setApiKey] = useState("")
   const {userId} = useUser();
   const [currentLoc, setCurrentLoc] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-
-  console.log("setcurrent loc :             ", setCurrentLoc)
 
   useEffect(() => {
     fetch("http://localhost:3000/misc/config")

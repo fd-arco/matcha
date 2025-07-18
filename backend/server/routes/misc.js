@@ -265,7 +265,6 @@ router.get("/match-check/:user1/:user2", async(req, res) => {
             [user1, user2]
         );
         const isMatched = parseInt(result.rows[0].count, 10) > 0;
-        console.log("isMAtched = ", isMatched);
         res.status(500).json({isMatched});
     } catch (error) {
         console.error("erreur verif match", error);

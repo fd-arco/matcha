@@ -62,7 +62,6 @@ const initWebSocket = (server) => {
                 if (data.type === "message") {
                     const senderId = data.senderId.toString();
                     const receiverId = data.receiverId.toString();
-                    const content = data.content
                     const matchCheck = await pool.query(`
                         SELECT * FROM matches
                         WHERE (user1_id = $1 AND user2_id = $2)
@@ -254,7 +253,6 @@ const initWebSocket = (server) => {
                         }))
                     }
                     if (clients.has(senderId.toString())) {
-                        console.log(`envoi a ${senderId} qu on update le statut`)
                         clients.get(senderId.toString()).send(JSON.stringify({
                             type:"match_status_update",
                             user1:senderId,
@@ -263,7 +261,6 @@ const initWebSocket = (server) => {
                         }));
                     }
                     if (clients.has(receiverId.toString())) {
-                        console.log(`envoi a ${receiverId} qu on update le statut`)
                         clients.get(receiverId.toString()).send(JSON.stringify({
                             type:"match_status_update",
                             user1:senderId,
@@ -429,7 +426,6 @@ const initWebSocket = (server) => {
                 }
                 if (data.type === "check_match_status") {
                     const {user1, user2} = data;
-                    console.log(`reception dans check matchstatus qu il faut mettre a false user1=${user1} user2=${user2}`);
 
                     const result = await pool.query(
                         `SELECT COUNT(*) FROM matches
@@ -438,9 +434,7 @@ const initWebSocket = (server) => {
                          [user1, user2]
                     );
                     const isMatched = parseInt(result.rows[0].count, 10) > 0;
-                    console.log(`dans checkmatchstatus on a isMatched egale a ${isMatched}`);
                     if (clients.has(user2.toString())) {
-                        console.log(`on envoie bien matchstatus update a ${user2}`);
                         clients.get(user2.toString()).send(JSON.stringify({
                             type:"match_status_update",
                             user1,
@@ -449,7 +443,6 @@ const initWebSocket = (server) => {
                         }));
                     }
                     if (clients.has(user1.toString())) {
-                        console.log(`on envoie bien matchstatus update a ${user1}`);
                         clients.get(user1.toString()).send(JSON.stringify({
                             type:"match_status_update",
                             user1,

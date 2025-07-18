@@ -27,26 +27,6 @@ const Conversation = ({match, onBack}) => {
         }
     }, [blockedUserId, match?.user_id]);
 
-    // useEffect(() => {
-    //     const checkMatchStatus = async () => {
-    //         try {
-    //             const res = await fetch(`http://localhost:3000/misc/match-check/${userId}/${match.user_id}`, {
-    //                 credentials:"include"
-    //             });
-    //             const data = await res.json();
-    //             if (!data.isMatched) {
-    //                 setReasonBlocked("unmatched");
-    //                 setShowBlockedModal(true);
-    //                 console.log("ya plus de match");
-    //             }
-    //         } catch (error) {
-    //             console.error("erreur verif match :", error);
-    //             setIsStillMatched(false);
-    //         }
-    //     }
-    //     checkMatchStatus();
-    // }, [userId, match.user_id]);
-
     useEffect(() => {
         const fetchMessages = async () => {
             try {
@@ -79,11 +59,9 @@ const Conversation = ({match, onBack}) => {
 
     const sendMessage = () => {
         const matchKey = `${userId}-${match.user_id}`;
-        console.log(`matchKey = ${matchKey}`);
         if (!newMessage.trim() || !socket) {
             return;
         }
-        console.log(`matchStatus[matchkey] = ${matchStatus[matchKey]}`);
         if (matchStatus[matchKey] === false) {
             setReasonBlocked("unmatched");
             setShowBlockedModal(true);
@@ -107,30 +85,30 @@ const Conversation = ({match, onBack}) => {
         
     };
 
-    const handleClick = async() => {
-        try {
-            await fetch("http://localhost:3000/messages/read", {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    userId: userId,
-                    matchId: match.user_id
-                }),
-                credentials:"include"
-            });
-            if (socket) {
-                socket.send(JSON.stringify({
-                    type:"read_messages",
-                    userId: userId,
-                    matchId: match.user_id
-                }));
-            }
-        } catch (error) {
-            console.error("Erreur lors de la mise a jour des messages lus:", error);
-        }
-    }
+    // const handleClick = async() => {
+    //     try {
+    //         await fetch("http://localhost:3000/messages/read", {
+    //             method: "PUT",
+    //             headers: {
+    //                 "Content-Type": "application/json"
+    //             },
+    //             body: JSON.stringify({
+    //                 userId: userId,
+    //                 matchId: match.user_id
+    //             }),
+    //             credentials:"include"
+    //         });
+    //         if (socket) {
+    //             socket.send(JSON.stringify({
+    //                 type:"read_messages",
+    //                 userId: userId,
+    //                 matchId: match.user_id
+    //             }));
+    //         }
+    //     } catch (error) {
+    //         console.error("Erreur lors de la mise a jour des messages lus:", error);
+    //     }
+    // }
 
     const handleReport = async () => {
     try {
@@ -209,7 +187,7 @@ const Conversation = ({match, onBack}) => {
                 <ArrowLeft size={20} />
                 <span>Back To Swipes</span>
             </button>
-            <div className="flex-1 overflow-y-auto w-full mt-4 p-2 border rounded-lg bg-white dark:bg-gray-900" onClick={handleClick} style={{ maxHeight: "70vh" }}>
+            <div className="flex-1 overflow-y-auto w-full mt-4 p-2 border rounded-lg bg-white dark:bg-gray-900" style={{ maxHeight: "70vh" }}>
                 {messages.map((msg, index) => (
                     <div key={index} className={`flex items-end my-2 ${msg.sender_id === userIdInt ? "justify-end" : "justify-start"}`}>
                         {msg.sender_id !== userIdInt && (

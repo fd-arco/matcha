@@ -6,9 +6,7 @@ import Matchs from "../components/Matchs";
 import {useState, useRef, useEffect} from "react";
 import Conversation from "../components/Conversation";
 import { useSocket } from "../context/SocketContext";
-import MobileDrawerMenu from "../components/MobileDrawerMenu";
 import { useUser } from "../context/UserContext";
-import { useGeoManager } from "../hooks/useGeoManager";
 
 const Swipe = () => {
     const [selectedMatch, setSelectedMatch] = useState(null);

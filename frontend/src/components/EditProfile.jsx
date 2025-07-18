@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from "react";
 import UpdateModal from "../components/UpdateModal";
-import { useNavigate } from "react-router-dom";
 import ConfirmActionModal from "./ConfirmActionModal";
 import { useUser } from "../context/UserContext";
 import ModalLocal2 from "./EditLocation.jsx"
-import { getUserLocation } from "../util/geo.js";
-import { useGeo } from "../context/GeoContext.jsx";
 import { useGeoManager } from "../hooks/useGeoManager.jsx";
 
 

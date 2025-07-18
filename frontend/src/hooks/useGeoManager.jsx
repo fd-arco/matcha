@@ -119,9 +119,7 @@ export function useGeoManager(userId) {
           const current = await getLocationFromDB(userId);
           setMethod(current.method);
           if (current.method === 'manual') {
-                console.log("   icic    ")
                 setPosition({lat:current.latitude, lon:current.longitude});
-                console.log("position dans usegemanager  ::  ", position)
                 setCity(current.city ?? null);
                 setLoading(false);
             } else {

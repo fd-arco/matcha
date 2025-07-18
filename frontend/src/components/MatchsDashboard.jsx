@@ -31,7 +31,6 @@ const MatchsDashboard = ({notifications, setMatchNotifications, userId}) => {
             setMatchNotifications((prev) =>
                 prev.filter((n) => n.notification_id !== notif.notification_id)
             );
-            console.log("envoi de matchsdashboard a websocket.js");
             socket.send(JSON.stringify({
                 type:"check_match_status",
                 user1: userId,
