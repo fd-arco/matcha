@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { getUserLocation } from "../util/geo.js";
 import ConfirmActionModal from "../components/ConfirmActionModal.jsx";
@@ -10,6 +10,7 @@ export default function CreateProfil() {
     const [photos, setPhotos] = useState([]);
     const navigate = useNavigate();
     const {userId, setHasProfile} = useUser();
+    const [user, setUser] = useState(null)
     // const userId = localStorage.getItem("userId");
     const [infoModal, setInfoModal] = useState({
         isOpen:false,
@@ -77,6 +78,32 @@ export default function CreateProfil() {
     const handleRemovePhoto = (index) => {
         setPhotos(photos.filter((_, i) => i !== index));
     };
+
+
+    useEffect(() => {
+        if (!userId) return;
+
+        const interval = setInterval(async () => {
+            try {
+                const response = await fetch(`http://localhost:3000/auth/get-user/${userId}`, {
+                    credentials: "include",
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    console.log("oui oui")
+                    setUser(data.verified);
+                    if (data.verified) {
+                        clearInterval(interval);
+                    }
+                }
+            } catch (error) {
+                console.error("Erreur réseau:", error);
+            }
+        }, 5000); 
+
+        return () => clearInterval(interval);
+    }, [userId]);
+
 
 
     const handleSubmit = async (event) => {
@@ -329,9 +356,10 @@ export default function CreateProfil() {
                             <div>
                             {formErrors.loc && (<p className="text-red-500 dark:text-red-800 text-sm m-0 p-0">{formErrors.loc}</p>)}
                             <br></br>
-                            <button type="submit" className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 text-white px-4 py-2 rounded-lg w-full">
+                            {user ? (<button type="submit" className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 text-white px-4 py-2 rounded-lg w-full">
                                 Submit
-                            </button>
+                            </button>) :
+                                (<p>you have to validate ur email TO SUBMIT </p>)}
                             </div>
                             
 
