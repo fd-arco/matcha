@@ -50,7 +50,6 @@ CREATE TABLE IF NOT EXISTS ignored_profiles (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Création de la table messages
 CREATE TABLE IF NOT EXISTS messages (
     id SERIAL PRIMARY KEY,
     sender_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -60,7 +59,6 @@ CREATE TABLE IF NOT EXISTS messages (
     is_read BOOLEAN DEFAULT FALSE
 );
 
--- Création de la table likes
 CREATE TABLE IF NOT EXISTS likes (
     id SERIAL PRIMARY KEY,
     liker_id INTEGER REFERENCES users(id) ON DELETE CASCADE,

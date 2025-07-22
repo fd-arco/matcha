@@ -3,14 +3,8 @@ import { useState, useEffect } from "react";
 import {useFilters} from "../context/FilterContext"
 import UpdateModal from "./UpdateModal";
 import { useUser } from "../context/UserContext";
-import { useGeo } from "../context/GeoContext";
 
 const SearchModule = () => {
-    // const [ageGap, setAgeGap] = useState([18, 100]);
-    // const [fameRating, setFameRating] = useState(0);
-    // const [distanceMax, setdistanceMax] = useState(50);
-    // const [tagsInCommon, setTagsInCommon] = useState(0);
-
     const [ageGap, setAgeGap] = useState(() => {
         const stored = localStorage.getItem('ageGap');
         return stored ? JSON.parse(stored) : [18, 100];
@@ -32,7 +26,6 @@ const SearchModule = () => {
     const [error, setError] = useState('');
     const [matchingProfilesCount, setMatchingProfilesCount] = useState(0);
     const {setFilters} = useFilters();
-    const {canMatch} = useGeo();
     const [showUpdateModal, setShowUpdateModal] = useState(false);
 
     const {userId} = useUser();

@@ -1,8 +1,6 @@
-import { Link } from "react-router-dom";
 import Matcha from "../util/matcha1.jpg"
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DarkModeToggle from "../util/dark";
 import EmailModal from "../util/modal2.jsx"
 import SentModal  from "../components/Modal.jsx"
 import { useUser } from "../context/UserContext.jsx";
@@ -19,6 +17,7 @@ export default function Register (){
     const navigate = useNavigate();
     const {setUserId, setHasProfile} = useUser();
     const [errors, setErrors] = useState({});
+    const [messageError, setMessageError] = useState("");
 
     function isPasswordSecure(password) {
         const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
@@ -27,11 +26,20 @@ export default function Register (){
 
     async function handleRegister(event) {
         event.preventDefault();
+        setMessageError("");
         if (!isPasswordSecure(password)) {
-            setErrors({password:"Password must be at least 8 characters long and include at least one uppercase letter and one number."});
+            setMessageError("Password must be at least 8 characters long and include at least one uppercase letter and one number.");
             return ;
         }
-        setErrors({});
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!email.trim() || !emailRegex.test(email)) {
+            setMessageError("Please enter a valid email.");
+            return ;
+        }
+
+        // setErrors({});
         try {
 
             const response = await fetch("http://localhost:3000/auth/register", {
@@ -95,26 +103,25 @@ export default function Register (){
                 <div className="max-w-md mx-auto">
                     <h1 className="text-black dark:text-white text-2xl md:text-4xl font-semibold mb-2">Create an account</h1>
                     <br></br>
-                    {/* <p className="text-gray-400 mb-8">
-                        Already have an account?
-                        <a href="https://abhirajk.vercel.app/" className="text-white hover:underline">Log in</a>
-                    </p> */}
-                    <form className="space-y-2" onSubmit={ handleRegister }  >
+                    <form className="space-y-2" onSubmit={ handleRegister }  noValidate >
                         <div className="flex flex-col md:flex-row gap-4">
-                            <input type="text" onChange={(event) => setFirstName(event.target.value)} 
+                            <input type="text" required maxLength={50} onChange={(event) => setFirstName(event.target.value)} 
                             value={firstname} placeholder="First name" className="w-full dark:text-white placeholder-gray-700 dark:placeholder-gray-400 md:w-1/2 bg-gray-300 dark:bg-gray-600 text-black rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600" required/>
-                            <input type="text" onChange={(event) => setLastName(event.target.value)}
+                            <input type="text" required maxLength={50} onChange={(event) => setLastName(event.target.value)}
                             value={lastname} placeholder="Last name" className="w-full dark:text-white placeholder-gray-700 dark:placeholder-gray-400 md:w-1/2 bg-gray-300 dark:bg-gray-600 text-black rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600"/>
                         </div>
                         {message && <p style={{ color: 'white' }}>{message}</p>}
-                        <input type="email" onChange={(event) => setEmail(event.target.value)}
+                        <input type="email" maxLength = {100} onChange={(event) => setEmail(event.target.value)}
                         value={email} placeholder="Email" className="w-full dark:text-white placeholder-gray-700 dark:placeholder-gray-400 bg-gray-300 dark:bg-gray-600 text-black rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600"/>
+                        {errors.email && (
+                         <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                        )}
                         <div className="relative">
-                            <input type="password" onChange={(event) => setPassword(event.target.value)}
+                            <input type="password" maxLength={64} onChange={(event) => setPassword(event.target.value)}
                             value={password} placeholder="Enter your password" className="w-full dark:text-white placeholder-gray-700 dark:placeholder-gray-400 bg-gray-300 dark:bg-gray-600 text-black rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-600"/>
                         </div>
-                            {errors.password && (
-                                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+                            {messageError && (
+                                <p className="text-red-500 text-sm mt-1">{messageError}</p>
                             )}
                         <br></br>
                             <button type="submit" className="w-full  bg-green-500 dark:text-white hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 text-black rounded-lg p-3 transition-colors">

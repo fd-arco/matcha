@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
-import { getUserLocation } from "../util/geo.js";
+import { useNavigate } from "react-router-dom";
 import ConfirmActionModal from "../components/ConfirmActionModal.jsx";
 import { useUser } from "../context/UserContext";
 
@@ -11,7 +10,6 @@ export default function CreateProfil() {
     const navigate = useNavigate();
     const {userId, setHasProfile} = useUser();
     const [user, setUser] = useState(null)
-    // const userId = localStorage.getItem("userId");
     const [infoModal, setInfoModal] = useState({
         isOpen:false,
         title:"",
@@ -167,9 +165,8 @@ export default function CreateProfil() {
             return ;
         }
         
-        // const location = await getUserLocation();
         const finalFormData = new FormData();
-        finalFormData.append("user_id", userId); //TODO:RECUPERER USER_ID DEPUIS LA CREATION DU COMPTE
+        finalFormData.append("user_id", userId); 
         finalFormData.append("name", name);
         finalFormData.append("dob", dob);
         finalFormData.append("gender", gender);
@@ -177,8 +174,6 @@ export default function CreateProfil() {
         finalFormData.append("lookingFor", lookingFor);
         finalFormData.append("bio", bio);
         finalFormData.append("passions", JSON.stringify(selectedPassions));
-        // finalFormData.append("latitude", location.latitude);
-        // finalFormData.append("longitude", location.longitude);
         
         photos.forEach((photo) => {
             finalFormData.append("photos", photo.file);

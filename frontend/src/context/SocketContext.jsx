@@ -88,11 +88,12 @@ export const SocketProvider = ({children}) => {
 
 
             if (message.type === "read_messages") {
-                setUnreadCountTrigger(prev => !prev);
-                    // setNotifications(prev => ({
-                    //     ...prev,
-                    //     messages: Math.max(0, prev.messages - 1)
-                    // }));
+                const {count} = message;
+                console.log("count = ",count);
+                setNotifications(prev => ({
+                    ...prev,
+                    messages: Math.max(0, prev.messages - count)
+                }));
             }
 
             if (message.type === "newNotification") {
@@ -122,12 +123,36 @@ export const SocketProvider = ({children}) => {
             }
             }
 
-            if (message.type === "newMatch") {
-                setMatchesGlobal(prev => {
-                    const filtered = prev.filter(m => m.user_id !== message.match.user_id);
-                    return [...filtered, message.match];
-                });
-            }
+            // if (message.type === "newMatch") {
+            //     console.log("Jajoute match dans newMatch");
+            //     setMatchesGlobal(prev => {
+            //         const filtered = prev.filter(m => m.user_id !== message.match.user_id);
+            //         return [...filtered, message.match];
+            //     });
+            // }
+
+if (message.type === "newMatch") {
+    console.log("[WebSocket] ⚡ Réception d’un nouveau match");
+
+    setMatchesGlobal(prev => {
+        console.log("🧠 État actuel des matchs :", prev);
+
+        const existing = prev.find(m => m.user_id === message.match.user_id);
+        if (existing) {
+            console.log(`🔁 Un match avec user_id ${message.match.user_id} existe déjà :`, existing);
+            console.log("🎯 Match reçu via WebSocket :", message.match);
+        } else {
+            console.log(`🆕 Aucun match avec user_id ${message.match.user_id} trouvé`);
+        }
+
+        const filtered = prev.filter(m => m.user_id !== message.match.user_id);
+        const newMatches = [...filtered, message.match];
+
+        console.log("📌 Nouvel état des matchs (après remplacement) :", newMatches);
+
+        return newMatches;
+    });
+}
 
             if (message.type === "userStatusChanged") {
                 setOnlineStatuses(prev => ({
@@ -181,6 +206,7 @@ export const SocketProvider = ({children}) => {
                         [key2]:isMatched
                     }));
                     if (!isMatched) {
+                        console.log("Je remove le match dans match status update");
                         setMatchesGlobal(prev =>
                             prev.filter(
                                 match =>
@@ -199,9 +225,6 @@ export const SocketProvider = ({children}) => {
                         );
 
                         setLikeNotifications(prev => {
-                            const newReceived = prev.received.filter(n => !isInvolved(n));
-                            const newSent = prev.sent.filter(n => !isInvolved(n));
-
                             return {
                                 received: prev.received.filter(n => !isInvolved(n)),
                                 sent: prev.sent.filter(n => !isInvolved(n)),
@@ -224,17 +247,6 @@ export const SocketProvider = ({children}) => {
                     }
                 }
             }
-            if (message.type === "refreshMatchUI") {
-                const {blockerId, blockedId} = message;
-                const currentUser = userId;
-                if (userId === blockerId.toString() || userId === blockedId.toString()) {
-                    setMatchesGlobal(prev =>
-                        prev.filter(m =>
-                            String(m.user_id) !== (userId === blockerId.toString() ? blockedId.toString() : blockerId.toString())
-                        )
-                    )
-                }
-            }
         }
 
         newSocket.onclose = () => {
@@ -246,20 +258,13 @@ export const SocketProvider = ({children}) => {
         }
     }, [userId, loading]);
 
-//     const resetMessageNotifications = () => {
-//     setNotifications(prev => ({
-//         ...prev,
-//         messages: 0
-//     }));
-// };
-
-            const resetMessageNotificationForUser = (otherUserId) => {
-                setMessageCounts(prev => {
-                    const updated = { ...prev };
-                    delete updated[otherUserId];
-                    return updated;
-                });
-            };
+    const resetMessageNotificationForUser = (otherUserId) => {
+        setMessageCounts(prev => {
+            const updated = { ...prev };
+            delete updated[otherUserId];
+            return updated;
+        });
+    };
 
     return (
         <SocketContext.Provider value={{

@@ -5,13 +5,12 @@ import ViewsDashboard from "../components/ViewsDashboard";
 import LikesDashboard from "../components/LikesDashboard";
 import MatchsDashboard from "../components/MatchsDashboard";
 import MessagesDashboard from "../components/MessagesDashboard";
-import Navbar from "../components/Navbar";
 import { useSocket } from "../context/SocketContext";
 import { useUser } from "../context/UserContext";
 
 const Dashboard = () => {
     const {
-        socket, setHasNotification,
+        setHasNotification,
         notifications, setNotifications,
         messageNotifications, setMessageNotifications,
         likeNotifications, setLikeNotifications,

@@ -8,7 +8,7 @@ import { useUser } from "../context/UserContext";
 const Bandeau = () => {
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
-    const {setUserPhoto, notifications, messageCounts} = useSocket();
+    const {setUserPhoto, notifications} = useSocket();
     const {userId} = useUser();
     const [showProfilModal, setShowProfilModal] = useState(false);
 

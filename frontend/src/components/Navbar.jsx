@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import DarkModeToggle from "../util/dark";
 import { useEffect, useState} from "react";
 import { useNavigate } from "react-router-dom";
-import {User} from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 

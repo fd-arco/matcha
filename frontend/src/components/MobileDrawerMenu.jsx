@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Bandeau from "./Bandeau";
 import Messages from "./Messages";
-import { LocateFixed } from "lucide-react";
 
 const MobileDrawerMenu = ({ selectedMatch, onSelectMatch }) => {
   const [isOpen, setIsOpen] = useState(false);
