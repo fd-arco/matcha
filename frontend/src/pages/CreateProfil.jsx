@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ConfirmActionModal from "../components/ConfirmActionModal.jsx";
 import { useUser } from "../context/UserContext";
@@ -9,6 +9,7 @@ export default function CreateProfil() {
     const [photos, setPhotos] = useState([]);
     const navigate = useNavigate();
     const {userId, setHasProfile} = useUser();
+    const [user, setUser] = useState(null)
     const [infoModal, setInfoModal] = useState({
         isOpen:false,
         title:"",
@@ -77,6 +78,32 @@ export default function CreateProfil() {
     };
 
 
+    useEffect(() => {
+        if (!userId) return;
+
+        const interval = setInterval(async () => {
+            try {
+                const response = await fetch(`http://localhost:3000/auth/get-user/${userId}`, {
+                    credentials: "include",
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    console.log("oui oui")
+                    setUser(data.verified);
+                    if (data.verified) {
+                        clearInterval(interval);
+                    }
+                }
+            } catch (error) {
+                console.error("Erreur réseau:", error);
+            }
+        }, 5000); 
+
+        return () => clearInterval(interval);
+    }, [userId]);
+
+
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         let errors = {};
@@ -138,9 +165,8 @@ export default function CreateProfil() {
             return ;
         }
         
-        // const location = await getUserLocation();
         const finalFormData = new FormData();
-        finalFormData.append("user_id", userId); //TODO:RECUPERER USER_ID DEPUIS LA CREATION DU COMPTE
+        finalFormData.append("user_id", userId); 
         finalFormData.append("name", name);
         finalFormData.append("dob", dob);
         finalFormData.append("gender", gender);
@@ -148,8 +174,6 @@ export default function CreateProfil() {
         finalFormData.append("lookingFor", lookingFor);
         finalFormData.append("bio", bio);
         finalFormData.append("passions", JSON.stringify(selectedPassions));
-        // finalFormData.append("latitude", location.latitude);
-        // finalFormData.append("longitude", location.longitude);
         
         photos.forEach((photo) => {
             finalFormData.append("photos", photo.file);
@@ -324,12 +348,25 @@ export default function CreateProfil() {
                                 </textarea>
                                 {formErrors.bio && (<p className="text-red-500 text-sm m-0 p-0">{formErrors.bio}</p>)}
                             </div>
-                            <div>
-                            {formErrors.loc && (<p className="text-red-500 dark:text-red-800 text-sm m-0 p-0">{formErrors.loc}</p>)}
-                            <br></br>
-                            <button type="submit" className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 text-white px-4 py-2 rounded-lg w-full">
-                                Submit
-                            </button>
+                            <div className="flex flex-col items-center justify-center h-full text-center">
+                                {formErrors.loc && (
+                                    <p className="text-red-500 dark:text-red-800 text-sm m-0 p-0">
+                                        {formErrors.loc}
+                                    </p>
+                                )}
+                                <br />
+                                {user ? (
+                                    <button
+                                        type="submit"
+                                        className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 text-white px-4 py-2 rounded-lg w-full"
+                                    >
+                                        Submit
+                                    </button>
+                                ) : (
+                                    <span className="text-red-500 dark:text-red-800 m-auto p-0">
+                                        Please validate your email to create your matcha profile!
+                                    </span>
+                                )}
                             </div>
                             
 
