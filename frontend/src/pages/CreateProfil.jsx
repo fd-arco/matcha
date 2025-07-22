@@ -348,13 +348,25 @@ export default function CreateProfil() {
                                 </textarea>
                                 {formErrors.bio && (<p className="text-red-500 text-sm m-0 p-0">{formErrors.bio}</p>)}
                             </div>
-                            <div>
-                            {formErrors.loc && (<p className="text-red-500 dark:text-red-800 text-sm m-0 p-0">{formErrors.loc}</p>)}
-                            <br></br>
-                            {user ? (<button type="submit" className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 text-white px-4 py-2 rounded-lg w-full">
-                                Submit
-                            </button>) :
-                                (<p>you have to validate ur email TO SUBMIT </p>)}
+                            <div className="flex flex-col items-center justify-center h-full text-center">
+                                {formErrors.loc && (
+                                    <p className="text-red-500 dark:text-red-800 text-sm m-0 p-0">
+                                        {formErrors.loc}
+                                    </p>
+                                )}
+                                <br />
+                                {user ? (
+                                    <button
+                                        type="submit"
+                                        className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 text-white px-4 py-2 rounded-lg w-full"
+                                    >
+                                        Submit
+                                    </button>
+                                ) : (
+                                    <span className="text-red-500 dark:text-red-800 m-auto p-0">
+                                        Please validate your email to create your matcha profile!
+                                    </span>
+                                )}
                             </div>
                             
 
