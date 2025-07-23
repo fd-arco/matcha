@@ -1,3 +1,5 @@
 /.env
 /frontend/src/components/poubelle.txt
 /uploads
+/backend/uploads
+/backend/fakeprofilephotos/
