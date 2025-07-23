@@ -2,7 +2,7 @@ export default function  EmilConfirmation(){
 
 
     return (
-        <div className="min-h-[calc(100vh-72px)] w-full bg-gray-200 text-black dark:bg-gray-800 dark:text-white transition-colors flex items-center justify-center">
+        <div className="min-h-screen w-full bg-gray-200 text-black dark:bg-gray-800 dark:text-white transition-colors flex items-center justify-center">
             <div className="text-center space-y-5">
                 <p className="mt-1 text-4xl font-extrabold text-black-900 dark:text-white-100 sm:text-5xl sm:tracking-tight lg:text-6xl">
                     Your account is now
@@ -15,6 +15,9 @@ export default function  EmilConfirmation(){
                 </p>
                 <p className="max-w-3xl mt-5 mx-auto text-xl text-black-500 dark:text-white-300">
                     Take the leap and unleash your capabilities. Experience one week of unlimited access on us and witness the transformation.
+                </p>
+                <p className="max-w-3xl mt-5 mx-auto text-xl text-black-500 dark:text-white-300">
+                    You can now close this window.
                 </p>
             </div>
         </div>

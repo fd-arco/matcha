@@ -61,8 +61,6 @@ const initWebSocket = (server) => {
                         [matchId, userId]
                     );
                     const readCount = result.rowCount;
-                    console.log("Marquage comme lu entre sender:", matchId, "receiver:", userId);
-                    console.log("Messages lus :", result.rowCount);
                     if (clients.has(userId.toString())) {
                         clients.get(userId.toString()).send(JSON.stringify({
                             type: "read_messages",

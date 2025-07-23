@@ -52,8 +52,6 @@ const Swipe = () => {
       }
     }, [userId, fetchNotifications]);
 
-	console.log("boolean:   ", emailVerified)
-
 if (!emailVerified) {
   return (
     <div className="flex items-center justify-center h-[calc(100vh-72px)]">
