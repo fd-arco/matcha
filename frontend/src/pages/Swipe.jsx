@@ -11,7 +11,7 @@ const Swipe = () => {
     const [selectedMatch, setSelectedMatch] = useState(null);
     const {setHasNotification} = useSocket();
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-    const {userId} = useUser();
+    const {userId, emailVerified} = useUser();
 
 
     useEffect(() => {
@@ -52,8 +52,31 @@ const Swipe = () => {
       }
     }, [userId, fetchNotifications]);
 
-  return (
+	console.log("boolean:   ", emailVerified)
 
+if (!emailVerified) {
+  return (
+    <div className="flex items-center justify-center h-[calc(100vh-72px)]">
+      <div className="flex flex-col items-center space-y-2">
+        <h1 className="text-xl font-semibold text-center text-gray-800 dark:text-gray-200">
+          An email has been sent to your address
+        </h1>
+        <h2 className="text-md text-center text-gray-600 dark:text-gray-400">
+          Please verify your mail to start enjoying the app!
+        </h2>
+		<div className="flex flex-row gap-2">
+			<div className="w-4 h-4 rounded-full bg-green-500 animate-bounce"></div>
+			<div className="w-4 h-4 rounded-full bg-green-500 animate-bounce [animation-delay:-.3s]"></div>
+			<div className="w-4 h-4 rounded-full bg-green-500 animate-bounce [animation-delay:-.5s]"></div>
+		</div>
+      </div>
+    </div>
+  );
+}
+
+
+
+  return (
   <div className="flex flex-col h-[calc(100vh-72px)]">
     <div className="flex flex-1">
       {!isMobile && (

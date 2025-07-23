@@ -359,8 +359,6 @@ export default function CreateProfil() {
                                         Submit
                                     </button>
                             </div>
-                            
-
                         </form>
                     </div>
                     <div className="w-full md:w-[48%] flex flex-col">
