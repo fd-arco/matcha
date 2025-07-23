@@ -116,7 +116,6 @@ const ProfileModal = ({viewedId, onClose}) => {
             setIsReportSuccessModalOpen(true);
         } catch (err) {
             console.error("Error lors du report: ", err);
-            alert("erreur lors du signalement");
         }
     }
 
@@ -143,7 +142,6 @@ const ProfileModal = ({viewedId, onClose}) => {
             setIsBlockSuccessModalOpen(true);
         } catch(err) {
             console.error("Erreur blocage:", err);
-            alert("an errror occured while blocking this user.")
         }
     }
 

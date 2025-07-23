@@ -227,7 +227,7 @@ router.post("/reset-password", async(req, res) => {
         const mailOptions = {
             from: process.env.GMAIL_USER,
             to: email,
-            subject: 'Vérification de votre compte',
+            subject: 'Changement du mot de passe de votre compte Matcha',
             text: `Bonjour, voici le lien pour changer votre mot de passe: ${verifLinkPassword}`,
             html: `<h2>Welcome back to MATCHA</h2><br></br><p> voici le lien pour changer votre mot de passe: <a href="${verifLinkPassword}">Changer mon mot de passe</a></p>`
         };

@@ -85,31 +85,6 @@ const Conversation = ({match, onBack}) => {
         
     };
 
-    // const handleClick = async() => {
-    //     try {
-    //         await fetch("http://localhost:3000/messages/read", {
-    //             method: "PUT",
-    //             headers: {
-    //                 "Content-Type": "application/json"
-    //             },
-    //             body: JSON.stringify({
-    //                 userId: userId,
-    //                 matchId: match.user_id
-    //             }),
-    //             credentials:"include"
-    //         });
-    //         if (socket) {
-    //             socket.send(JSON.stringify({
-    //                 type:"read_messages",
-    //                 userId: userId,
-    //                 matchId: match.user_id
-    //             }));
-    //         }
-    //     } catch (error) {
-    //         console.error("Erreur lors de la mise a jour des messages lus:", error);
-    //     }
-    // }
-
     const handleReport = async () => {
     try {
         await fetch("http://localhost:3000/misc/report", {
@@ -125,7 +100,6 @@ const Conversation = ({match, onBack}) => {
         setIsReportSuccessModalOpen(true);
     } catch (err) {
         console.error("Erreur signalement:", err);
-        alert("Erreur lors du signalement");
     }
     };
 
@@ -150,7 +124,6 @@ const Conversation = ({match, onBack}) => {
             onBack();
         } catch (err) {
             console.error("Erreur blocage:", err);
-            alert("Erreur lors du blocage");
         }
     };
 

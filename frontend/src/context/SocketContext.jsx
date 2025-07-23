@@ -11,7 +11,7 @@ export const SocketProvider = ({children}) => {
     const [hasNotification, setHasNotification] = useState(false);
     const [onlineStatuses, setOnlineStatuses] = useState({});
     const [userPhoto, setUserPhoto] = useState(null);
-    const {userId, loading} = useUser();
+    const {userId, loading, emailVerified} = useUser();
     const [blockedUserId, setBlockedUserId] = useState(null);
     const [notifications, setNotifications] = useState(null);
     const [messageNotifications, setMessageNotifications] = useState([]);
@@ -43,7 +43,7 @@ export const SocketProvider = ({children}) => {
     }, [userId, loading]);
 
     useEffect(() => {
-        if (loading) return;
+        if (loading || !emailVerified) return;
         if (!userId) return;
 
         const newSocket = new WebSocket("ws://localhost:3000");
@@ -76,7 +76,6 @@ export const SocketProvider = ({children}) => {
             }
             if (message.type === "read_messages") {
                 const {count} = message;
-                console.log("count = ",count);
                 setNotifications(prev => ({
                     ...prev,
                     messages: Math.max(0, prev.messages - count)
@@ -211,7 +210,7 @@ export const SocketProvider = ({children}) => {
             newSocket.close();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [userId, loading]);
+    }, [userId, loading, emailVerified]);
 
     const resetMessageNotificationForUser = (otherUserId) => {
         setMessageCounts(prev => {

@@ -54,6 +54,7 @@ const Swipe = () => {
 
 if (!emailVerified) {
   return (
+    <div className="bg-gray-200 dark:text-white text-black dark:bg-gray-600">
     <div className="flex items-center justify-center h-[calc(100vh-72px)]">
       <div className="flex flex-col items-center space-y-2">
         <h1 className="text-xl font-semibold text-center text-gray-800 dark:text-gray-200">
@@ -68,6 +69,7 @@ if (!emailVerified) {
 			<div className="w-4 h-4 rounded-full bg-green-500 animate-bounce [animation-delay:-.5s]"></div>
 		</div>
       </div>
+    </div>
     </div>
   );
 }

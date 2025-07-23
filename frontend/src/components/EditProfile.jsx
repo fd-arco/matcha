@@ -212,7 +212,6 @@ export default function EditProfile() {
             }
         } catch (error) {
             console.error("Error while updating profile:", error);
-            alert("Unable to update profile.");
         }
     };
 

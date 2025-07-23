@@ -36,36 +36,6 @@ export default function Profil() {
         sessionStorage.getItem("token");
         navigate("/");
     };
-    
-    
-
-    // useEffect(() => {
-
-    //     const token = sessionStorage.getItem("token");
-    //     if (!token) {
-
-    //         navigate("/register");
-    //         return;
-    //     }
-    //     fetch("http://localhost:3000/me", {
-
-    //         headers: { Authorization: `Bearer ${token}` },
-    //     })
-    //         .then((res) => res.json())
-    //         .then((data) => {
-    //             if (data.id) {
-    //                 setUser(data);
-    //             } 
-    //             else {
-    //                 sessionStorage.removeItem("token");
-    //                 navigate("/register");
-    //             }
-    //         })
-    //         .catch(() => {
-    //             sessionStorage.removeItem("token");
-    //             navigate("/register");
-    //         });
-    // }, [navigate]);
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">

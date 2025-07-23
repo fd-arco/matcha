@@ -403,7 +403,7 @@ router.get('/profiles/:userId', async (req, res) => {
                     const profileLat = parseFloat(profile.latitude);
                     const profileLon = parseFloat(profile.longitude);
                     const dist = getDistance(userLat, userLon, profileLat, profileLon);
-                    const distanceScore = 10 * Math.exp(-dist/100);
+                    const distanceScore = 100 * Math.exp(-dist/100);
                     const score = (common.length * 3) + (profile.fame / 100) + distanceScore;
                     return {
                         ...profile,

@@ -414,8 +414,6 @@ const initWebSocket = (server) => {
                                 created_at: new Date().toISOString(), // TODO:afficher l heure de la notification de like
                             }
                         }));
-                    } else {
-                        console.warn(`⚠️ [WS Server] receiverId ${receiverId} non connecté`);
                     }
                 }
                 if (data.type === "matchRemoved") {

@@ -195,7 +195,6 @@ export default function CreateProfil() {
             }
         } catch (error) {
             console.error("Erreur lors de l'envoi du profil:", error);
-            alert("Impossible de creer le profil.");
         }
     }
 
