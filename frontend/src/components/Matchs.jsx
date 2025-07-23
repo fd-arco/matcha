@@ -15,7 +15,6 @@ const Matchs = ({onSelectMatch}) => {
     const {userId} = useUser();
     const [showMatchModal, setShowMatchModal] = useState(false);
     const [matchedProfile, setMatchedProfile] = useState(null);
-    const [userLocation, setUserLocation] = useState(null);
     const {socket} = useSocket();
     const {method, position, loading, resetLocation} = useGeoManager(userId);
 
@@ -47,23 +46,23 @@ const Matchs = ({onSelectMatch}) => {
         fetchProfiles();
     }, [filters, userId]);
 
-    useEffect(() => {
-      const fetchCurrentUser = async () => {
-        try {
-          const res = await fetch(`http://localhost:3000/profile/user/${userId}`, {
-            credentials:"include"
-          });
-          const data = await res.json();
-          if(res.ok)
-          {
-            setUserLocation({ lat: data.latitude, lng: data.longitude });
-          }
-        } catch (err) {
-          console.error("Erreur position user connecté:", err);
-        }
-      };
-      fetchCurrentUser();
-    }, [userId]);
+    // useEffect(() => {
+    //   const fetchCurrentUser = async () => {
+    //     try {
+    //       const res = await fetch(`http://localhost:3000/profile/user/${userId}`, {
+    //         credentials:"include"
+    //       });
+    //       const data = await res.json();
+    //       if(res.ok)
+    //       {
+    //         setUserLocation({ lat: data.latitude, lng: data.longitude });
+    //       }
+    //     } catch (err) {
+    //       console.error("Erreur position user connecté:", err);
+    //     }
+    //   };
+    //   fetchCurrentUser();
+    // }, [userId]);
 
     useEffect(() => {
         const sendView = async () => {

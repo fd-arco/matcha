@@ -10,7 +10,7 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
     const [matches, setMatches] = useState([]);
     const {matchesGlobal, messagesGlobal, onlineStatuses, setOnlineStatuses, socket, resetMessageNotificationForUser} = useSocket();
     const {userId} = useUser();
-    const [currentTime, setCurrentTime] = useState(new Date());
+    // const [currentTime, setCurrentTime] = useState(new Date());
     const [showProfilModal, setShowProfilModal] = useState(null);
 
     useEffect(() => {
@@ -68,12 +68,12 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
         );
     }, [selectedMatch?.user_id]);
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentTime(new Date());
-        }, 60000);
-        return () => clearInterval(interval);
-    }, []);
+    // useEffect(() => {
+    //     const interval = setInterval(() => {
+    //         setCurrentTime(new Date());
+    //     }, 60000);
+    //     return () => clearInterval(interval);
+    // }, []);
 
     useEffect(() => {
         if (messagesGlobal.length === 0)
@@ -107,17 +107,6 @@ const Messages = ({onSelectMatch, selectedMatch}) => {
 
     const handleSelectMatch = async(match) => {
         try {
-            // await fetch("http://localhost:3000/messages/read", {
-            //     method:"PUT",
-            //     headers: {
-            //         "Content-Type": "application/json"
-            //     },
-            //     body: JSON.stringify({
-            //         userId: userId,
-            //         matchId: match.user_id
-            //     }),
-            //     credentials:"include"
-            // });
             if (socket) {
                 socket.send(JSON.stringify({
                     type:"read_messages",

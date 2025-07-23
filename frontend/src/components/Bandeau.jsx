@@ -26,7 +26,7 @@ const Bandeau = () => {
             }
         };
         fetchUser();
-    }, [userId]);
+    }, [userId, setUserPhoto]);
     
     if (!notifications || !user) {
         return <div className="bg-gray-200 p-4 text-center">Loading...</div>
@@ -34,11 +34,9 @@ const Bandeau = () => {
 
     const totalUnread =
         Number(notifications.views) + Number(notifications.likes) + Number(notifications.matchs) + Number(notifications.messages);
-        // (messageCounts ? Object.values(messageCounts).reduce((a, b) => a + b, 0) : 0);
 
 
     return (
-        //TODO:AJOUTER ONCLICK SUR LE DIV POUR REDIRIGER VERS LES EDIT PROFILE
         <div className="bg-green-500 dark:bg-green-800 text-black dark:text-white p-4 flex flex-wrap items-center justify-between gap-4"> 
             <div className="flex gap-4 items-center flex-1 min-w-0">
                 <div className="relative flex-shrink-0">
@@ -48,10 +46,6 @@ const Bandeau = () => {
                         className="w-16 h-16 min-w-16 min-h-16 rounded-full border-2 border-white shadow-md hover:opacity-80 transition cursor-pointer"
                         onClick={() => setShowProfilModal(true)}
                     />
-                    {/* <span
-                        className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-green-500 border-2 border-white"
-                        title="En ligne"
-                    ></span> */}
                     <div className="absolute bottom-0 right-0 flex items-center space-x-1">
                         <span
                             className="w-4 h-4 rounded-full bg-green-500 border-2 border-white"

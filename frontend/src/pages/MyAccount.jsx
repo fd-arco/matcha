@@ -8,7 +8,6 @@ export default function MyAccount() {
     const navigate = useNavigate();
     const {userId} = useUser();
     useEffect(() => {
-        // const userId = localStorage.getItem("userId");
         
         if (!userId) return;
 
@@ -24,7 +23,7 @@ export default function MyAccount() {
             }
         }
         fetchUser();
-    }, []);
+    }, [userId]);
 
     if (!user) {
         return <div className="p-8 text-center">Loading...</div>

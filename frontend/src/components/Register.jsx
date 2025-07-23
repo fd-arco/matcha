@@ -2,7 +2,7 @@ import Matcha from "../util/matcha1.jpg"
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import EmailModal from "../util/modal2.jsx"
-import SentModal  from "../components/Modal.jsx"
+// import SentModal  from "../components/Modal.jsx"
 import { useUser } from "../context/UserContext.jsx";
 
 export default function Register (){
@@ -13,10 +13,9 @@ export default function Register (){
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
     const [validEmail, setValidEmail] = useState(false);
-    const [sent, setSent] = useState(false);
+    // const [sent, setSent] = useState(false);
     const navigate = useNavigate();
     const {setUserId, setHasProfile} = useUser();
-    const [errors, setErrors] = useState({});
     const [messageError, setMessageError] = useState("");
 
     function isPasswordSecure(password) {
@@ -39,7 +38,6 @@ export default function Register (){
             return ;
         }
 
-        // setErrors({});
         try {
 
             const response = await fetch("http://localhost:3000/auth/register", {
@@ -51,7 +49,7 @@ export default function Register (){
                 body: JSON.stringify({ email, firstname, lastname, password }),
             });
     
-            const data = await response.json();
+            // const data = await response.json();
 
             if (!response.ok) {
                 setValidEmail(true);
@@ -106,16 +104,13 @@ export default function Register (){
                     <form className="space-y-2" onSubmit={ handleRegister }  noValidate >
                         <div className="flex flex-col md:flex-row gap-4">
                             <input type="text" required maxLength={50} onChange={(event) => setFirstName(event.target.value)} 
-                            value={firstname} placeholder="First name" className="w-full dark:text-white placeholder-gray-700 dark:placeholder-gray-400 md:w-1/2 bg-gray-300 dark:bg-gray-600 text-black rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600" required/>
+                            value={firstname} placeholder="First name" className="w-full dark:text-white placeholder-gray-700 dark:placeholder-gray-400 md:w-1/2 bg-gray-300 dark:bg-gray-600 text-black rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600"/>
                             <input type="text" required maxLength={50} onChange={(event) => setLastName(event.target.value)}
                             value={lastname} placeholder="Last name" className="w-full dark:text-white placeholder-gray-700 dark:placeholder-gray-400 md:w-1/2 bg-gray-300 dark:bg-gray-600 text-black rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600"/>
                         </div>
                         {message && <p style={{ color: 'white' }}>{message}</p>}
                         <input type="email" maxLength = {100} onChange={(event) => setEmail(event.target.value)}
                         value={email} placeholder="Email" className="w-full dark:text-white placeholder-gray-700 dark:placeholder-gray-400 bg-gray-300 dark:bg-gray-600 text-black rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600"/>
-                        {errors.email && (
-                         <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-                        )}
                         <div className="relative">
                             <input type="password" maxLength={64} onChange={(event) => setPassword(event.target.value)}
                             value={password} placeholder="Enter your password" className="w-full dark:text-white placeholder-gray-700 dark:placeholder-gray-400 bg-gray-300 dark:bg-gray-600 text-black rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-600"/>
@@ -137,7 +132,7 @@ export default function Register (){
             </div>
         </div>
         {validEmail && <EmailModal onClose={() => setValidEmail(false)}/>}
-        {sent && <SentModal/>}
+        {/* {sent && <SentModal/>} */}
     </div>
     );
 }

@@ -20,8 +20,7 @@ export const SocketProvider = ({children}) => {
     const [viewNotifications, setViewNotifications] = useState({ received: [], sent: [] });
     const [matchStatus, setMatchStatus] = useState({});
     const [messageCounts, setMessageCounts] = useState({});
-
-
+    
     useEffect(() => {
         if (loading) return;
         if (!userId || typeof userId !== "number") return;
@@ -41,7 +40,7 @@ export const SocketProvider = ({children}) => {
         };
 
         fetchUnreadNotifications();
-    }, [userId]);
+    }, [userId, loading]);
 
     useEffect(() => {
         if (loading) return;
@@ -56,37 +55,25 @@ export const SocketProvider = ({children}) => {
 
         newSocket.onmessage = (event) => {
             const message = JSON.parse(event.data);
-
             if (message.type === "newMessage") {
                 setMessagesGlobal(prev => [...prev, message.message]);
             }
-
             if (message.type === "newMessage") {
-            setMessagesGlobal(prev => [...prev, message.message]);
+                setMessagesGlobal(prev => [...prev, message.message]);
 
-            const senderId = message.message.sender_id;
-            const receiverId = message.message.receiver_id;
+                const senderId = message.message.sender_id;
+                const receiverId = message.message.receiver_id;
 
-            const isRecipient = Number(receiverId) === Number(userId);
-            const otherUserId = isRecipient ? senderId : receiverId;
+                const isRecipient = Number(receiverId) === Number(userId);
+                const otherUserId = isRecipient ? senderId : receiverId;
 
-            if (isRecipient) {
-                setMessageCounts(prev => ({
-                    ...prev,
-                    [otherUserId]: (prev[otherUserId] || 0) + 1
-                }));
-
-                // setNotifications(prev => ({
-                //     ...prev,
-                //     messages: Object.values({
-                //         ...prev.messageCounts,
-                //         [otherUserId]: (prev.messageCounts?.[otherUserId] || 0) + 1
-                //     }).reduce((a,b) => a+b, 0)
-                // }));
+                if (isRecipient) {
+                    setMessageCounts(prev => ({
+                        ...prev,
+                        [otherUserId]: (prev[otherUserId] || 0) + 1
+                    }));
+                }
             }
-        }
-
-
             if (message.type === "read_messages") {
                 const {count} = message;
                 console.log("count = ",count);
@@ -95,65 +82,39 @@ export const SocketProvider = ({children}) => {
                     messages: Math.max(0, prev.messages - count)
                 }));
             }
-
             if (message.type === "newNotification") {
                 setHasNotification(true);
                 if (message.type === "newNotification") {
-                setNotifications(prev => ({
-                    ...prev, [message.category]: Number(prev[message.category]) + 1
-                }));
-                if (message.category === "messages" && message.notification) {
-                    setMessageNotifications(prev => [message.notification, ...prev])
-                }
-                if (message.category === "matchs" && message.notification) {
-                    setMatchNotifications(prev => [message.notification, ...prev]);
-                }
-                if (message.category === "likes" && message.notification) {
-                    setLikeNotifications(prev => ({
-                        ...prev,
-                        received: [message.notification, ...(prev.received || [])]
+                    setNotifications(prev => ({
+                        ...prev, [message.category]: Number(prev[message.category]) + 1
                     }));
-                }
-                if (message.category === "views" && message.notification) {
-                    setViewNotifications(prev => ({
-                        ...prev,
-                        received: [message.notification, ...(prev.received || [])]
-                    }));
+                    if (message.category === "messages" && message.notification) {
+                        setMessageNotifications(prev => [message.notification, ...prev])
+                    }
+                    if (message.category === "matchs" && message.notification) {
+                        setMatchNotifications(prev => [message.notification, ...prev]);
+                    }
+                    if (message.category === "likes" && message.notification) {
+                        setLikeNotifications(prev => ({
+                            ...prev,
+                            received: [message.notification, ...(prev.received || [])]
+                        }));
+                    }
+                    if (message.category === "views" && message.notification) {
+                        setViewNotifications(prev => ({
+                            ...prev,
+                            received: [message.notification, ...(prev.received || [])]
+                        }));
+                    }
                 }
             }
+            if (message.type === "newMatch") {
+                setMatchesGlobal(prev => {
+                    const filtered = prev.filter(m => m.user_id !== message.match.user_id);
+                    const newMatches = [...filtered, message.match];
+                    return newMatches;
+                });
             }
-
-            // if (message.type === "newMatch") {
-            //     console.log("Jajoute match dans newMatch");
-            //     setMatchesGlobal(prev => {
-            //         const filtered = prev.filter(m => m.user_id !== message.match.user_id);
-            //         return [...filtered, message.match];
-            //     });
-            // }
-
-if (message.type === "newMatch") {
-    console.log("[WebSocket] ⚡ Réception d’un nouveau match");
-
-    setMatchesGlobal(prev => {
-        console.log("🧠 État actuel des matchs :", prev);
-
-        const existing = prev.find(m => m.user_id === message.match.user_id);
-        if (existing) {
-            console.log(`🔁 Un match avec user_id ${message.match.user_id} existe déjà :`, existing);
-            console.log("🎯 Match reçu via WebSocket :", message.match);
-        } else {
-            console.log(`🆕 Aucun match avec user_id ${message.match.user_id} trouvé`);
-        }
-
-        const filtered = prev.filter(m => m.user_id !== message.match.user_id);
-        const newMatches = [...filtered, message.match];
-
-        console.log("📌 Nouvel état des matchs (après remplacement) :", newMatches);
-
-        return newMatches;
-    });
-}
-
             if (message.type === "userStatusChanged") {
                 setOnlineStatuses(prev => ({
                     ...prev,
@@ -162,7 +123,6 @@ if (message.type === "newMatch") {
                         lastOnline:message.lastOnline || null
                     }
                 }));
-
             }
             if (message.type === "matchRemoved") {
                 const {userId} = message;
@@ -206,7 +166,6 @@ if (message.type === "newMatch") {
                         [key2]:isMatched
                     }));
                     if (!isMatched) {
-                        console.log("Je remove le match dans match status update");
                         setMatchesGlobal(prev =>
                             prev.filter(
                                 match =>
@@ -248,14 +207,10 @@ if (message.type === "newMatch") {
                 }
             }
         }
-
-        newSocket.onclose = () => {
-            console.log("Websocket deconnecte depuis context");
-        }
-
         return () => {
             newSocket.close();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userId, loading]);
 
     const resetMessageNotificationForUser = (otherUserId) => {
@@ -279,7 +234,6 @@ if (message.type === "newMatch") {
             setHasNotification,
             onlineStatuses,
             setOnlineStatuses,
-            // resetMessageNotifications,
             resetMessageNotificationForUser,
             messageCounts,
             userPhoto,

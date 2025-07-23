@@ -9,7 +9,6 @@ export default function CreateProfil() {
     const [photos, setPhotos] = useState([]);
     const navigate = useNavigate();
     const {userId, setHasProfile} = useUser();
-    const [user, setUser] = useState(null)
     const [infoModal, setInfoModal] = useState({
         isOpen:false,
         title:"",
@@ -88,8 +87,6 @@ export default function CreateProfil() {
                 });
                 const data = await response.json();
                 if (response.ok) {
-                    console.log("oui oui")
-                    setUser(data.verified);
                     if (data.verified) {
                         clearInterval(interval);
                     }
@@ -355,21 +352,13 @@ export default function CreateProfil() {
                                     </p>
                                 )}
                                 <br />
-                                {/* {user ? ( */}
                                     <button
                                         type="submit"
                                         className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 text-white px-4 py-2 rounded-lg w-full"
                                     >
                                         Submit
                                     </button>
-                                {/* // ) : (
-                                //     <span className="text-red-500 dark:text-red-800 m-auto p-0">
-                                //         Please validate your email to create your matcha profile!
-                                //     </span>
-                                // )} */}
                             </div>
-                            
-
                         </form>
                     </div>
                     <div className="w-full md:w-[48%] flex flex-col">

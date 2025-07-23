@@ -20,7 +20,7 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [activeTab, setActiveTab] = useState(null);
-    const [lastClickedTab, setLastClickedTab] = useState(null);
+    // const [lastClickedTab, setLastClickedTab] = useState(null);
 
     const {userId} = useUser();
 
@@ -42,7 +42,7 @@ const Dashboard = () => {
             }
         }
         fetchNotifications();
-    }, [userId, refreshTrigger]);
+    }, [userId, setNotifications, refreshTrigger]);
 
     useEffect(() => {
         const fetchMessageNotification = async () => {
@@ -57,7 +57,7 @@ const Dashboard = () => {
             }
         }
         fetchMessageNotification();
-    }, [userId, refreshTrigger]);
+    }, [userId, setMessageNotifications, refreshTrigger]);
 
     useEffect(() => {
         const fetchLikeNotifications = async() => {
@@ -75,7 +75,7 @@ const Dashboard = () => {
             }
         }
         fetchLikeNotifications();
-    }, [userId, refreshTrigger]);
+    }, [userId, setLikeNotifications,refreshTrigger]);
 
     useEffect(() => {
         const fetchMatchNotifications = async() => {
@@ -90,7 +90,7 @@ const Dashboard = () => {
             }
         }
         fetchMatchNotifications();
-    }, [userId, refreshTrigger]);
+    }, [userId, setMatchNotifications, refreshTrigger]);
 
     useEffect(() => {
         const fetchViewNotifications = async() => {
@@ -109,7 +109,7 @@ const Dashboard = () => {
             }
         }
         fetchViewNotifications();
-    }, [userId, refreshTrigger])
+    }, [userId, setViewNotifications,refreshTrigger])
 
     const unreadViewsCount = viewNotifications.received?.filter(v => !v.is_read).length || 0;
 
@@ -169,7 +169,7 @@ const Dashboard = () => {
                                 setRefreshTrigger(prev => prev + 1);
                             }
                             setActiveTab("views");
-                            setLastClickedTab("views");
+                            // setLastClickedTab("views");
                         }}
                         
                     >
@@ -190,7 +190,7 @@ const Dashboard = () => {
                                 
                             }
                             setActiveTab("likes");
-                            setLastClickedTab("likes");
+                            // setLastClickedTab("likes");
                         }}
                     >
                         <Heart size={32} />
@@ -210,7 +210,7 @@ const Dashboard = () => {
 
                             }
                             setActiveTab("matchs");
-                            setLastClickedTab("matchs");
+                            // setLastClickedTab("matchs");
                         }}
                     >
                         <Users size={32} />
@@ -229,7 +229,7 @@ const Dashboard = () => {
                                 setRefreshTrigger(prev => prev + 1);
                             }
                             setActiveTab("messages");
-                            setLastClickedTab("messages");
+                            // setLastClickedTab("messages");
                         }}
                     >
                         <MessageSquare size={32} />

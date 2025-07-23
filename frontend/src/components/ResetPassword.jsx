@@ -19,7 +19,7 @@ export default function ResetModal ({onClose}){
                 credentials: "include",
                 body: JSON.stringify({ email }),
             });
-            const data = await response.json();
+            // const data = await response.json();
             if(response.ok)
             {
                 setMessage(false);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useCallback, useState } from "react";
 
 async function getLocationFromDB(userId) {
   try {
@@ -55,15 +55,31 @@ async function getLocationByIP() {
     }
 }
 
-
 export function useGeoManager(userId) {
     const [position, setPosition] = useState(null);
     const [city, setCity] = useState(null);
     const [method, setMethod] = useState(null);
     const [loading, setLoading] = useState(true);
-    const resetLocation = async () => {
+    const resetLocation = useCallback(async () => {
       setLoading(true);
       const status = await navigator.permissions.query({name:'geolocation'});
+
+      const handleFallbackToIP = async () => {
+        const loc = await getLocationByIP();
+        if (loc) {
+          const result = await updateLocationInDB({
+            userId,
+            city:loc.city,
+            method:'ip'
+          });
+          if (result) {
+            setPosition({lat:result.latitude, lon:result.longitude});
+            setCity(result.city);
+            setMethod(result.method);
+          }
+        }
+        setLoading(false);
+      }
       if (status.state === 'granted' || status.state==='prompt') {
         navigator.geolocation.getCurrentPosition(
           async (pos) => {
@@ -80,39 +96,12 @@ export function useGeoManager(userId) {
             setLoading(false);
           },
           async(error) => {
-            console.warn("refus ou erreur gps:", error)
-            const loc = await getLocationByIP();
-            if (loc) {
-              const result = await updateLocationInDB({
-                userId,
-                city:loc.city,
-                method:'ip'
-              })
-              if (result) {
-                setPosition({lat:result.latitude, lon:result.longitude});
-                setCity(result.city);
-                setMethod(result.method);
-              }
-              setLoading(false);
-            }
+            await handleFallbackToIP();
           })
         } else {
-          const loc = await getLocationByIP();
-          if (loc) {
-            const result = await updateLocationInDB({
-              userId, 
-              city:loc.city,
-              method:'ip'
-            })
-            if (result) {
-              setPosition({lat:result.latitude,lon:result.longitude})
-              setCity(result.city);
-              setMethod(result.method);
-            }
-          }
-          setLoading(false);
+            await handleFallbackToIP();
         }
-      }
+      }, [userId]);
       
       useEffect(() => {
         async function init () {
@@ -127,6 +116,6 @@ export function useGeoManager(userId) {
             }
         }
         init();
-    }, []);
+    }, [userId, resetLocation]);
     return {position, city, method, loading, setPosition, setMethod, resetLocation};
 }

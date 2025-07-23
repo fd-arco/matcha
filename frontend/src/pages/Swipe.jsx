@@ -2,7 +2,7 @@ import React from "react";
 import Bandeau from "../components/Bandeau";
 import Messages from "../components/Messages";
 import Matchs from "../components/Matchs";
-import {useState, useEffect} from "react";
+import {useState, useEffect, useCallback} from "react";
 import Conversation from "../components/Conversation";
 import { useSocket } from "../context/SocketContext";
 import { useUser } from "../context/UserContext";
@@ -24,7 +24,7 @@ const Swipe = () => {
     }, []);
 
     
-    const fetchNotifications = async () => {
+    const fetchNotifications = useCallback(async () => {
       try {
         const res = await fetch(`http://localhost:3000/notifications/${userId}`, {
           credentials:"include"
@@ -40,7 +40,7 @@ const Swipe = () => {
       } catch (err) {
         console.error("Erreur fetch notifications", err);
       }
-    };
+    }, [userId, setHasNotification]);
 
     const handleBackToSwipes = () => {
         setSelectedMatch(null);
@@ -50,7 +50,7 @@ const Swipe = () => {
       if (userId) {
         fetchNotifications();
       }
-    }, [userId]);
+    }, [userId, fetchNotifications]);
 
 	console.log("boolean:   ", emailVerified)
 
@@ -81,9 +81,7 @@ if (!emailVerified) {
     <div className="flex flex-1">
       {!isMobile && (
         <div className="w-1/4 flex flex-col h-[calc(100vh-72px)]">
-          {/* Bandeau avec hauteur auto */}
           <Bandeau />
-          {/* Messages prend le reste, scrollable si besoin */}
           <div className="flex-1 overflow-y-auto bg-gray-100 dark:bg-gray-700">
             <Messages onSelectMatch={setSelectedMatch} selectedMatch={selectedMatch} />
           </div>
@@ -91,11 +89,6 @@ if (!emailVerified) {
       )}
 
       <div className={`${isMobile ? "w-full" : "w-3/4"} flex-1 bg-gray-200 dark:bg-gray-800`}>
-        {/* {selectedMatch ? (
-          <Conversation match={selectedMatch} onBack={handleBackToSwipes} />
-        ) : (
-          <Matchs onSelectMatch={setSelectedMatch} />
-        )} */}
         {selectedMatch ? (
             <Conversation match={selectedMatch} onBack={handleBackToSwipes} />
           ) : 
