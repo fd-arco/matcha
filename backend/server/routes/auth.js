@@ -154,7 +154,7 @@ router.get("/me", async (req, res) => {
 router.get("/my-me", auth, async(req, res) => {
     try {
         const result = await pool.query(
-            `SELECT users.id,
+            `SELECT users.id, users.verified,
                 EXISTS (
                     SELECT 1 FROM profiles WHERE profiles.user_id = users.id
                 ) AS hasProfile
@@ -165,8 +165,8 @@ router.get("/my-me", auth, async(req, res) => {
 
         if (result.rows.length === 0) return res.status(200).json(null);
 
-        const {id, hasprofile} = result.rows[0];
-        res.json({id, hasProfile:hasprofile});
+        const {id, hasprofile, verified} = result.rows[0];
+        res.json({id, hasProfile:hasprofile, verified});
     } catch (err) {
         console.error('erreur dans my-me:', err);
         res.status(500).json({error:'Server error'});

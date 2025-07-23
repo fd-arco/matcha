@@ -355,18 +355,18 @@ export default function CreateProfil() {
                                     </p>
                                 )}
                                 <br />
-                                {user ? (
+                                {/* {user ? ( */}
                                     <button
                                         type="submit"
                                         className="bg-green-500 hover:bg-green-400 dark:bg-green-800 dark:hover:bg-green-900 text-white px-4 py-2 rounded-lg w-full"
                                     >
                                         Submit
                                     </button>
-                                ) : (
-                                    <span className="text-red-500 dark:text-red-800 m-auto p-0">
-                                        Please validate your email to create your matcha profile!
-                                    </span>
-                                )}
+                                {/* // ) : (
+                                //     <span className="text-red-500 dark:text-red-800 m-auto p-0">
+                                //         Please validate your email to create your matcha profile!
+                                //     </span>
+                                // )} */}
                             </div>
                             
 

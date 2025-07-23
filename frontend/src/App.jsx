@@ -22,6 +22,14 @@ import ResetPasswordFront from "./components/ResetPasswordFront.jsx"
 
 const getRoutes = () => createBrowserRouter([
   {
+    path: '/emailconf', 
+    element: (
+      <PrivateRoute>
+        <EmailConf />
+      </PrivateRoute>
+    )
+  },
+  {
     path:'/',
     element: <RootLayout />,
     children: [
@@ -35,14 +43,6 @@ const getRoutes = () => createBrowserRouter([
         element: (
           <PrivateRoute>
             <CreateProfil />
-          </PrivateRoute>
-        )
-      },
-      {
-        path: '/emailconf', 
-        element: (
-          <PrivateRoute>
-            <EmailConf />
           </PrivateRoute>
         )
       },
