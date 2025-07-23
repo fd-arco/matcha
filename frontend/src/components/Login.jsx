@@ -1,5 +1,5 @@
 import '../App.css'
-import { useState, useEffect, useRef} from 'react';
+import { useState, useRef} from 'react';
 import { useNavigate } from "react-router-dom";
 import EmailLogModal from "../util/modalLogin.jsx"
 import { useUser } from '../context/UserContext.jsx';
@@ -112,7 +112,6 @@ export default function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     value={password}
                     className="border p-3 shadow-md dark:bg-gray-600 dark:text-gray-300 dark:border-gray-700 placeholder:text-gray-800 dark:placeholder:text-gray-800 focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full"
-                    // className="border p-3 shadow-md dark:bg-grey-600 dark:text-gray-800 dark:border-gray-700  dark:placeholder-bg-gray-40 placeholder:text-base focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full"
                     type="password"
                     placeholder="Password"
                     required
@@ -133,14 +132,10 @@ export default function Login() {
               <div className="flex flex-col mt-4 items-center justify-center text-sm">
                 <h3 className="dark:text-gray-300">
                   Forgot your password? 
-                  <a
-                    className="group text-green-500 transition-all duration-100 ease-in-out"
-                  >
-                    <button className="bg-left-bottom bg-gradient-to-l from-green-400 to-green-700 bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out"
+                    <button className="group text-green-500 bg-left-bottom bg-gradient-to-l from-green-400 to-green-700 bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out"
                           onClick={() => setResetPassword(true)}>
                           click here
                     </button>
-                  </a>
                 </h3>
               </div>
             </div>
